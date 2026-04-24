@@ -29,16 +29,16 @@ References:
 Secret scanning is part of **GitHub Secret Protection** ($19/active committer/month). It detects known secret patterns — API keys, tokens, connection strings — that have been committed to your repository. Push protection extends this by blocking secrets _before_ they reach the remote.
 
 1. Navigate to your repository on GitHub
-2. Go to **Settings** → **Security** → **Code security**
+2. Go to **Settings** → **Advanced Security** (under the "Security" section of the left sidebar)
 3. Under the **Secret scanning** section, click **Enable** if it is not already active
 4. Once secret scanning is enabled, locate the **Push protection** option directly below and click **Enable**
 5. Review the confirmation — push protection is now active for all pushes to this repository
 6. Optionally, expand the **AI detection** toggle if available — this enables AI-powered detection of unstructured secrets such as passwords and generic credentials (requires a GitHub Secret Protection license)
 
-> **Org-level alternative:** Organization owners can enable these features at scale from **Settings** → **Security** → **Configurations**. Security configurations let you define a policy (e.g., "GitHub recommended" or a custom configuration) and apply it to all or selected repositories at once. This is the preferred approach for Enterprise Cloud administrators managing hundreds of repositories.
+> **Org-level alternative:** Organization owners can enable these features at scale from **Settings** → **Advanced Security → Configurations**. Security configurations let you define a policy (e.g., "GitHub recommended" or a custom configuration) and apply it to all or selected repositories at once. This is the preferred approach for Enterprise Cloud administrators managing hundreds of repositories.
 
 7. _(Optional)_ Configure **Delegated bypass for push protection**:
-   - In the same **Code security** settings page, under **Push protection**, click **Configure delegated bypass**
+   - In the same **Advanced Security** settings page, under **Push protection**, click **Configure delegated bypass**
    - Add a bypass list — typically a security team or a specific GitHub Team
    - When a contributor's push is blocked, they can request a bypass; only members of the designated team can approve it
    - This gives your security team centralized control over push protection exceptions without disabling the feature
@@ -73,14 +73,14 @@ In this section you will intentionally trigger a push protection block to unders
    ```
 6. Observe the push protection block — Git will reject the push with a message identifying the detected secret type (in this case, an AWS Access Key ID) and the file and line where it was found
 
-> **Troubleshooting:** If the push goes through without being blocked, verify push protection is enabled at the repository level (Settings → Code security → Push protection). Also confirm the test string uses the exact `AKIA` prefix — AWS key detection requires this format. See the [Instructor Guide](../docs/INSTRUCTOR-GUIDE.md) for additional help.
+> **Troubleshooting:** If the push goes through without being blocked, verify push protection is enabled at the repository level (Settings → Advanced Security → Push protection). Also confirm the test string uses the exact `AKIA` prefix — AWS key detection requires this format. **If the repo or org does not have GitHub Secret Protection licensed, push protection will not block regardless of UI state — check `/orgs/{org}/settings/billing/advanced-security` to verify licensing.** See the [Instructor Guide](../docs/INSTRUCTOR-GUIDE.md) for additional help.
 7. Review the bypass options presented in the terminal output:
    - **It's used in tests** — marks the secret as a test credential
    - **It's a false positive** — the detected string is not actually a secret
    - **I'll fix it later** — acknowledges the secret and creates a secret scanning alert
 8. Select one of the bypass options to unblock the push, or remove the secret from the file before pushing again
 
-> **Enterprise policy note:** Organization and enterprise owners can restrict which bypass reasons are available to contributors. For example, you can disable "I'll fix it later" to enforce immediate remediation. This is configured under **Settings** → **Security** → **Code security** → **Push protection** at the organization level.
+> **Enterprise policy note:** Organization and enterprise owners can restrict which bypass reasons are available to contributors. For example, you can disable "I'll fix it later" to enforce immediate remediation. This is configured under **Settings** → **Advanced Security** → **Push protection** at the organization level.
 
 9. Clean up the test branch and file:
    ```bash
@@ -94,7 +94,7 @@ In this section you will intentionally trigger a push protection block to unders
 
 Code scanning with CodeQL is part of **GitHub Code Security** ($30/active committer/month). CodeQL is GitHub's semantic code analysis engine that finds security vulnerabilities and coding errors.
 
-1. Navigate to your repository **Settings** → **Security** → **Code security**
+1. Navigate to your repository **Settings** → **Advanced Security**
 2. Under **Code scanning**, locate the **CodeQL analysis** section
 3. Click **Set up** → **Default**
 4. Review the default setup configuration:
@@ -144,7 +144,7 @@ Auto-triage rules let you automatically dismiss or act on Dependabot alerts base
 
 > **⏱️ Timing note:** This section is optional during in-session delivery. If the workshop is running behind schedule, skip to section 7.6 (Verification) and complete this section as self-paced practice.
 
-1. Navigate to your repository **Settings** → **Security** → **Code security**
+1. Navigate to your repository **Settings** → **Advanced Security**
 2. Scroll to the **Dependabot** section and locate **Dependabot rules**
 3. Notice the built-in preset rule: **Dismiss low impact issues for development-scoped dependencies** — this rule automatically dismisses alerts for vulnerabilities that only affect dev dependencies (e.g., `devDependencies` in npm, `test` scope in Maven) and have low or moderate severity
 4. Enable the preset rule by toggling it on
@@ -160,7 +160,7 @@ Auto-triage rules let you automatically dismiss or act on Dependabot alerts base
      - **Open a pull request** — automatically creates a Dependabot security update PR for matching alerts
 6. Save the rule and verify it appears in the rules list
 
-> **Org-level rules:** Organization owners can create auto-triage rules at the organization level under **Settings** → **Security** → **Configurations** → **Dependabot rules**. Organization-level rules apply across all repositories in the organization and take precedence over repository-level rules. This is the recommended approach for enforcing consistent triage policies at scale.
+> **Org-level rules:** Organization owners can create auto-triage rules at the organization level under **Settings** → **Advanced Security** → **Configurations** → **Dependabot rules**. Organization-level rules apply across all repositories in the organization and take precedence over repository-level rules. This is the recommended approach for enforcing consistent triage policies at scale.
 
 7. Review any alerts that were automatically dismissed by your new rule — they will appear in the **Closed** tab of Dependabot alerts with a label indicating they were auto-dismissed
 
@@ -171,7 +171,7 @@ Auto-triage rules let you automatically dismiss or act on Dependabot alerts base
 Use this checklist to confirm that all security features are properly configured.
 
 1. **Secret scanning is active:**
-   - Navigate to **Settings** → **Security** → **Code security**
+   - Navigate to **Settings** → **Advanced Security**
    - Confirm that **Secret scanning** shows as **Enabled**
    - Confirm that **Push protection** shows as **Enabled** beneath it
 
@@ -186,7 +186,7 @@ Use this checklist to confirm that all security features are properly configured
 
 4. **Dependabot alerts are accessible:**
    - Navigate to the **Security** tab → **Dependabot alerts**
-   - Confirm the dependency graph is enabled (**Settings** → **Security** → **Code security** → **Dependency graph**)
+   - Confirm the dependency graph is enabled (**Settings** → **Advanced Security** → **Dependency graph**)
    - Review at least one alert detail (or confirm the alert list loads if no vulnerable dependencies exist)
 
 5. **Auto-triage rule is configured:**

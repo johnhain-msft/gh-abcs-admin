@@ -26,7 +26,7 @@ GitHub provides audit logs at two distinct levels, each capturing different cate
 | **Events** | Enterprise settings (`business.*`), org membership, repo management, billing, security events across all orgs | Repository changes, team management, webhooks, member access |
 | **Git events** | Yes (7-day retention) | No |
 | **API endpoint** | `/enterprises/{enterprise}/audit-log` | `/orgs/{org}/audit-log` |
-| **UI location** | Enterprise → Settings → Audit log | Organization → Settings → Audit log |
+| **UI location** | Enterprise → Settings → Audit log | Organization → Settings → Archives → Logs → Audit log |
 
 The enterprise audit log aggregates actions across all child organizations, making it the primary tool for enterprise-wide security monitoring. The organization audit log provides a more focused view for org-level administrators who do not have enterprise owner access.
 
@@ -116,7 +116,7 @@ The audit log UI and API support a powerful query syntax for finding specific ev
 The audit log search interface is accessible from:
 
 - **Enterprise level:** Enterprise → Settings → Audit log
-- **Organization level:** Organization → Settings → Audit log
+- **Organization level:** Organization → Settings → Archives → Logs → Audit log
 
 The search bar accepts free-text queries and structured phrase qualifiers. Results are displayed in reverse chronological order with pagination.
 

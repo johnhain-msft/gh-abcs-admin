@@ -110,7 +110,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 1. Navigate to **enterprise settings → Authentication security** — show SAML configuration options (do not modify live settings)
 2. Show the **identity provider mapping** for team sync
 3. Walk through the EMU documentation page and highlight the key differences from standard SAML
-4. Show **enterprise settings → Policies → Personal access tokens** — demonstrate token restriction policies
+4. Show **Enterprise → Policies → Personal access tokens** — demonstrate token restriction policies
 
 **Discussion Prompts:**
 
@@ -152,9 +152,9 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 **Demo Script:**
 
-1. Navigate to **enterprise settings → Policies** — walk through each policy category
+1. Navigate to **Enterprise → Policies** — walk through each policy category
 2. Show how an enterprise policy restricts what org admins can configure
-3. Navigate to **enterprise settings → Copilot** — show seat assignment and policy options
+3. Navigate to **Enterprise → Policies → Copilot** — show seat assignment and policy options
 4. Show the org-level Copilot settings and how they inherit from the enterprise
 
 **Discussion Prompts:**
@@ -241,9 +241,9 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 **Demo Script:**
 
-1. Navigate to **org settings → Audit log** — demonstrate search and filtering
+1. Navigate to **org settings → Archives → Logs → Audit log** — demonstrate search and filtering
 2. Show a search query: `action:repo.create actor:username` and explain the syntax
-3. Navigate to **enterprise settings → Audit log** — show enterprise-level events
+3. Navigate to **Enterprise → Settings → Audit log** — show enterprise-level events
 4. Show the dormant users report under **enterprise settings → People**
 
 **Discussion Prompts:**
@@ -556,8 +556,8 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 **Demo Script:**
 
-1. Navigate to **org settings → Code security and analysis** — show the enable-all toggles
-2. Open a repository → **Settings → Code security and analysis** — show repo-level overrides
+1. Navigate to **org settings → Advanced Security → Configurations** — show the enable-all toggles
+2. Open a repository → **Settings → Advanced Security** — show repo-level overrides
 3. Navigate to **Security → Security overview** to show the dashboard
 4. Demonstrate push protection by attempting to push a test secret (use a revoked/test token)
 5. Show how to review and dismiss secret scanning alerts
@@ -661,7 +661,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 | Insufficient permissions | "You don't have access" or 403 errors | Verify the user is an org admin; check enterprise policies for restrictions |
 | Actions disabled | Workflows won't run or are greyed out | Check **org settings → Actions → General** — ensure Actions is enabled for all repositories |
 | Branch protection conflicts | Can't push to or merge into protected branch | Check ruleset bypass actors; verify the user has admin override if needed |
-| Secret scanning not available | No security alerts or scanning tab missing | Verify GHEC plan includes GitHub Secret Protection and GitHub Code Security (formerly GHAS); check **repo settings → Code security** |
+| Secret scanning not available | No security alerts or scanning tab missing | Verify GHEC plan includes GitHub Secret Protection and GitHub Code Security (formerly GHAS); check **repo settings → Advanced Security** |
 | API rate limiting | 403 responses with "rate limit exceeded" | Use authenticated requests; check rate limit headers with `gh api /rate_limit` |
 | `gh` CLI not installed | "command not found: gh" errors | Direct participant to [setup.md](../labs/setup.md) installation instructions |
 | `gh` CLI not authenticated | "authentication required" errors | Run `gh auth login` and follow the browser-based OAuth flow |

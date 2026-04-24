@@ -37,7 +37,7 @@ References:
 <details>
 <summary>🏛️ Enterprise Path — view enterprise-wide Copilot policies (requires enterprise owner access)</summary>
 
-1. Navigate to `https://github.com/enterprises/YOUR-ENTERPRISE` → **Settings** → **Policies**.
+1. Navigate to `https://github.com/enterprises/YOUR-ENTERPRISE` → **Policies**.
 2. The AI controls are organized into three sidebar sections: **Agents**, **Copilot**, and **MCP**.
 3. Enterprise-level policies cascade down to all organizations in the enterprise — an organization cannot enable a capability that the enterprise has disabled.
 4. If the enterprise policy is set to **Unconfigured**, affected org policies default to **Disabled** — this prevents accidental over-permissiveness.
@@ -139,7 +139,7 @@ References:
 <details>
 <summary>🏛️ Enterprise Path — query the enterprise audit log for Copilot events (requires enterprise owner access)</summary>
 
-For enterprise-level audit log access, navigate to `https://github.com/enterprises/YOUR-ENTERPRISE` → **Settings** → **Logs** → **Audit log** and use the same `action:copilot` filter. The enterprise audit log aggregates Copilot events from all organizations, giving you a single-pane view of policy changes and seat management across the enterprise.
+For enterprise-level audit log access, navigate to `https://github.com/enterprises/YOUR-ENTERPRISE` → **Settings** → **Audit log** and use the same `action:copilot` filter. The enterprise audit log aggregates Copilot events from all organizations, giving you a single-pane view of policy changes and seat management across the enterprise.
 
 </details>
 

@@ -45,7 +45,7 @@ In Lab 03, you created a basic branch ruleset scoped to a single repository. Org
 
 Tag rulesets protect your release tags from accidental or unauthorized changes. This is especially important for teams that use semantic versioning tags (`v1.0.0`, `v2.3.1`) as deployment triggers.
 
-1. Navigate back to your **organization Settings > Rules > Rulesets**
+1. Navigate back to your **organization Settings > Repository > Rulesets**
 2. Click **New ruleset**, then select **New tag ruleset**
 3. Set the **Ruleset name** to `YOUR-HANDLE-release-tag-protection`
 4. Set **Enforcement status** to **Active**
@@ -69,7 +69,7 @@ Understanding bypass behavior is essential for designing rulesets that balance s
 1. Navigate to one of the repositories targeted by your org-level ruleset
 2. Try to push a commit directly to the `main` branch (edit a file via the GitHub UI on the default branch):
     - Because the org ruleset is in **Evaluate** mode, the push should **succeed** — but the evaluation will be recorded in Rule Insights
-3. Now return to **Organization Settings > Rules > Rulesets** and edit the `YOUR-HANDLE-org-branch-standards` ruleset
+3. Now return to **Organization Settings > Repository > Rulesets** and edit the `YOUR-HANDLE-org-branch-standards` ruleset
 4. Change the **Enforcement status** from **Evaluate** to **Active**, then click **Save changes**
 5. Return to the repository and attempt to edit a file directly on `main` again:
     - This time, GitHub should **block** the direct push and force you to create a branch and pull request
@@ -90,7 +90,7 @@ Understanding bypass behavior is essential for designing rulesets that balance s
 
 Rulesets can be exported as JSON and imported into other organizations or repositories, enabling you to standardize policies across your enterprise.
 
-1. Navigate to **Organization Settings > Rules > Rulesets**
+1. Navigate to **Organization Settings > Repository > Rulesets**
 2. Find the `YOUR-HANDLE-org-branch-standards` ruleset you created in section 6.1
 3. Click the **···** (three-dot menu) to the right of the ruleset, then click **Export**
 4. GitHub downloads a JSON file representing the complete ruleset configuration. Open the file — its structure looks like this:
@@ -130,7 +130,7 @@ Rulesets can be exported as JSON and imported into other organizations or reposi
 }
 ```
 
-5. To import a ruleset, navigate to **Organization Settings > Rules > Rulesets**
+5. To import a ruleset, navigate to **Organization Settings > Repository > Rulesets**
 6. Click **New ruleset**, then click **Import a ruleset** at the top of the page
 
 > **Troubleshooting:** If the **Import a ruleset** option is not visible, verify you are on the organization-level **New ruleset** page (not a repository-level page). Ruleset import requires the organization Owner role. See the [Instructor Guide](../docs/INSTRUCTOR-GUIDE.md) for additional help.
@@ -170,10 +170,10 @@ In Lab 03 you learned that rulesets are the modern replacement for branch protec
 
 Use this checklist to confirm everything is configured correctly.
 
-1. Navigate to **Organization Settings > Rules > Rulesets** and verify:
+1. Navigate to **Organization Settings > Repository > Rulesets** and verify:
     - [ ] `YOUR-HANDLE-org-branch-standards` ruleset exists with status **Active** (you changed it from Evaluate in 6.3)
     - [ ] `YOUR-HANDLE-release-tag-protection` tag ruleset exists with status **Active**
-2. Navigate to **Organization Settings > Rules > Insights** (Rule Insights):
+2. To view **Rule Insights** (April 2026 redesign): open the `YOUR-HANDLE-org-branch-standards` ruleset, then click its **Insights** tab. Verify:
     - [ ] You see evaluation entries from when `YOUR-HANDLE-org-branch-standards` was in **Evaluate** mode (section 6.3, step 2)
     - [ ] You see enforcement entries from after you switched to **Active** mode
     - [ ] Tag ruleset events appear if you tested tag creation

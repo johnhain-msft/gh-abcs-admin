@@ -102,9 +102,10 @@ In the **"Branch protections"** section, enable the following rules:
 
 ## 3.7 _(Optional)_ View Rule Insights
 
-1. Go to **Settings > Rules > Insights**
-2. Review the timeline of rule evaluations — you should see your recent PR activity with pass/fail/bypass events
-3. _(Note)_ On GitHub Enterprise Cloud, you can set rulesets to **Evaluate** mode to dry-run rules against real traffic before activating them
+1. Go to **Settings → Rules → Rulesets**, then click the name of the ruleset you want to inspect
+2. On the ruleset's detail page, click the **Insights** tab (redesigned April 2026) to open the dashboard — you can filter by actor, time period, and result (pass / fail / bypass)
+3. Review the timeline of rule evaluations — you should see your recent PR activity with pass/fail/bypass events
+4. _(Note)_ On GitHub Enterprise Cloud, you can set rulesets to **Evaluate** mode to dry-run rules against real traffic before activating them
 
 > **Note: Legacy branch protection** — Prior to rulesets (GA July 2023), branch protection rules were the only way to protect branches. They are found at **Settings > Branches** and still function today. Rulesets are the recommended modern approach because they support layering multiple rules, provide an Active/Disabled/Evaluate status, give visibility to all contributors (not just admins), and can be applied at the organization level across multiple repositories. Legacy branch protection rules and rulesets coexist — the most restrictive combination of both applies.
 

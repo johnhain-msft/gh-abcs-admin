@@ -342,7 +342,7 @@
 "Lab 6 builds on what we just did. We're going to level up to **organization-level rulesets** and **tag protection**."
 
 > **🖥️ DEMO STEP 1: Navigate to org-level rulesets**
-> Navigate to: **Organization Settings → Rules → Rulesets → New branch ruleset**
+> Navigate to: **Organization Settings → Repository → Rulesets → New branch ruleset**
 
 "Notice I'm now in the **organization** settings, not the repository settings. This is a key distinction. Org-level rulesets cascade down to all repos — or to a subset you target."
 
@@ -499,7 +499,7 @@
 "This is Lab 7 — Security Scanning and Push Protection. This is one of the most impactful demos because you'll see push protection block a secret in real time."
 
 > **🖥️ DEMO STEP 1: Enable secret scanning and push protection**
-> Navigate to: **Repository → Settings → Security → Code security**
+> Navigate to: **Repository → Settings → Advanced Security** (under the Security section of the sidebar)
 
 "First, let's enable the features. Here in Security settings, I'll turn on Secret scanning and Push protection. These are the two features that prevent secrets from landing in your codebase."
 
