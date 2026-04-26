@@ -1,0 +1,27 @@
+{
+  "name": "gh-abcs-admin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GitHub Enterprise Cloud Admin Training — VBD Workshop",
+  "scripts": {
+    "test": "node tests/run-all.js",
+    "test:lint": "markdownlint-cli2 'docs/**/*.md' 'labs/**/*.md' 'README.md' '#docs/PLAN.md' '#docs/initial-prompt.md' '#docs/final-prompt-plan.md' '#docs/_research/**'",
+    "test:links": "node tests/validate-links.js",
+    "test:spell": "cspell lint --no-progress 'docs/**/*.md' 'labs/**/*.md' 'README.md'",
+    "test:structure": "node tests/validate-structure.js",
+    "test:frontmatter": "node tests/validate-frontmatter.js",
+    "test:codeblocks": "node tests/validate-codeblocks.js",
+    "test:mermaid": "node tests/validate-mermaid.js",
+    "test:vbd-coverage": "node tests/validate-vbd-coverage.js",
+    "test:lab-completeness": "node tests/validate-lab-completeness.js",
+    "test:freshness": "node tests/validate-freshness.js"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.17.0",
+    "markdown-link-check": "^3.13.0",
+    "cspell": "^8.17.0",
+    "ajv": "^8.17.0",
+    "yaml": "^2.7.0",
+    "glob": "^11.0.0"
+  }
+}

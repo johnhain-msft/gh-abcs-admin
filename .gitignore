@@ -348,3 +348,15 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# PowerPoint source decks (large binary files)
+*.pptx
+docs/Offering - GitHub Administration Training - Copy.pptx:sec.endpointdlp
+docs/Offering - GitHub Administration Training - Copy.pptx:Zone.Identifier
+
+# Personal instructor delivery aids (not workshop material)
+demo-prep.md
+demo-repo-setup-plan.md
+github-licensing-guide.md
+lab13-cheatsheet.md
+docs/PRs and commits.json

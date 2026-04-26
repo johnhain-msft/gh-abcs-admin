@@ -83,12 +83,12 @@ How do outside collaborators work with internal repositories and base permission
 
 1. **Definition**: An outside collaborator is a person who is **not a member** of your organization but has access to one or more repositories
 
-2. **Internal Repository Access**: 
+2. **Internal Repository Access**:
    - **Internal repositories are NOT visible to outside collaborators**
    - Only enterprise members (organization members) can see internal repositories
    - This is by design to enable "innersource" while protecting proprietary information
 
-3. **Base Permissions**: 
+3. **Base Permissions**:
    - Base permissions set the default access level for organization members
    - **Base permissions do NOT apply to outside collaborators**
    - Outside collaborators must be explicitly granted access to specific repositories
@@ -178,7 +178,7 @@ If you want external collaborators (consultants/vendors) in EMU to **NOT** have 
 | Can be added to teams | ✅ Yes | ❌ No | ✅ Yes |
 | Provisioned via IdP | Depends | ❌ No | ✅ Yes |
 
-> 📚 **References**: 
+> 📚 **References**:
 > - [About Internal Repositories](https://docs.github.com/en/enterprise-cloud@latest/repositories/creating-and-managing-repositories/about-repositories#about-internal-repositories)
 > - [Adding Outside Collaborators](https://docs.github.com/en/organizations/managing-user-access-to-your-organizations-repositories/managing-outside-collaborators/adding-outside-collaborators-to-repositories-in-your-organization)
 > - [Guest Collaborators](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/roles-in-an-enterprise#guest-collaborators)
@@ -322,7 +322,7 @@ Use these action categories to search for GitHub Actions policy events:
 
 #### How to Search for GitHub Actions Policy Changes
 
-1. **Access the Audit Log**: 
+1. **Access the Audit Log**:
    - Go to your Enterprise → Settings → Audit log
 
 2. **Search Queries to Use**:
@@ -364,7 +364,7 @@ action:workflows
 
 #### Additional Monitoring Options
 
-- **Audit Log Streaming**: Stream audit logs to external SIEM systems for long-term retention and analysis
+- **Audit Log Streaming**: Stream audit logs to external Security Information and Event Management (SIEM) systems for long-term retention and analysis
 - **Audit Log API**: Query audit logs programmatically using the REST or GraphQL API
 - **Webhooks**: Set up webhooks for real-time notifications of specific events
 
@@ -396,7 +396,7 @@ With EMU, **enterprise owner roles can be assigned through your Identity Provide
    - Billing Manager
    - Guest Collaborator
 
-3. **Using Groups**: 
+3. **Using Groups**:
    - Assign an IdP group to the GitHub EMU application
    - Set the role attribute for all users in that group to "Enterprise Owner"
    - All members of that group will be provisioned as enterprise owners
@@ -441,6 +441,442 @@ For enterprises that do **not** use EMU:
 > - [Configuring SCIM Provisioning for EMU](https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/using-enterprise-managed-users-for-iam/configuring-scim-provisioning-for-enterprise-managed-users)
 > - [Inviting People to Manage Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/inviting-people-to-manage-your-enterprise)
 > - [Roles in an Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/roles-in-an-enterprise)
+
+---
+
+## 6. Rulesets vs Branch Protection
+
+### Question
+
+How do repository rulesets differ from branch protection rules, and when should we migrate?
+
+### Answer
+
+Repository rulesets are the modern replacement for branch protection rules, offering several enterprise advantages:
+
+| Capability | Branch Protection | Rulesets |
+|------------|------------------|----------|
+| Scope | Single repo | Org-wide or repo-level |
+| Targeting | Branch patterns | Branch, tag, and push patterns |
+| Bypass actors | Not configurable | Teams, roles, apps, deploy keys |
+| Evaluate mode | ❌ | ✅ Test before enforcing |
+| Layering | One rule set per branch | Multiple rulesets stack |
+| API management | Limited | Full CRUD + import/export |
+
+**Migration guidance:** Start by enabling rulesets in **evaluate mode** alongside existing branch protection. Monitor the rule insights dashboard for 1-2 weeks, then disable branch protection and switch rulesets to active enforcement.
+
+> 📚 **References**:
+> - See [Repository Governance](07-repository-governance.md) for detailed configuration
+> - [Lab 06: Advanced Rulesets](../labs/lab06.md) for hands-on practice
+> - [GitHub Docs: Rulesets](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets)
+
+---
+
+## 7. Custom Secret Scanning Patterns
+
+### Question
+
+How do we set up custom secret scanning patterns for our organization?
+
+### Answer
+
+Custom patterns let you detect organization-specific secrets (internal API keys, tokens, connection strings) beyond GitHub's 200+ built-in partner patterns.
+
+**Steps to configure:**
+1. Navigate to **Organization Settings → Code security → Secret scanning**
+2. Under "Custom patterns," click **New pattern**
+3. Define the pattern using Hyperscan regex syntax
+4. Add optional `before` and `after` context patterns to reduce false positives
+5. Run a **dry run** on selected repos to validate matches before enabling
+6. Enable the pattern org-wide once validated
+
+**Best practices:**
+- Start with high-confidence patterns (e.g., known internal token prefixes)
+- Use the dry run feature to estimate alert volume before enabling
+- Set up push protection for critical custom patterns to block commits containing them
+- Review alert metrics monthly and tune patterns that generate excessive false positives
+
+> 📚 **References**:
+> - See [Security & Compliance](08-security-compliance.md) for security configuration
+> - [GitHub Docs: Custom Patterns](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/using-advanced-secret-scanning-and-push-protection-features/custom-patterns/defining-custom-patterns-for-secret-scanning)
+
+---
+
+## 8. CodeQL Default vs Advanced Setup
+
+### Question
+
+What's the difference between CodeQL default setup and advanced setup?
+
+### Answer
+
+| Aspect | Default Setup | Advanced Setup |
+|--------|--------------|----------------|
+| Configuration | One-click enable | Custom workflow YAML |
+| Languages | Auto-detected | Explicitly specified |
+| Query suites | `security-extended` | Any suite including custom queries |
+| Schedule | GitHub-managed | Custom cron schedule |
+| Build steps | Auto-detected | Manual build commands |
+| Monorepo support | Limited | Full control |
+
+**Recommendation:** Use **default setup** for most repositories — it covers 95% of use cases with zero maintenance. Switch to **advanced setup** when you need custom queries, specific build steps, or monorepo support.
+
+> 📚 **References**:
+> - See [Security By Default Policies](11-security-by-default-policies.md) for org-wide enablement
+> - [GitHub Docs: CodeQL](https://docs.github.com/en/enterprise-cloud@latest/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning)
+
+---
+
+## 9. Push Protection Bypass Requests
+
+### Question
+
+How do we handle push protection bypass requests?
+
+### Answer
+
+When a developer's push is blocked by secret scanning push protection, they can request a bypass. The workflow is:
+
+1. **Developer pushes** → push is blocked with the detected secret type
+2. **Developer selects a reason** — false positive, used in tests, or will fix later
+3. **Bypass request is created** (if delegated bypass is enabled)
+4. **Designated reviewers** receive a notification to approve or deny
+5. **If approved**, the developer can push; the event is logged in the audit log
+
+**Configuring delegated bypass:**
+- Organization Settings → Code security → Push protection → **Enable delegated bypass**
+- Assign bypass reviewer teams (recommend: security team or senior engineers)
+- All bypass decisions are captured in the audit log (`secret_scanning_push_protection.bypass_created`)
+
+**Metrics to monitor:** Track bypass request rates, approval rates, and reasons in the security overview dashboard. High bypass rates may indicate overly broad custom patterns.
+
+> 📚 **References**:
+> - See [Lab 07: Secret Scanning & Push Protection](../labs/lab07.md) for hands-on practice
+> - [GitHub Docs: Push Protection](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/using-advanced-secret-scanning-and-push-protection-features/push-protection-for-repositories-and-organizations)
+
+---
+
+## 10. Copilot Governance Controls
+
+### Question
+
+How do we control which Copilot features are available to our developers?
+
+### Answer
+
+Copilot governance operates at three levels with a cascading policy model:
+
+**Enterprise level** → Sets the ceiling for all orgs:
+- Enable/disable Copilot entirely
+- Control: code completions, chat, CLI, pull request summaries, agent mode
+- Privacy: telemetry opt-out, prompt/suggestion retention
+- Models: allow/restrict premium models, bring-your-own API keys
+
+**Organization level** → Can further restrict (never expand beyond enterprise):
+- Feature toggles inherit from enterprise defaults
+- Content exclusion patterns (glob-based file/path exclusions)
+- Seat assignment and management
+
+**Key controls for admins:**
+- **Content exclusions** prevent Copilot from accessing sensitive files (doesn't apply to agent mode — note this limitation)
+- **Seat management API** enables automated provisioning/deprovisioning
+- **Copilot metrics API** provides usage data for ROI tracking
+- **Audit log events** (`copilot.*`) track policy changes and usage
+
+> 📚 **References**:
+> - See [Copilot Governance](12-github-copilot-governance.md) for full policy details
+> - [Lab 15: Copilot Governance](../labs/lab15.md) for hands-on practice
+
+---
+
+## 11. API Rate Limits
+
+### Question
+
+What are the API rate limits and how do we handle them in automation scripts?
+
+### Answer
+
+| API Type | Limit | Reset Window |
+|----------|-------|-------------|
+| REST (authenticated) | 5,000 req/hr | Rolling 1-hour window |
+| GraphQL | 5,000 points/hr | Rolling 1-hour window |
+| Search API | 30 req/min | Rolling 1-minute window |
+| Secondary (abuse) | ~100 req/min/endpoint | Varies |
+
+**Handling in scripts:**
+```bash
+# Check remaining quota before bulk operations
+gh api rate_limit --jq '.resources.core | "Remaining: \(.remaining)/\(.limit), Resets: \(.reset)"'
+
+# Use conditional requests (ETag) to avoid consuming quota
+curl -H "If-None-Match: \"etag-value\"" -H "Authorization: Bearer $TOKEN" \
+  https://api.github.com/orgs/YOUR-ORG/repos
+```
+
+**Best practices:** Use GraphQL for bulk queries (one request vs many REST calls), implement exponential backoff on 429 responses, cache responses with ETags, and use GitHub Apps (higher limits) over PATs for production automation.
+
+> 📚 **References**:
+> - See [Scripts & Automation](24-scripts-automation.md) for comprehensive API patterns
+> - [GitHub Docs: Rate Limits](https://docs.github.com/en/enterprise-cloud@latest/rest/using-the-rest-api/rate-limits-for-the-rest-api)
+
+---
+
+## 12. GitHub-Hosted vs Self-Hosted Runners
+
+### Question
+
+Should we use GitHub-hosted or self-hosted runners?
+
+### Answer
+
+| Factor | GitHub-Hosted | Self-Hosted |
+|--------|--------------|-------------|
+| Maintenance | Zero — managed by GitHub | You manage OS, updates, security |
+| Clean environment | Fresh VM every job | Persistent — requires cleanup |
+| Network access | Public internet only (unless VNET) | Access to internal resources |
+| Cost | Per-minute billing | Your infrastructure costs |
+| Specs | 2–64 vCPU (larger runners) | Custom hardware |
+| GPU support | Available (larger runners) | Any GPU you provision |
+
+**Recommendation:** Start with **GitHub-hosted runners** for most workloads. Use **larger runners** (available in GHEC) for builds needing more CPU/RAM. Use **self-hosted** only when you need: private network access, specialized hardware, regulatory data residency, or cost optimization at very high scale. Consider **Azure VNET injection** for GitHub-hosted runners needing private network access.
+
+> 📚 **References**:
+> - See [Reference Architecture](10-reference-architecture.md) for runner architecture patterns
+
+---
+
+## 13. OIDC Federation for Azure Deployments
+
+### Question
+
+How do we set up OIDC federation for Azure deployments from GitHub Actions?
+
+### Answer
+
+OIDC eliminates long-lived secrets by exchanging short-lived GitHub tokens for Azure credentials:
+
+1. **In Azure:** Create an App Registration → Certificates & secrets → Federated credentials
+2. **Configure subject claims:** `repo:org/repo:ref:refs/heads/main` or `repo:org/repo:environment:production`
+3. **In GitHub:** Add `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` as secrets
+4. **In workflow YAML:**
+```yaml
+permissions:
+  id-token: write
+  contents: read
+steps:
+  - uses: azure/login@v2
+    with:
+      client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+      subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+```
+
+**Key advantage:** No client secrets to rotate. Tokens are scoped per-workflow, per-environment, per-branch.
+
+> 📚 **References**:
+> - See [Deployment Strategies](23-deployment-strategies.md) for environment configuration
+> - [Lab 12: Deployment Environments](../labs/lab12.md)
+
+---
+
+## 14. Merge Queues
+
+### Question
+
+When should we enable merge queues and how do they work?
+
+### Answer
+
+Merge queues prevent "broken main" by ensuring every PR is tested against the latest base branch before merging. They're most valuable when:
+- Multiple PRs merge daily to the same branch
+- CI takes > 10 minutes (merge race condition risk)
+- Branch protection requires status checks to pass
+
+**How it works:**
+1. Developer clicks "Merge when ready" instead of "Merge pull request"
+2. PR enters the queue and is grouped with other queued PRs
+3. GitHub creates a temporary merge group branch with all queued PRs combined
+4. CI runs against the merge group — if it passes, all PRs in the group merge
+5. If CI fails, the failing PR is removed and the group is retested
+
+**Configuration:** Enable via rulesets → "Require merge queue" rule. Configure group size (1-100), merge method, and minimum/maximum wait times.
+
+> 📚 **References**:
+> - See [Repository Governance](07-repository-governance.md) for merge queue configuration
+
+---
+
+## 15. Deployment Approval Gates
+
+### Question
+
+How do we set up deployment approval gates for production environments?
+
+### Answer
+
+GitHub Environments support multiple protection rules that can be layered:
+
+1. **Required reviewers** (up to 6) — must approve before deployment proceeds
+2. **Wait timer** (0-43,200 min / 30 days) — enforces a delay after approval
+3. **Branch/tag restrictions** — only allow deployments from specific branches
+4. **Prevent self-review** — deployer cannot approve their own deployment
+5. **Custom protection rules** — integrate external systems via GitHub Apps (e.g., change management, compliance checks)
+
+**Setup:** Repository Settings → Environments → New environment → Configure protection rules.
+
+**Tip:** Combine required reviewers with branch restrictions for defense-in-depth — even if an attacker compromises a developer account, they can't deploy from a feature branch to production.
+
+> 📚 **References**:
+> - [Lab 12: Deployment Environments](../labs/lab12.md) for hands-on practice
+> - See [Deployment Strategies](23-deployment-strategies.md) for full environment configuration
+
+---
+
+## 16. Audit Log Streaming
+
+### Question
+
+How do we stream audit logs to our SIEM?
+
+### Answer
+
+GHEC supports streaming enterprise audit logs to these destinations:
+
+| Destination | Protocol | Setup Complexity |
+|-------------|----------|-----------------|
+| Amazon S3 | S3 API | Medium |
+| Azure Blob Storage | Azure API | Medium |
+| Azure Event Hubs | AMQP | Medium |
+| Datadog | HTTP | Low |
+| Google Cloud Storage | GCS API | Medium |
+| Splunk | HEC | Low |
+| Custom HTTPS endpoint | Webhook | Low |
+
+**Setup:** Enterprise Settings → Audit log → Log streaming → Set up a stream → Select destination.
+
+**Key operational details:**
+- Events are delivered **at-least-once** (dedup by event UUID)
+- **7-day buffer** — if the destination is down, GitHub retries for up to 7 days
+- Stream includes all enterprise, org, and repo events
+- Git events require separate enablement
+
+> 📚 **References**:
+> - See [Audit Log Deep Dive](22-audit-log-deep-dive.md) for comprehensive coverage
+> - [Lab 08: Audit Log](../labs/lab08.md) for hands-on practice
+
+---
+
+## 17. Repository Templates for Standards
+
+### Question
+
+How do we enforce organizational standards using repository templates?
+
+### Answer
+
+Repository templates pre-populate new repos with your governance baselines:
+
+**What to include in templates:**
+- `.github/` directory: CODEOWNERS, PR templates, issue templates, workflows
+- Branch protection or ruleset configuration (via setup scripts)
+- Security policy (`SECURITY.md`), contributing guidelines (`CONTRIBUTING.md`)
+- CI/CD starter workflows, linter configs, Dependabot configuration
+- README with team conventions and architecture decisions
+
+**Enforcement strategy:**
+1. Create 2-3 templates (e.g., `template-microservice`, `template-library`, `template-docs`)
+2. Use **custom properties** to tag repos created from each template
+3. Apply **properties-based rulesets** for governance that follows the template type
+4. Recommend (or require via org policies) that all new repos use a template
+
+> 📚 **References**:
+> - [Lab 04: Repository Templates](../labs/lab04.md) for hands-on practice
+> - See [Repository Governance](07-repository-governance.md) for template governance patterns
+
+---
+
+## 18. IdP Team Sync
+
+### Question
+
+How do we sync GitHub teams with our IdP groups?
+
+### Answer
+
+Team sync automatically manages GitHub team membership based on IdP group assignments:
+
+**Supported IdPs:** Microsoft Entra ID (via SAML), Okta, PingFederate (and any SCIM-supported IdP with EMU).
+
+**Setup (Entra ID example):**
+1. Ensure SAML SSO is configured and SCIM provisioning is active
+2. Organization Settings → Authentication security → Team synchronization → Enable
+3. For each GitHub team: Settings → IdP groups → Connect an IdP group
+4. GitHub syncs membership hourly (Entra ID default ~40 min cycle)
+
+**Best practices:**
+- Map IdP groups 1:1 with GitHub teams for predictable membership
+- Use nested teams in GitHub to mirror IdP group hierarchy
+- Monitor sync status via the audit log (`team.sync_completed` events)
+- For EMU: team sync is managed at the enterprise level via SCIM groups
+
+> 📚 **References**:
+> - See [Identity & Access Management](03-identity-access-management.md) for full IdP integration
+> - See [Teams & Permissions](05-teams-permissions.md) for team management
+
+---
+
+## 19. Custom Repository Roles
+
+### Question
+
+How do we create custom repository roles for our organization?
+
+### Answer
+
+Custom roles let you define fine-grained permissions beyond the 5 built-in roles (Read, Triage, Write, Maintain, Admin):
+
+**Setup:** Organization Settings → Roles → New role → Select a base role → Add/remove individual permissions.
+
+**Example custom roles:**
+| Role Name | Base | Added Permissions | Use Case |
+|-----------|------|-------------------|----------|
+| Security Reviewer | Read | View secret scanning alerts, dismiss alerts | Security team read-only review |
+| Release Manager | Write | Edit repo rules, manage deploy keys | CI/CD team deployment access |
+| Compliance Auditor | Read | View audit log, download SBOM | Compliance team oversight |
+
+**Limits:** Up to 5 custom roles per organization (GHEC). Custom roles inherit all permissions from the base role.
+
+> 📚 **References**:
+> - [Lab 09: Teams & Custom Roles](../labs/lab09.md) for hands-on practice
+> - See [Teams & Permissions](05-teams-permissions.md) for role configuration
+
+---
+
+## 20. ADO-to-GitHub Migration Planning
+
+### Question
+
+What's the recommended approach for migrating from Azure DevOps to GitHub?
+
+### Answer
+
+**Phased approach:**
+
+| Phase | Activities | Duration |
+|-------|-----------|----------|
+| 0 — Assessment | Inventory repos, pipelines, work items. Run `gh ado2gh inventory-report`. | 1-2 weeks |
+| 1 — Pilot | Migrate 2-3 non-critical repos with GEI. Validate history, PRs, branch policies. | 2-3 weeks |
+| 2 — CI/CD | Convert Azure Pipelines → GitHub Actions (use `gh actions-importer`). Set up OIDC for Azure. | 2-4 weeks |
+| 3 — Bulk Migration | Migrate remaining repos in waves of 50-100. Resolve mannequins. | 4-8 weeks |
+| 4 — Cutover | Redirect references, archive ADO projects, train teams. | 1-2 weeks |
+
+**What migrates with GEI:** Git history, branches, PRs, PR comments, work item links, branch policies (partial).
+**What doesn't:** Pipelines, boards/work items (content), test plans, artifacts, LFS objects.
+
+> 📚 **References**:
+> - See [GEI ADO Guide](14-github-enterprise-importer-ado-guide.md) for detailed GEI usage
+> - See [Migration Analysis](16-azure-devops-to-github-migration-analysis.md) for feature mapping
 
 ---
 

@@ -1,0 +1,211 @@
+{
+  "version": "1.0.0",
+  "description": "Maps VBD agenda items to documentation and lab files. Used by validate-vbd-coverage.js.",
+  "workshopSpec": {
+    "title": "GitHub Admin Training (GitHub Enterprise Cloud)",
+    "format": "Workshop | 2-day | Remote | Level 300 - Advanced",
+    "duration": "2 consecutive days, 3 hours/day (6 hours total)"
+  },
+  "agendaItems": [
+    {
+      "id": "1.1",
+      "day": 1,
+      "topic": "Repository permissions and settings",
+      "subtopics": ["Visibility", "Base permissions", "Custom roles"],
+      "priority": "P0",
+      "docs": ["docs/07-repository-governance.md", "docs/05-teams-permissions.md"],
+      "labs": ["labs/lab04.md"]
+    },
+    {
+      "id": "1.2",
+      "day": 1,
+      "topic": "Create branches and Pull Requests",
+      "subtopics": ["Branch workflow", "PR process"],
+      "priority": "P0",
+      "docs": ["docs/07-repository-governance.md"],
+      "labs": ["labs/lab03.md"]
+    },
+    {
+      "id": "1.3",
+      "day": 1,
+      "topic": "Configure protected branches",
+      "subtopics": ["Rulesets (modern)", "Branch protection (legacy)"],
+      "priority": "P0",
+      "docs": ["docs/07-repository-governance.md"],
+      "labs": ["labs/lab03.md", "labs/lab06.md"]
+    },
+    {
+      "id": "1.4",
+      "day": 1,
+      "topic": "Configure required status checks",
+      "subtopics": ["CI integration", "Check suites"],
+      "priority": "P0",
+      "docs": ["docs/07-repository-governance.md"],
+      "labs": ["labs/lab03.md", "labs/lab06.md"]
+    },
+    {
+      "id": "1.5",
+      "day": 1,
+      "topic": "Security in the cloud",
+      "subtopics": ["Secret scanning", "Code scanning", "Dependabot"],
+      "priority": "P0",
+      "docs": ["docs/08-security-compliance.md", "docs/11-security-by-default-policies.md"],
+      "labs": ["labs/lab07.md"]
+    },
+    {
+      "id": "1.6",
+      "day": 1,
+      "topic": "User privacy",
+      "subtopics": ["Data residency", "Export", "GDPR"],
+      "priority": "P1",
+      "docs": ["docs/26-user-privacy-data-residency.md"],
+      "labs": [],
+      "labNote": "P1 presentation-only — covered in 10-min overview slot (Day 1, slot #12). Data residency and GDPR settings are enterprise-level configurations not suitable for hands-on lab in a training org."
+    },
+    {
+      "id": "1.7",
+      "day": 1,
+      "topic": "Licenses",
+      "subtopics": ["License types", "Seat management", "Billing"],
+      "priority": "P1",
+      "docs": ["docs/19-licenses-billing.md"],
+      "labs": [],
+      "labNote": "P1 presentation-only — covered in 10-min overview slot (Day 1, slot #12). License and billing management requires enterprise owner access to real billing data, not available in training environments."
+    },
+    {
+      "id": "1.8",
+      "day": 1,
+      "topic": "GitHub Marketplace",
+      "subtopics": ["Apps", "Actions", "Integrations marketplace"],
+      "priority": "P1",
+      "docs": ["docs/20-github-marketplace-apps.md"],
+      "labs": ["labs/lab11.md"]
+    },
+    {
+      "id": "2.1",
+      "day": 2,
+      "topic": "Integrations and authentication methods",
+      "subtopics": ["SAML", "SCIM", "OIDC", "OAuth Apps", "GitHub Apps"],
+      "priority": "P0",
+      "docs": ["docs/03-identity-access-management.md", "docs/04-enterprise-managed-users.md"],
+      "labs": ["labs/lab11.md"]
+    },
+    {
+      "id": "2.2",
+      "day": 2,
+      "topic": "GitHub Enterprise site administration",
+      "subtopics": ["Enterprise settings", "Policies"],
+      "priority": "P0",
+      "docs": ["docs/01-enterprise-hierarchy.md", "docs/06-policy-inheritance.md"],
+      "labs": ["labs/lab06.md", "labs/lab15.md"]
+    },
+    {
+      "id": "2.3",
+      "day": 2,
+      "topic": "Audit account activities",
+      "subtopics": ["Audit log", "Streaming", "SIEM"],
+      "priority": "P0",
+      "docs": ["docs/08-security-compliance.md", "docs/01-enterprise-hierarchy.md", "docs/22-audit-log-deep-dive.md"],
+      "labs": ["labs/lab08.md"]
+    },
+    {
+      "id": "2.4",
+      "day": 2,
+      "topic": "Select repository and organization settings",
+      "subtopics": ["Org-level configs", "Defaults"],
+      "priority": "P0",
+      "docs": ["docs/02-organization-strategies.md", "docs/06-policy-inheritance.md"],
+      "labs": ["labs/lab02.md", "labs/lab04.md"]
+    },
+    {
+      "id": "2.5",
+      "day": 2,
+      "topic": "Administer users",
+      "subtopics": ["User lifecycle", "Invitations", "Roles"],
+      "priority": "P0",
+      "docs": ["docs/03-identity-access-management.md", "docs/04-enterprise-managed-users.md", "docs/21-user-administration.md"],
+      "labs": ["labs/lab09.md"]
+    },
+    {
+      "id": "2.6",
+      "day": 2,
+      "topic": "Manage dormant users",
+      "subtopics": ["Identify inactive", "Reclaim licenses"],
+      "priority": "P1",
+      "docs": ["docs/21-user-administration.md"],
+      "labs": ["labs/lab10.md"]
+    },
+    {
+      "id": "2.7",
+      "day": 2,
+      "topic": "Organizations and teams",
+      "subtopics": ["Nested teams", "IdP sync", "Permissions"],
+      "priority": "P0",
+      "docs": ["docs/02-organization-strategies.md", "docs/05-teams-permissions.md"],
+      "labs": ["labs/lab09.md"]
+    },
+    {
+      "id": "2.8",
+      "day": 2,
+      "topic": "The GitHub API",
+      "subtopics": ["REST vs GraphQL", "Status API"],
+      "priority": "P0",
+      "docs": ["docs/24-scripts-automation.md", "docs/27-integrations-status-api.md"],
+      "labs": ["labs/lab05.md", "labs/lab13.md"]
+    },
+    {
+      "id": "2.9",
+      "day": 2,
+      "topic": "Integrate 3rd party tests and results",
+      "subtopics": ["Status API", "Check runs"],
+      "priority": "P1",
+      "docs": ["docs/27-integrations-status-api.md"],
+      "labs": ["labs/lab13.md"]
+    },
+    {
+      "id": "2.10",
+      "day": 2,
+      "topic": "Deploy with GitHub",
+      "subtopics": ["Environments", "Protection rules", "OIDC"],
+      "priority": "P1",
+      "docs": ["docs/23-deployment-strategies.md"],
+      "labs": ["labs/lab12.md"]
+    },
+    {
+      "id": "2.11",
+      "day": 2,
+      "topic": "Use webhooks",
+      "subtopics": ["Webhook config", "Events", "Security"],
+      "priority": "P0",
+      "docs": ["docs/27-integrations-status-api.md"],
+      "labs": ["labs/lab01.md"]
+    },
+    {
+      "id": "2.12",
+      "day": 2,
+      "topic": "Scripts and automation",
+      "subtopics": ["gh CLI", "API scripting", "Automation"],
+      "priority": "P1",
+      "docs": ["docs/24-scripts-automation.md"],
+      "labs": ["labs/lab13.md"]
+    },
+    {
+      "id": "2.13",
+      "day": 2,
+      "topic": "Unhealthy repositories",
+      "subtopics": ["Large files", "Stale branches", "Repo health"],
+      "priority": "P1",
+      "docs": ["docs/25-unhealthy-repos-git-history.md"],
+      "labs": ["labs/lab14.md"]
+    },
+    {
+      "id": "2.14",
+      "day": 2,
+      "topic": "Changing history with Git",
+      "subtopics": ["Rebase", "filter-repo", "BFG", "Sensitive data"],
+      "priority": "P1",
+      "docs": ["docs/25-unhealthy-repos-git-history.md"],
+      "labs": ["labs/lab14.md"]
+    }
+  ]
+}

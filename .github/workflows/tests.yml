@@ -1,0 +1,95 @@
+name: Workshop Validation
+
+on:
+  push:
+    branches: [main, 'feature/**']
+    paths:
+      - 'docs/**'
+      - 'labs/**'
+      - 'README.md'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.markdownlint.yml'
+      - '.cspell.json'
+      - '.github/workflows/tests.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'labs/**'
+      - 'README.md'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.markdownlint.yml'
+      - '.cspell.json'
+      - '.github/workflows/tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Workshop Content
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run markdown lint
+        run: npm run test:lint
+
+      - name: Validate front matter
+        run: npm run test:frontmatter
+
+      - name: Validate structure
+        run: npm run test:structure
+
+      - name: Validate code blocks
+        run: npm run test:codeblocks
+
+      - name: Validate Mermaid diagrams
+        run: npm run test:mermaid
+
+      - name: Check content freshness
+        run: npm run test:freshness
+
+      - name: Check spelling
+        run: npm run test:spell
+
+      - name: Validate VBD coverage map
+        run: npm run test:vbd-coverage
+
+      - name: Validate lab completeness
+        run: npm run test:lab-completeness
+
+  link-check:
+    name: Check Links
+    runs-on: ubuntu-latest
+    # Link checks are slower and can be flaky due to network — run separately
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate links
+        run: npm run test:links
+        continue-on-error: true

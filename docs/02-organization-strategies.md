@@ -58,7 +58,7 @@ graph TD
 
 **Cost Optimization**
 - Single set of GitHub Actions shared runners (organization-level)
-- Consolidated GitHub Advanced Security (GHAS) license utilization
+- Consolidated GitHub Advanced Security (GHAS) license utilization — Secret Protection and Code Security are now available separately
 - Simplified billing analysis and showback reporting
 - Reduced administrative licensing costs
 
@@ -376,7 +376,7 @@ flowchart LR
 **Cost Management**
 - **Compute Quotas**: Per-user GitHub Actions minutes limits (e.g., 2,000 minutes/month)
 - **Storage Quotas**: Repository size limits (1GB soft limit, alerts at 80%)
-- **GHAS Exclusion**: Sandbox repositories excluded from GHAS license consumption
+- **GHAS Exclusion**: Sandbox repositories excluded from Secret Protection and Code Security license consumption
 - **Spending Limits**: Organization-level spending caps for Actions and Packages
 
 ### Archive Pattern
@@ -449,7 +449,7 @@ The Archive organization serves as a repository graveyard for decommissioned, hi
 - Disposal certificate generated and retained in compliance system
 
 **Cost Optimization**
-- Archive organization excluded from GHAS licensing
+- Archive organization excluded from Secret Protection and Code Security licensing
 - GitHub Actions disabled (no compute costs)
 - GitHub Packages disabled (no storage costs for new artifacts)
 - Storage costs minimal (Git repositories highly compressible)
@@ -510,7 +510,7 @@ Business Unit (BU) separation leverages organizational boundaries to align with 
 
 **Security Scanning Consolidation**
 - **Central Security Organization**: Security team maintains visibility across all BU organizations
-- **GitHub Advanced Security**: Enterprise-level licensing with per-organization opt-in
+- **GitHub Advanced Security**: Enterprise- and Team-level licensing — Secret Protection ($19/committer/mo) and Code Security ($30/committer/mo) with per-organization opt-in
 - **Aggregated Security Dashboard**: GitHub API + external tooling for unified vulnerability view
 
 **Cost Allocation and Showback**
@@ -518,7 +518,7 @@ Business Unit (BU) separation leverages organizational boundaries to align with 
 **Billing Separation**
 - Each organization represents a cost center with independent billing reports
 - GitHub Actions minutes and storage tracked per organization
-- GHAS license consumption tracked via enterprise billing reports
+- Secret Protection and Code Security license consumption tracked via enterprise billing reports
 - Export to financial systems for chargeback/showback via API integration
 
 **Use Cases**
@@ -548,7 +548,7 @@ Compliance separation establishes organizational boundaries to enforce regulator
 - **Security Controls**: Encryption at rest and in transit, BAA-compliant infrastructure
 - **Access Control**: Role-based access, minimum necessary principle, audit trails
 - **Breach Notification**: Automated alerting for unauthorized PHI access attempts
-- **Data Residency**: GitHub Enterprise Cloud with Advanced Security for compliance alignment
+- **Data Residency**: GitHub Enterprise Cloud with Advanced Security products (Secret Protection, Code Security) for compliance alignment
 
 **FedRAMP (Federal Government)**
 - **FedRAMP Organization**: Government-facing applications and systems
@@ -1049,7 +1049,7 @@ stateDiagram-v2
 - **Team Structure**: Review team proliferation and nesting depth
 - **Access Review**: Validate outside collaborators and dormant accounts
 - **Policy Compliance**: Audit policy configurations against baselines
-- **Cost Analysis**: Review Actions minutes, storage, and GHAS utilization
+- **Cost Analysis**: Review Actions minutes, storage, and GHAS (Secret Protection + Code Security) utilization
 - **Security Posture**: Aggregate security alerts and response times
 
 **Automated Governance**
@@ -1106,12 +1106,12 @@ stateDiagram-v2
 ### Architecture and Best Practices
 - [GitHub Enterprise Cloud Well-Architected Framework](https://wellarchitected.github.com/)
 - [Enterprise account documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/overview/about-github-enterprise-cloud)
-- [Establishing a GitHub enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/overview/establishing-a-github-enterprise)
+- [Establishing a GitHub enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/concepts/enterprise-best-practices/organize-work)
 - [GitHub Enterprise onboarding resources](https://resources.github.com/learn/pathways/administration-governance/)
 
 ### Compliance and Security
-- [GitHub Enterprise Cloud security features](https://docs.github.com/en/enterprise-cloud@latest/admin/code-security)
-- [About data residency](https://docs.github.com/en/enterprise-cloud@latest/admin/configuration/configuring-data-residency-for-your-enterprise)
+- [GitHub Enterprise Cloud security features](https://docs.github.com/en/enterprise-cloud@latest/code-security)
+- [About data residency](https://docs.github.com/en/enterprise-cloud@latest/admin/data-residency)
 - [GitHub compliance documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/overview/about-github-enterprise-cloud#compliance-and-security)
 - [Audit log documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise)
 

@@ -385,7 +385,7 @@ If your GitHub repos are in different organizations:
 
 **Problem**: You have a central `PipelineTemplates` repo that 50+ pipelines extend from.
 
-**Solution**: 
+**Solution**:
 
 1. **Create GitHub service connection** before migration
 2. **Prepare all pipeline updates** in branches

@@ -1,0 +1,50 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "^https://github\\.com/YOUR",
+      "comment": "Placeholder URLs in lab instructions"
+    },
+    {
+      "pattern": "^https://github\\.com/YOURORGANIZATION",
+      "comment": "Placeholder org URLs in lab instructions"
+    },
+    {
+      "pattern": "^https://smee\\.io",
+      "comment": "Smee.io webhook proxy — dynamic URLs"
+    },
+    {
+      "pattern": "^#",
+      "comment": "Anchor-only links — validated by structure checks"
+    },
+    {
+      "pattern": "^/",
+      "comment": "Absolute repo paths (e.g., /labs/*, /.github/*) — valid on GitHub but unresolvable locally"
+    },
+    {
+      "pattern": "^https://learning\\.oreilly\\.com",
+      "comment": "O'Reilly Learning — requires authentication, blocks bots (403)"
+    },
+    {
+      "pattern": "^https://cacm\\.acm\\.org",
+      "comment": "ACM Digital Library — blocks automated crawlers (403)"
+    },
+    {
+      "pattern": "^https://github\\.com/marketplace$",
+      "comment": "GitHub Marketplace landing page — returns 400 to non-browser requests but loads correctly in browsers"
+    }
+  ],
+  "replacementPatterns": [],
+  "httpHeaders": [
+    {
+      "urls": ["https://docs.github.com"],
+      "headers": {
+        "Accept-Encoding": "gzip, deflate"
+      }
+    }
+  ],
+  "timeout": "15s",
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "5s",
+  "aliveStatusCodes": [200, 206, 301, 302, 307, 308]
+}

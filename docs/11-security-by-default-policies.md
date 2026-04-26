@@ -157,7 +157,7 @@ Organization settings provide granular control within the boundaries set by ente
 |-------|---------------|-------------|---------------------|-----------|
 | Organization | **Actions Permissions** | Controls which actions can run | **Restrict** - Allow only selected actions and verified creators | [Disabling or limiting GitHub Actions](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/disabling-or-limiting-github-actions-for-your-organization) |
 | Organization | **Runner Groups** | Organizes self-hosted runners | **Configure** - Create runner groups limited to specific repositories | [GitHub Well-Architected - Governance Policies](https://wellarchitected.github.com/library/governance/recommendations/governance-policies-best-practices/) |
-| Organization | **Required Workflows** | Enforces workflows across repositories | **Configure** - Define required security/compliance workflows | [Required workflows](https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/required-workflows) |
+| Organization | **Organization Rulesets** | Enforces workflows across repositories (required workflows have been superseded by organization rulesets) | **Configure** - Define required security/compliance workflows via rulesets | [Managing rulesets for repositories](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization) |
 
 ### Webhooks and Integrations
 
@@ -228,7 +228,7 @@ Repository settings provide the most granular control for individual repositorie
 | Level | Policy/Setting | Description | Recommended Setting | Reference |
 |-------|---------------|-------------|---------------------|-----------|
 | Repository | **Actions Permissions** | Controls workflow execution | **Restrict** - Follow organization policy; use reusable workflows | [Managing GitHub Actions settings](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository) |
-| Repository | **Workflow Permissions** | GITHUB_TOKEN permissions | **Read-only** - Request specific permissions in workflow | [Modifying the permissions for the GITHUB_TOKEN](https://docs.github.com/en/enterprise-cloud@latest/actions/reference/authentication/automatic-token-authentication#modifying-the-permissions-for-the-github_token) |
+| Repository | **Workflow Permissions** | GITHUB_TOKEN permissions | **Read-only** - Request specific permissions in workflow | [Modifying the permissions for the GITHUB_TOKEN](https://docs.github.com/en/enterprise-cloud@latest/actions/tutorials/authenticate-with-github_token#modifying-the-permissions-for-the-github_token) |
 | Repository | **Require Approval for Fork PRs** | Requires approval before running workflows | **Enable** - Prevent malicious workflow execution from forks | [Managing GitHub Actions settings](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository) |
 
 ---

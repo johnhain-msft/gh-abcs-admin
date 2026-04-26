@@ -147,7 +147,7 @@ GitHub's architecture naturally supports InnerSource -- applying open-source bes
 |--------|----------------------|---------------------------|
 | Code hosting | Azure Repos | GitHub Repositories |
 | CI/CD | Azure Pipelines (retained in hybrid) | GitHub Actions + Azure Pipelines |
-| Security scanning | Third-party integrations | GitHub Advanced Security (native) |
+| Security scanning | Third-party integrations | GitHub Advanced Security — Secret Protection & Code Security (native) |
 | Package management | Azure Artifacts | GitHub Packages / Azure Artifacts |
 | Project management | Azure Boards (retained) | Azure Boards (integrated with GitHub) |
 | AI assistance | IDE-only Copilot | Full agentic Copilot (coding agent, code review, autofix) |
@@ -157,9 +157,9 @@ GitHub's architecture naturally supports InnerSource -- applying open-source bes
 
 ## 4. Pillar 3 -- Governance & Security
 
-### 4.1 GitHub Advanced Security (GHAS)
+### 4.1 GitHub Advanced Security (GHAS) — Secret Protection & Code Security
 
-GitHub Advanced Security provides an integrated, developer-first security platform that shifts security left into the development workflow:
+GitHub Advanced Security (GHAS) — comprising GitHub Secret Protection and GitHub Code Security — provides an integrated, developer-first security platform that shifts security left into the development workflow:
 
 **Code Scanning (CodeQL)**
 - Static analysis detecting SQL injection, XSS, command injection, insecure patterns
@@ -180,7 +180,7 @@ GitHub Advanced Security provides an integrated, developer-first security platfo
 - Software Bill of Materials (SBOM) generation for regulatory compliance
 - Supports Executive Order 14028 and emerging supply chain mandates
 
-**Security Posture Improvements (Forrester TEI GHAS Spotlight):**
+**Security Posture Improvements (Forrester TEI GHAS Spotlight — Secret Protection & Code Security):**
 - **10-20% to 80%+ application coverage**: Dramatic increase in SAST scanning coverage
 - **3x faster remediation**: Copilot Autofix reduces vulnerability fix time by factor of three
 - **75% efficiency improvement**: Security-related task efficiency for DevSecOps teams
@@ -264,6 +264,8 @@ The software development lifecycle is being fundamentally transformed by autonom
 |                 +----------+   +----------+                     |
 +-----------------------------------------------------------------+
 ```
+
+> *Note: "GHAS" in the diagram above refers to GitHub Advanced Security, comprising GitHub Secret Protection ($19/committer/mo) and GitHub Code Security ($30/committer/mo).*
 
 ### 5.2 Agentic Capabilities Across the SDLC
 
@@ -375,7 +377,7 @@ Forrester's 2025 TEI study of GitHub Enterprise Cloud (composite: 5,000-develope
 |--------------|--------|
 | **Licensing savings** | Elimination of duplicate platform licensing; Azure DevOps Basic included with GHEC |
 | **Productivity gains** | 20-55% faster development tasks (Copilot); autonomous coding agent handles routine work |
-| **Security cost reduction** | Native GHAS replaces need for multiple third-party security tools |
+| **Security cost reduction** | Native GHAS (Secret Protection & Code Security) replaces need for multiple third-party security tools |
 | **Incident response savings** | SRE Agent reduces MTTR and on-call burden |
 | **Reduced context switching** | Unified developer experience reduces tool fragmentation overhead |
 | **Technical debt reduction** | AI-assisted modernisation and automated dependency updates |
@@ -431,14 +433,14 @@ Forrester's 2025 TEI study of GitHub Enterprise Cloud (composite: 5,000-develope
 - Select 2-3 representative repositories
 - Execute migration using `gh ado2gh` tooling
 - Validate Azure Boards/Pipelines integration with GitHub repos
-- Enable Copilot and GHAS for pilot teams
+- Enable Copilot, Secret Protection, and Code Security for pilot teams
 - Collect feedback and refine process
 
 **Phase 2 -- Expansion (8-12 weeks)**
 - Migrate remaining repositories in waves (grouped by team/project)
 - Enable enterprise rulesets and governance policies
 - Roll out GitHub Copilot organisation-wide
-- Implement GHAS security scanning
+- Implement Secret Protection and Code Security scanning
 - Establish InnerSource practices and repository standards
 
 **Governance Implementation Priority (from ADO Migration Assessment):**
@@ -486,7 +488,7 @@ Forrester's 2025 TEI study of GitHub Enterprise Cloud (composite: 5,000-develope
 | Pull request cycle time | 25-35% reduction |
 | Code review efficiency | 20-30% improvement with AI summaries |
 | Developer satisfaction (survey) | 70%+ report increased job fulfilment |
-| GHAS application coverage | 80%+ repositories with scanning enabled |
+| Secret Protection & Code Security coverage | 80%+ repositories with scanning enabled |
 | Vulnerability remediation time | 75% reduction |
 | Secret scanning coverage | 100% of repositories with push protection |
 | Policy compliance rate | 95%+ repositories compliant with enterprise rulesets |
@@ -547,7 +549,7 @@ Forrester's 2025 TEI study of GitHub Enterprise Cloud (composite: 5,000-develope
 ### Governance & Security
 11. [Enforcing Code Governance with Rulesets](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-code-governance) -- GitHub Docs
 12. [Rulesets Best Practices](https://wellarchitected.github.com/library/governance/recommendations/managing-repositories-at-scale/rulesets-best-practices/) -- GitHub Well-Architected
-13. [GitHub Advanced Security (GHAS)](https://www.microsoft.com/en-us/securityengineering/sdl/ghas) -- Microsoft Security Engineering
+13. [GitHub Advanced Security (GHAS — now Secret Protection + Code Security)](https://www.microsoft.com/en-us/securityengineering/sdl/ghas) -- Microsoft Security Engineering
 14. [Introducing GitHub Secret Protection and GitHub Code Security](https://github.blog/changelog/2025-03-04-introducing-github-secret-protection-and-github-code-security/) -- GitHub Changelog
 
 ### Research & Metrics

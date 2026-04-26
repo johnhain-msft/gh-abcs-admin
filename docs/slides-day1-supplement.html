@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 1 Supplement — Enterprise Policies, Copilot Governance, Audit Log &amp; Dormant Users</title>
+<style>
+/* ─── Reset & Base ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0d1117;
+  --bg-card:  #161b22;
+  --text:     #f0f6fc;
+  --text-dim: #8b949e;
+  --green:    #238636;
+  --blue:     #1f6feb;
+  --orange:   #d29922;
+  --red:      #f85149;
+  --purple:   #a371f7;
+  --border:   #30363d;
+  --font:     -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --mono:     ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); }
+
+/* ─── Slide Container ─── */
+.deck { position: relative; width: 100%; height: 100%; overflow: hidden; }
+
+.slide {
+  position: absolute; inset: 0;
+  display: none; flex-direction: column; justify-content: center;
+  padding: 4rem 6rem;
+  opacity: 0; transition: opacity .3s ease;
+}
+.slide.active { display: flex; opacity: 1; }
+
+/* ─── Typography ─── */
+.slide h1 { font-size: 2.8rem; font-weight: 700; margin-bottom: 1rem; line-height: 1.15; }
+.slide h2 { font-size: 2.2rem; font-weight: 600; margin-bottom: 1.2rem; color: var(--blue); line-height: 1.2; }
+.slide h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: .6rem; color: var(--green); }
+.slide p  { font-size: 1.15rem; line-height: 1.6; margin-bottom: .6rem; }
+.slide ul { list-style: none; padding-left: 0; }
+.slide ul li {
+  font-size: 1.15rem; line-height: 1.55; padding: .3rem 0 .3rem 1.6rem;
+  position: relative;
+}
+.slide ul li::before {
+  content: '▸'; position: absolute; left: 0; color: var(--green); font-weight: 700;
+}
+.slide ul ul { margin-top: .2rem; }
+.slide ul ul li { font-size: 1.05rem; color: var(--text-dim); padding-left: 1.4rem; }
+.slide ul ul li::before { content: '–'; color: var(--text-dim); }
+.slide .subtitle { font-size: 1.3rem; color: var(--text-dim); margin-bottom: .5rem; }
+.slide .section-label {
+  font-size: .85rem; text-transform: uppercase; letter-spacing: .12em;
+  color: var(--green); margin-bottom: .8rem; font-weight: 600;
+}
+
+/* ─── Table ─── */
+.slide table { border-collapse: collapse; width: 100%; margin: .8rem 0; font-size: 1rem; }
+.slide th, .slide td { text-align: left; padding: .55rem .8rem; border-bottom: 1px solid var(--border); }
+.slide th { color: var(--blue); font-weight: 600; border-bottom: 2px solid var(--blue); }
+.slide td { color: var(--text); }
+.slide tr:last-child td { border-bottom: none; }
+
+/* ─── Code ─── */
+.slide code {
+  font-family: var(--mono); background: var(--bg-card); padding: .15rem .4rem;
+  border-radius: 4px; font-size: .95rem; color: var(--orange);
+}
+
+/* ─── Diagram box ─── */
+.diagram {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1.2rem 1.6rem; font-family: var(--mono); font-size: 1rem;
+  line-height: 1.6; white-space: pre; overflow-x: auto; margin: .8rem 0;
+  color: var(--text-dim);
+}
+
+/* ─── Accent boxes ─── */
+.callout {
+  background: var(--bg-card); border-left: 4px solid var(--green);
+  padding: 1rem 1.4rem; border-radius: 0 6px 6px 0; margin: .8rem 0;
+  font-size: 1.1rem;
+}
+.callout.warning { border-left-color: var(--orange); }
+.callout.info    { border-left-color: var(--blue); }
+
+/* ─── Two-column layout ─── */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+
+/* ─── Title slide special ─── */
+.slide.title-slide { text-align: center; justify-content: center; }
+.slide.title-slide h1 { font-size: 3rem; margin-bottom: .6rem; }
+.slide.title-slide .subtitle { font-size: 1.5rem; }
+
+/* ─── Transition slide ─── */
+.slide.transition-slide {
+  text-align: center; justify-content: center;
+  background: linear-gradient(135deg, var(--bg) 0%, #0d1b2a 100%);
+}
+.slide.transition-slide h2 { font-size: 2.6rem; color: var(--green); margin-bottom: 1rem; }
+.slide.transition-slide p  { font-size: 1.3rem; color: var(--text-dim); }
+
+/* ─── Progress bar & slide number ─── */
+#progress { position: fixed; bottom: 0; left: 0; height: 3px; background: var(--green); transition: width .3s; z-index: 100; }
+#slidenum {
+  position: fixed; bottom: 1rem; right: 1.5rem; font-size: .85rem;
+  color: var(--text-dim); font-family: var(--mono); z-index: 100;
+}
+
+/* ─── Notes panel ─── */
+#notes-panel {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; max-height: 30vh;
+  background: #1c2128; border-top: 2px solid var(--border); padding: 1rem 2rem;
+  overflow-y: auto; font-size: .95rem; color: var(--text-dim); z-index: 200;
+}
+#notes-panel.visible { display: block; }
+#notes-panel h4 { color: var(--blue); margin-bottom: .4rem; font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; }
+
+/* ─── Overview mode ─── */
+body.overview .deck { display: flex; flex-wrap: wrap; overflow: auto; padding: 1rem; gap: 1rem; }
+body.overview .slide {
+  position: static; display: flex !important; opacity: 1 !important;
+  width: 320px; height: 200px; flex-shrink: 0;
+  border: 2px solid var(--border); border-radius: 8px; cursor: pointer;
+  padding: 1rem; transform: scale(1); font-size: .35rem;
+  overflow: hidden;
+}
+body.overview .slide.active { border-color: var(--green); }
+body.overview .slide h1 { font-size: .9rem; }
+body.overview .slide h2 { font-size: .75rem; }
+body.overview .slide h3 { font-size: .6rem; }
+body.overview .slide p, body.overview .slide li { font-size: .5rem; }
+body.overview .slide table { font-size: .4rem; }
+body.overview .slide .diagram { font-size: .35rem; padding: .3rem; }
+body.overview #progress, body.overview #slidenum, body.overview #notes-panel { display: none !important; }
+
+/* ─── Speaker notes hidden in normal view ─── */
+aside.notes { display: none; }
+
+/* ─── Print ─── */
+@media print {
+  .slide { position: static !important; display: flex !important; opacity: 1 !important;
+    page-break-after: always; height: 100vh; padding: 2rem 3rem; }
+  #progress, #slidenum, #notes-panel { display: none !important; }
+  body { background: #fff; color: #000; }
+  .slide h2 { color: #0969da; }
+  .slide h3 { color: #1a7f37; }
+  .slide ul li::before { color: #1a7f37; }
+  .slide code { background: #f6f8fa; color: #953800; }
+  .diagram { background: #f6f8fa; border-color: #d0d7de; color: #57606a; }
+  .callout { background: #f6f8fa; }
+  .slide th { color: #0969da; border-bottom-color: #0969da; }
+  .slide td { color: #1f2328; border-bottom-color: #d0d7de; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SECTION 1: Enterprise Policies & Copilot Governance
+     ════════════════════════════════════════════════════════════════════ -->
+
+<!-- Slide 1: Section Title -->
+<section class="slide title-slide">
+  <div class="section-label">Section 1 · ~15 min</div>
+  <h1>Enterprise Policies &amp;<br>Copilot Governance</h1>
+  <p class="subtitle">Policy inheritance, plans, org policies, content exclusions &amp; seat management</p>
+  <aside class="notes">This section covers topics NOT in the PowerPoint. We'll walk through the policy cascade model, Copilot plan differences, org-level policy levers, content exclusions, and seat management — then hand off to Lab 15 for hands-on practice.</aside>
+</section>
+
+<!-- Slide 2: Policy Inheritance -->
+<section class="slide">
+  <h2>Policy Inheritance</h2>
+  <p class="subtitle">Enterprise → Organization → Repository cascade</p>
+  <div class="diagram">  ┌─────────────────────────────┐
+  │    ENTERPRISE  (top-level)  │   Sets the floor
+  │  Enforce · No Policy · Disable│
+  └──────────────┬──────────────┘
+                 │  inherits ▼
+  ┌──────────────┴──────────────┐
+  │      ORGANIZATION           │   Can add restrictions,
+  │  Enabled · Disabled · Unconfigured │   never relax
+  └──────────────┬──────────────┘
+                 │  inherits ▼
+  ┌──────────────┴──────────────┐
+  │       REPOSITORY            │   Content exclusions,
+  │     (+ Individual prefs)    │   personal settings
+  └─────────────────────────────┘</div>
+  <ul>
+    <li><strong>Enforced</strong> — mandatory baseline; orgs <em>cannot</em> change</li>
+    <li><strong>No Policy / Allowed</strong> — delegated; org owners decide</li>
+    <li><strong>Disabled</strong> — blocked enterprise-wide; orgs cannot enable</li>
+  </ul>
+  <aside class="notes">Key principle: child entities can only ADD restrictions, never relax ones from above. Absence of a restrictive policy ≠ explicit permission. Enforced policies create a "compliance floor" that prevents policy drift. The decision tree short-circuits: if enterprise denies, org/repo are never evaluated.</aside>
+</section>
+
+<!-- Slide 3: Copilot Plans Overview -->
+<section class="slide">
+  <h2>Copilot Plans Overview</h2>
+  <table>
+    <tr><th>Plan</th><th>Price</th><th>Target</th><th>Key Differentiator</th></tr>
+    <tr><td>Free</td><td>$0</td><td>Individual</td><td>Limited completions &amp; chat</td></tr>
+    <tr><td>Pro</td><td>$10/mo</td><td>Individual</td><td>Unlimited completions &amp; chat</td></tr>
+    <tr><td>Pro+</td><td>$39/mo</td><td>Power users</td><td>Premium models, more agent usage</td></tr>
+    <tr><td><strong>Business</strong></td><td><strong>$19/user/mo</strong></td><td>Organizations</td><td>Org policies, content exclusions, IP indemnification</td></tr>
+    <tr><td><strong>Enterprise</strong></td><td><strong>$39/user/mo</strong></td><td>Large enterprises</td><td>Enterprise policies, audit logs, BYOLLM keys</td></tr>
+  </table>
+  <div class="callout info">Both Business &amp; Enterprise include: no code retention, IP indemnification, code review, cloud agent, agent mode, Copilot Spaces, and MCP server policy.</div>
+  <aside class="notes">Business vs Enterprise: Enterprise adds enterprise-wide policy enforcement, enterprise-level audit logs, bring-your-own LLM API keys, and enterprise-wide custom instructions. Both offer unlimited completions, chat, code review, cloud agent, agent mode, and MCP servers. Copilot IDE features work for GHES users licensed via github.com; cloud-native features (code review, cloud agent) require GHEC.</aside>
+</section>
+
+<!-- Slide 4: Organization Policies -->
+<section class="slide">
+  <h2>Copilot Organization Policies</h2>
+  <p class="subtitle">Key levers for org owners (subject to enterprise constraints)</p>
+  <div class="cols">
+    <div>
+      <h3>Feature Policies</h3>
+      <ul>
+        <li><strong>Access policy</strong> — who gets Copilot: all members or selected</li>
+        <li><strong>Code completions</strong> — IDE inline suggestions</li>
+        <li><strong>Copilot Chat</strong> — IDE, GitHub.com, Mobile, CLI</li>
+        <li><strong>Code review</strong> — AI-assisted PR reviews</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Security-Sensitive Policies</h3>
+      <ul>
+        <li><strong>Public code matching</strong> — block suggestions matching public code</li>
+        <li><strong>Cloud agent</strong> — autonomous code changes (evaluate carefully)</li>
+        <li><strong>Agent mode (IDE)</strong> — multi-step agentic workflows</li>
+        <li><strong>MCP servers</strong> — external integrations (security review first)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout warning">⚠️ Security-by-default: Block public code matching, disable cloud agent &amp; MCP servers until reviewed. Delegate agent mode to org owners.</div>
+  <aside class="notes">Each policy has 3 states at org level: Enabled, Disabled, Unconfigured. Unconfigured = disabled until explicitly set. Best practice: explicitly configure ALL policies rather than leaving them unconfigured. Privacy policies: block prompt/suggestion collection to maintain data privacy (code is not retained). Preview features should be disabled in production.</aside>
+</section>
+
+<!-- Slide 5: Content Exclusions -->
+<section class="slide">
+  <h2>Content Exclusions</h2>
+  <p class="subtitle">Prevent Copilot from accessing sensitive files</p>
+  <div class="cols">
+    <div>
+      <h3>How It Works</h3>
+      <ul>
+        <li>Glob patterns exclude files from AI context</li>
+        <li>Inline suggestions disabled for excluded files</li>
+        <li>Chat cannot reference excluded content</li>
+        <li>Configurable at <strong>repo</strong>, <strong>org</strong>, and <strong>enterprise</strong> level</li>
+      </ul>
+      <h3>Common Patterns</h3>
+      <ul>
+        <li><code>**/.env</code>, <code>**/.env.*</code></li>
+        <li><code>**/secrets/**</code>, <code>**/*credential*</code></li>
+        <li><code>**/*.pem</code>, <code>**/*.key</code></li>
+        <li><code>**/terraform.tfvars</code>, <code>**/*.tfstate</code></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Key Details</h3>
+      <ul>
+        <li>Propagation delay: <strong>~30 minutes</strong> (or reload IDE)</li>
+        <li>Enterprise exclusions apply to <em>all</em> users regardless of licensing org</li>
+        <li>Org exclusions apply only to users licensed through that org</li>
+      </ul>
+      <div class="callout warning">⚠️ Exclusions do <strong>NOT</strong> apply to: Copilot CLI, coding agent, or agent mode. Disable those features if exclusion is critical for compliance.</div>
+    </div>
+  </div>
+  <aside class="notes">After configuring exclusions, wait ~30 min or reload the IDE. To test: open an excluded file — no inline suggestions should appear, and Copilot Chat should not be able to use the file content. Enterprise-level exclusions are the strongest: they apply to ALL Copilot users in the enterprise. The gap with CLI/agent mode/coding agent is a critical security consideration — call it out explicitly.</aside>
+</section>
+
+<!-- Slide 6: Seat Management -->
+<section class="slide">
+  <h2>Seat Management</h2>
+  <div class="cols">
+    <div>
+      <h3>Assignment Methods</h3>
+      <ul>
+        <li><strong>All members</strong> — automatic for everyone in org</li>
+        <li><strong>Selected members/teams</strong> — granular control</li>
+        <li><strong>Direct enterprise assignment</strong> — for non-GHE licensed users</li>
+        <li><strong>Self-service claiming</strong> — team join or issue-based requests</li>
+      </ul>
+      <h3>Cost Optimization</h3>
+      <ul>
+        <li>Reclaim after <strong>30+ days</strong> inactivity</li>
+        <li>Set seat caps to limit consumption</li>
+        <li>Pilot programs before full rollout</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Monitoring &amp; APIs</h3>
+      <ul>
+        <li>Enterprise <strong>Insights</strong> tab — active users, feature adoption</li>
+        <li>Billing API: <code>GET /enterprises/{ent}/copilot/metrics/...</code></li>
+        <li>28-day usage reports per user and enterprise</li>
+      </ul>
+      <h3>License Inheritance</h3>
+      <ul>
+        <li>Access through org membership</li>
+        <li>Multiple org memberships → most permissive policy wins</li>
+        <li>Enterprise policies can override org-level controls</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Key cost tip: identify users who haven't used Copilot recently, send reminders, then reclaim. The billing API provides 28-day rolling reports. Team-based assignment is the most scalable approach — team membership changes automatically adjust Copilot access. Self-service via GitHub App or issue templates reduces admin overhead and accelerates adoption.</aside>
+</section>
+
+<!-- Slide 7: Transition to Lab 15 -->
+<section class="slide transition-slide">
+  <h2>🧪 Lab 15</h2>
+  <p><strong>Hands-on: Copilot Governance Configuration</strong></p>
+  <br>
+  <ul style="text-align:left; max-width:600px; margin:0 auto;">
+    <li>Configure enterprise &amp; org Copilot policies</li>
+    <li>Set up content exclusions with glob patterns</li>
+    <li>Manage seat assignments and review usage metrics</li>
+    <li>Verify exclusions work in the IDE</li>
+  </ul>
+  <aside class="notes">Transition to Lab 15. Students will configure Copilot policies at enterprise and org level, create content exclusions, manage seat assignments, and verify that exclusions prevent Copilot from accessing sensitive files. Remind students to wait ~30 min after setting exclusions (or reload IDE) before testing.</aside>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SECTION 2: Audit Log & Dormant Users
+     ════════════════════════════════════════════════════════════════════ -->
+
+<!-- Slide 8: Section Title -->
+<section class="slide title-slide">
+  <div class="section-label">Section 2 · ~10 min</div>
+  <h1>Audit Logging &amp;<br>Dormant User Management</h1>
+  <p class="subtitle">Event capture, search syntax, streaming, and license reclamation</p>
+  <aside class="notes">This section covers audit log architecture, search/filter syntax, streaming to external SIEMs, and dormant user identification and license reclamation. We'll then hand off to Lab 8 for hands-on audit log exploration.</aside>
+</section>
+
+<!-- Slide 9: Audit Log Overview -->
+<section class="slide">
+  <h2>Audit Log Overview</h2>
+  <div class="cols">
+    <div>
+      <h3>What's Captured</h3>
+      <ul>
+        <li>Settings changes &amp; access control</li>
+        <li>User membership &amp; role changes</li>
+        <li>Repository management events</li>
+        <li>App permissions &amp; webhooks</li>
+        <li>Git events (push, clone, fetch)</li>
+        <li>Authentication &amp; billing events</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Retention &amp; Access</h3>
+      <table>
+        <tr><th>Type</th><th>Retention</th><th>Access</th></tr>
+        <tr><td>Web events</td><td><strong>180 days</strong></td><td>UI, API, streaming, export</td></tr>
+        <tr><td>Git events</td><td><strong>7 days</strong></td><td>API only, streaming</td></tr>
+        <tr><td>Streamed</td><td><strong>Indefinite</strong></td><td>Your external storage</td></tr>
+      </table>
+      <div class="callout warning">⚠️ Git events have only 7-day retention — always enable streaming for long-term capture.</div>
+    </div>
+  </div>
+  <aside class="notes">Enterprise audit log aggregates across ALL child orgs — it's the primary tool for enterprise-wide monitoring. Org audit log is more focused for org admins without enterprise access. Default UI shows 3 months; use the `created` qualifier to access up to 180 days. Enterprise owners must explicitly enable IP address disclosure — it's off by default. EMU enterprises get additional user security log events in the enterprise log.</aside>
+</section>
+
+<!-- Slide 10: Searching the Audit Log -->
+<section class="slide">
+  <h2>Searching the Audit Log</h2>
+  <p class="subtitle">Phrase qualifiers for precise filtering</p>
+  <div class="cols">
+    <div>
+      <h3>Key Qualifiers</h3>
+      <table>
+        <tr><th>Qualifier</th><th>Example</th></tr>
+        <tr><td><code>action:</code></td><td><code>action:repo.create</code></td></tr>
+        <tr><td><code>actor:</code></td><td><code>actor:octocat</code></td></tr>
+        <tr><td><code>created:</code></td><td><code>created:&gt;=2025-01-01</code></td></tr>
+        <tr><td><code>repo:</code></td><td><code>repo:my-org/my-repo</code></td></tr>
+        <tr><td><code>operation:</code></td><td><code>operation:authentication</code></td></tr>
+        <tr><td><code>country:</code></td><td><code>country:US</code></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Example Queries</h3>
+      <ul>
+        <li>Repo creation by user in last 30 days:<br>
+          <code>action:repo.create actor:octocat created:&gt;=2025-05-01</code></li>
+        <li>Branch protection changes:<br>
+          <code>action:protected_branch.update created:&gt;=2025-04-01</code></li>
+        <li>Member removals:<br>
+          <code>action:org.remove_member created:&gt;=2025-01-01</code></li>
+      </ul>
+      <div class="callout info">Multiple qualifiers are AND'd together. Date ranges: <code>created:2025-01-01..2025-03-31</code></div>
+    </div>
+  </div>
+  <aside class="notes">Qualifiers are space-separated and AND'd. The `created` qualifier is crucial — default UI only shows 3 months, but events exist for 180 days. Export options: JSON or CSV from UI for web events, compressed JSON for Git events. API rate limit: 1,750 queries/hr per user+IP. GraphQL supports org-level audit log queries with ~90-120 days of data.</aside>
+</section>
+
+<!-- Slide 11: Audit Log Streaming -->
+<section class="slide">
+  <h2>Audit Log Streaming</h2>
+  <p class="subtitle">Real-time export to external SIEM / storage for compliance</p>
+  <div class="cols">
+    <div>
+      <h3>Supported Targets</h3>
+      <table>
+        <tr><th>Provider</th><th>Auth</th></tr>
+        <tr><td>Amazon S3</td><td>Access keys or OIDC</td></tr>
+        <tr><td>Azure Blob Storage</td><td>SAS token</td></tr>
+        <tr><td>Azure Event Hubs</td><td>Connection string</td></tr>
+        <tr><td>Splunk</td><td>HEC token</td></tr>
+        <tr><td>Google Cloud Storage</td><td>Service account JSON</td></tr>
+        <tr><td>Datadog</td><td>API key</td></tr>
+        <tr><td>HTTPS Endpoint</td><td>HEC token</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Why Streaming Matters</h3>
+      <ul>
+        <li>Overcomes 180-day / 7-day retention limits</li>
+        <li>Required for SOC 2, HIPAA, PCI-DSS compliance</li>
+        <li>Enables real-time alerting in SIEM tools</li>
+        <li>Supports up to 2 endpoints simultaneously</li>
+      </ul>
+      <h3>Buffering Rules</h3>
+      <ul>
+        <li>Paused &lt; 7 days → no data loss</li>
+        <li>Paused 7–21 days → resumes from 1 week back</li>
+        <li>Paused &gt; 3 weeks → resets to current time</li>
+        <li>Datadog: max 18-hour pause window</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Stream format: compressed JSON (.json.gz), at-least-once delivery, deduplicate via `_document_id`. Health checks run every 24 hours — you get 6 days to fix a misconfigured stream before events are dropped. Multi-endpoint (preview): stream to S3 for storage AND Splunk for alerting simultaneously. Azure Event Hubs is ideal for Microsoft Sentinel integration. Not supported in Azure Government (Blob + Event Hubs).</aside>
+</section>
+
+<!-- Slide 12: Dormant Users -->
+<section class="slide">
+  <h2>Dormant Users</h2>
+  <p class="subtitle">30 days without qualifying activity = dormant</p>
+  <div class="cols">
+    <div>
+      <h3>Qualifying Activities ✅</h3>
+      <ul>
+        <li>SAML SSO authentication</li>
+        <li>Creating/deleting repositories</li>
+        <li>Push to <em>internal</em> repo via HTTPS</li>
+        <li>Creating/closing issues &amp; PRs</li>
+        <li>PR review comments</li>
+        <li>Starring a repository</li>
+        <li>Joining an organization</li>
+      </ul>
+    </div>
+    <div>
+      <h3>NOT Qualifying ❌</h3>
+      <ul>
+        <li>PAT-based access (CI/CD pipelines!)</li>
+        <li>SSH key-based Git operations</li>
+        <li>GitHub App-based workflows</li>
+        <li>Git ops on <em>private</em> repos</li>
+        <li>Reading/browsing without interaction</li>
+        <li>Public repo activity outside enterprise</li>
+      </ul>
+      <div class="callout warning">⚠️ #1 gotcha: devs using PAT/SSH daily may appear dormant. Cross-reference audit log before reclaiming!</div>
+    </div>
+  </div>
+  <aside class="notes">The 30-day window is fixed — cannot be configured. You cannot manually mark a user as active; they must perform a qualifying activity. Download the dormant users report from Enterprise → Compliance → Reports. Also viewable in Enterprise → People → filter "Dormant". License reclamation workflow: 1) Identify via report, 2) Cross-reference with audit log for PAT/SSH activity, 3) Confirm with managers, 4) Remove via UI or `removeEnterpriseMember` GraphQL mutation, 5) Clean up IdP access. For EMU: soft-deprovision via IdP (reversible) to free the license.</aside>
+</section>
+
+<!-- Slide 13: Transition to Lab 8 -->
+<section class="slide transition-slide">
+  <h2>🧪 Lab 8</h2>
+  <p><strong>Hands-on: Audit Log Exploration</strong></p>
+  <br>
+  <ul style="text-align:left; max-width:600px; margin:0 auto;">
+    <li>Search audit logs with phrase qualifiers</li>
+    <li>Combine <code>action:</code>, <code>actor:</code>, and <code>created:</code> filters</li>
+    <li>Export audit data in JSON/CSV format</li>
+    <li>Review the dormant users report</li>
+  </ul>
+  <aside class="notes">Transition to Lab 8. Students will practice searching the audit log using the qualifier syntax, build complex queries combining multiple filters, export results, and review the dormant users report. Remind them about the 180-day web event / 7-day Git event retention limits.</aside>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     SECTION 3: Cost Centers Deep Dive
+     ════════════════════════════════════════════════════════════════════ -->
+
+<!-- Slide 14: Section Title -->
+<section class="slide title-slide">
+  <div class="section-label">Section 3 · ~15 min</div>
+  <h1>Cost Centers Deep Dive</h1>
+  <p class="subtitle">Departmental chargeback, tracking, and budget governance</p>
+  <aside class="notes">This section covers the billing feature most requested by finance teams — cost centers. Cost centers let enterprises allocate GitHub spending across business units, projects, or departments for internal chargeback and budget accountability. We'll cover design patterns, allocation rules, budget alerts, Azure integration, and automation.</aside>
+</section>
+
+<!-- Slide 15: What Are Cost Centers? -->
+<section class="slide">
+  <h2>What Are Cost Centers?</h2>
+  <p class="subtitle">Logical groupings for billing allocation and chargeback</p>
+  <ul>
+    <li><strong>Purpose</strong> — allocate GitHub costs to departments, teams, or projects for internal chargeback</li>
+    <li><strong>Grouping</strong> — assign organizations, repositories, and users to cost centers</li>
+    <li><strong>Visibility</strong> — enterprise owners see per-cost-center spending breakdowns</li>
+    <li><strong>Default bucket</strong> — unassigned resources accumulate in the enterprise default cost center</li>
+  </ul>
+  <div class="callout info">
+    <strong>Key limits:</strong> Up to <strong>250 cost centers</strong> per enterprise, each supporting up to <strong>25,000 resources</strong>.
+  </div>
+  <aside class="notes">Cost centers solve a fundamental enterprise problem: who pays for what? Without them, all GitHub spending lands on a single invoice with no departmental attribution. Finance teams need this for internal chargeback, budget accountability, and spend forecasting. The 250/25K limits are generous — most enterprises use 10–50 cost centers. Any resource not explicitly assigned goes to the default cost center, so always assign resources proactively.</aside>
+</section>
+
+<!-- Slide 16: Cost Center Design Patterns -->
+<section class="slide">
+  <h2>Cost Center Design Patterns</h2>
+  <p class="subtitle">Choose the model that fits your organization</p>
+  <div class="diagram">  Pattern 1: By Business Unit        Pattern 2: By Project
+  ┌──────────────┐                   ┌──────────────┐
+  │  Engineering  │ ← orgs + users   │  Project-X   │ ← repos + users
+  │  Marketing    │                   │  Project-Y   │
+  │  Data Science │                   │  Platform    │
+  └──────────────┘                   └──────────────┘
+
+  Pattern 3: Hybrid
+  ┌─────────────────────────────────────────┐
+  │  BU cost centers  → license costs       │
+  │  Project cost centers → usage costs     │
+  │  (Actions, Packages, Codespaces)        │
+  └─────────────────────────────────────────┘</div>
+  <ul>
+    <li><strong>By BU</strong> — simplest; one cost center per department, maps to org chart</li>
+    <li><strong>By Project</strong> — aligns spend with initiatives; useful for project-based funding</li>
+    <li><strong>Hybrid</strong> — BU for seats/licenses, project for consumption; most flexible</li>
+  </ul>
+  <aside class="notes">Pattern 1 (By BU) works best when departments own their own orgs and the org chart is stable. Pattern 2 (By Project) is ideal for companies that fund by initiative and need to track ROI per project. Pattern 3 (Hybrid) is the most common at large enterprises — license costs follow people (BU), while usage costs follow work (project). The hybrid approach requires more setup but gives the most accurate chargeback. Ask the customer: "How does your finance team allocate IT costs today?" — mirror that model.</aside>
+</section>
+
+<!-- Slide 17: Allocation Rules — What Goes Where -->
+<section class="slide">
+  <h2>Allocation Rules — What Goes Where</h2>
+  <p class="subtitle">How each product's costs are attributed to cost centers</p>
+  <table>
+    <tr><th>Product</th><th>Allocation Model</th><th>Attributed By</th></tr>
+    <tr><td>GHEC Seats</td><td>License-based</td><td>User's assigned cost center</td></tr>
+    <tr><td>Copilot Seats</td><td>License-based</td><td>User's assigned cost center</td></tr>
+    <tr><td>Actions</td><td>Usage-based</td><td>Repo/org where workflow runs</td></tr>
+    <tr><td>Packages</td><td>Usage-based</td><td>Repo/org that owns the package</td></tr>
+    <tr><td>Codespaces</td><td>Usage-based</td><td>Repo/org where codespace is created</td></tr>
+    <tr><td>Secret Protection (GHAS)</td><td>License-based</td><td>User's assigned cost center</td></tr>
+    <tr><td>Code Security (GHAS)</td><td>License-based</td><td>User's assigned cost center</td></tr>
+    <tr><td>Copilot Premium Requests</td><td>Usage-based</td><td>User's assigned cost center*</td></tr>
+  </table>
+  <p style="font-size:0.85rem; color:#8b949e; margin-top:0.5rem;">* Copilot Premium Requests are user-level consumption (premium models, agent mode) billed to the user's cost center, unlike other usage-based products which are attributed to the repo/org where the work runs.</p>
+  <div class="callout warning">⚠️ Understanding allocation rules is critical — misattribution is the #1 source of chargeback disputes.</div>
+  <aside class="notes">This is the key slide. License-based costs follow the user — whoever the seat is assigned to, their cost center gets charged. This includes GHAS (Secret Protection and Code Security), which are license-based products allocated per user, the same way Copilot and GHEC seats work — each active committer is billed to one cost center based on their user assignment. Usage-based costs follow the resource — the org or repo where the compute happens determines the cost center. The exception is Copilot Premium Requests, which are usage-based but tied to the individual user's cost center since they represent per-user consumption. Walk through a concrete example: "Dev in Engineering cost center runs Actions in a Marketing repo — Actions cost goes to Marketing, Copilot seat and GHAS license costs stay with Engineering."</aside>
+</section>
+
+<!-- Slide 18: Tracking Copilot & GHAS Costs -->
+<section class="slide">
+  <h2>Tracking Copilot &amp; GHAS Costs</h2>
+  <p class="subtitle">Per-cost-center visibility for the biggest variable spend items</p>
+  <div class="cols">
+    <div>
+      <h3>Copilot Tracking</h3>
+      <ul>
+        <li>Seat count per cost center in billing dashboard</li>
+        <li>Premium request consumption per cost center</li>
+        <li>Usage metrics: completions, chat, agent mode</li>
+        <li>Set <strong>budget alerts</strong> on premium request spend</li>
+      </ul>
+      <h3>GHAS Tracking</h3>
+      <ul>
+        <li>Active committers per cost center</li>
+        <li>Secret Protection &amp; Code Security billed separately</li>
+        <li>Cross-repo committers may span multiple cost centers</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Budget Alerts</h3>
+      <table>
+        <tr><th>Type</th><th>Behavior</th></tr>
+        <tr><td>Alert-only</td><td>Notify at threshold; usage continues</td></tr>
+        <tr><td>Stop-usage</td><td>Block further usage at threshold <em>(metered products only — not GHAS)</em></td></tr>
+      </table>
+      <div class="callout warning">⚠️ Set budgets <strong>before</strong> rollout — retroactive budget enforcement does not refund overages.</div>
+      <h3>Setup Order</h3>
+      <ul>
+        <li>1. Create cost centers</li>
+        <li>2. Set budgets per cost center</li>
+        <li>3. Assign resources</li>
+        <li>4. <em>Then</em> enable features</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Emphasize the setup order — budgets should be configured BEFORE enabling Copilot or GHAS, not after. Alert-only budgets are good for visibility. Stop-usage budgets enforce hard caps but ONLY for metered products (Actions, Packages, Codespaces). GHAS and Copilot seat licenses are alert-only — stop-usage does not apply to license-based products. Start with alert-only at 80% of expected spend. Budget alerts apply at enterprise or cost center scope.</aside>
+</section>
+
+<!-- Slide 19: Azure Billing Integration -->
+<section class="slide">
+  <h2>Azure Billing Integration</h2>
+  <p class="subtitle">Unified billing through Azure Cost Management</p>
+  <div class="cols">
+    <div>
+      <h3>How It Works</h3>
+      <ul>
+        <li>Link GitHub Enterprise to an Azure subscription</li>
+        <li>GitHub costs appear in <strong>Azure Cost Management</strong></li>
+        <li>Cost centers map to Azure billing dimensions</li>
+        <li>Single invoice for GitHub + Azure resources</li>
+      </ul>
+      <h3>Per-Cost-Center Routing</h3>
+      <ul>
+        <li>Each cost center can route to a different Azure subscription or resource group</li>
+        <li>Enables departmental Azure billing alignment</li>
+        <li>Supports existing Azure cost allocation tags</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Benefits</h3>
+      <ul>
+        <li><strong>Single pane of glass</strong> — all cloud costs in one view</li>
+        <li><strong>Existing workflows</strong> — leverage Azure cost alerts and budgets</li>
+        <li><strong>Compliance</strong> — unified audit trail for procurement</li>
+        <li><strong>Forecasting</strong> — Azure Cost Management projections include GitHub spend</li>
+      </ul>
+      <div class="callout info">Requires an Azure subscription with Owner or Contributor role to link.</div>
+    </div>
+  </div>
+  <aside class="notes">This is critical for enterprises already on Azure — they get a single invoice and unified reporting across all cloud spend. The linkage happens at Enterprise Settings → Billing → Payment information. Once linked, GitHub metered usage (Actions, Packages, Codespaces, Copilot premium) flows through the Azure subscription. License costs (GHEC seats, Copilot seats) also appear in Azure Cost Management. Per-cost-center routing lets departments manage their own Azure subscriptions while the enterprise maintains centralized governance.</aside>
+</section>
+
+<!-- Slide 20: API & Automation -->
+<section class="slide">
+  <h2>API &amp; Automation</h2>
+  <p class="subtitle">Automate cost center management at scale</p>
+  <div class="cols">
+    <div>
+      <h3>Key API Endpoints</h3>
+      <table>
+        <tr><th>Operation</th><th>Endpoint</th></tr>
+        <tr><td>List cost centers</td><td><code>GET /enterprises/{ent}/settings/billing/cost-centers</code></td></tr>
+        <tr><td>Create cost center</td><td><code>POST /enterprises/{ent}/settings/billing/cost-centers</code></td></tr>
+        <tr><td>Add resources</td><td><code>POST .../{cost_center_id}/resources</code></td></tr>
+        <tr><td>Get usage report</td><td><code>GET /enterprises/{ent}/settings/billing/usage</code></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>Automation Examples</h3>
+      <ul>
+        <li>Sync cost centers from HR/finance system</li>
+        <li>Auto-assign new orgs/repos on creation</li>
+        <li>Monthly chargeback CSV reports via scheduled Actions</li>
+        <li>Budget threshold alerts to Slack/Teams</li>
+      </ul>
+      <div class="callout info">Use <code>gh api</code> for quick ad-hoc queries:<br><code>gh api /enterprises/{ent}/settings/billing/cost-centers</code></div>
+    </div>
+  </div>
+  <aside class="notes">Cost center management can be fully automated. Common pattern: a scheduled GitHub Actions workflow runs monthly, pulls usage data per cost center via the API, generates a chargeback CSV, and emails it to department leads. For new resource assignment, use a webhook listener on `repository.created` and `organization.created` events to auto-assign to the correct cost center based on naming conventions. The `gh api` CLI command is the fastest way to explore these endpoints interactively.</aside>
+</section>
+
+<!-- Slide 21: Cost Centers Best Practices -->
+<section class="slide">
+  <h2>Cost Centers Best Practices</h2>
+  <div class="cols">
+    <div>
+      <h3>Naming Conventions</h3>
+      <ul>
+        <li><code>dept-environment</code> — e.g., <code>engineering-prod</code></li>
+        <li><code>bu-team</code> — e.g., <code>platform-sre</code></li>
+        <li>Match your organization's GL codes where possible</li>
+      </ul>
+      <h3>Setup Checklist</h3>
+      <ul>
+        <li>✅ Assign <strong>ALL</strong> resources — unassigned goes to default</li>
+        <li>✅ Set budgets immediately after creation</li>
+        <li>✅ Review quarterly and adjust with org changes</li>
+        <li>✅ Document ownership: who approves spend per cost center?</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Common Mistakes</h3>
+      <ul>
+        <li>❌ Creating cost centers after features are enabled (retroactive = messy)</li>
+        <li>❌ Leaving resources unassigned (inflates default cost center)</li>
+        <li>❌ Too many cost centers (administrative overhead exceeds value)</li>
+        <li>❌ No budget alerts (surprise invoices at month end)</li>
+        <li>❌ Not reviewing when teams reorg (stale attribution)</li>
+      </ul>
+      <div class="callout warning">⚠️ Start with fewer cost centers and split later — merging cost centers is harder than splitting.</div>
+    </div>
+  </div>
+  <aside class="notes">Wrap up with actionable takeaways. The #1 mistake is creating cost centers after features are already in use — historical usage won't retroactively reassign. Start simple: one cost center per major department, budget alerts at 80%, and quarterly reviews. Naming should match whatever your finance team already uses for internal cost tracking. Document an owner for each cost center who can approve spend and adjust budgets. Start with fewer cost centers — you can always add more, but consolidating existing ones requires moving all resources manually. Transition to Day 1 wrap-up discussion and Q&amp;A. Encourage participants to explore cost center settings in their own enterprise environments.</aside>
+</section>
+
+</div><!-- /deck -->
+
+<!-- ─── Progress bar & slide number ─── -->
+<div id="progress"></div>
+<div id="slidenum"></div>
+
+<!-- ─── Notes panel (toggle with N key) ─── -->
+<div id="notes-panel">
+  <h4>Speaker Notes</h4>
+  <div id="notes-content"></div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+  let overview = false;
+
+  const progressBar = document.getElementById('progress');
+  const slideNum = document.getElementById('slidenum');
+  const notesPanel = document.getElementById('notes-panel');
+  const notesContent = document.getElementById('notes-content');
+
+  function show(idx) {
+    if (idx < 0 || idx >= total) return;
+    slides[current].classList.remove('active');
+    current = idx;
+    slides[current].classList.add('active');
+    update();
+  }
+
+  function update() {
+    progressBar.style.width = ((current + 1) / total * 100) + '%';
+    slideNum.textContent = (current + 1) + ' / ' + total;
+    const notes = slides[current].querySelector('aside.notes');
+    notesContent.textContent = notes ? notes.textContent : '(no notes)';
+    history.replaceState(null, '', '#' + (current + 1));
+  }
+
+  function toggleOverview() {
+    overview = !overview;
+    document.body.classList.toggle('overview', overview);
+  }
+
+  // Init
+  slides.forEach(function(s) { s.classList.remove('active'); });
+  var hash = parseInt(location.hash.replace('#', ''), 10);
+  current = (hash >= 1 && hash <= total) ? hash - 1 : 0;
+  slides[current].classList.add('active');
+  update();
+
+  // Keyboard nav
+  document.addEventListener('keydown', function(e) {
+    if (overview && e.key !== 'Escape') return;
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case ' ': case 'PageDown':
+        e.preventDefault(); show(current + 1); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+        e.preventDefault(); show(current - 1); break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End':  e.preventDefault(); show(total - 1); break;
+      case 'Escape': e.preventDefault(); toggleOverview(); break;
+      case 'n': case 'N':
+        notesPanel.classList.toggle('visible'); break;
+    }
+  });
+
+  // Click nav in overview
+  document.querySelector('.deck').addEventListener('click', function(e) {
+    if (!overview) return;
+    var sl = e.target.closest('.slide');
+    if (sl) { toggleOverview(); show(slides.indexOf(sl)); }
+  });
+
+  // Touch support
+  var touchX = 0;
+  document.addEventListener('touchstart', function(e) { touchX = e.touches[0].clientX; });
+  document.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) { dx < 0 ? show(current + 1) : show(current - 1); }
+  });
+})();
+</script>
+
+</body>
+</html>

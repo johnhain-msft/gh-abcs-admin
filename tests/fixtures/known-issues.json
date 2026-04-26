@@ -1,0 +1,471 @@
+{
+  "_comment": "Phase 1 known issues register. Every issue found during baseline is cataloged here with its fix phase assignment. Used for tracking and regression testing.",
+  "_version": "1.0.0",
+  "_generated": "2026-04-02",
+  "summary": {
+    "totalEntries": 36,
+    "totalIndividualFindings": "See issue descriptions for aggregate counts (e.g., KI-009 covers 34 GHAS references, KI-033 covers 18 false-positive links)",
+    "byCategory": {
+      "broken-link-external": 12,
+      "broken-link-internal": 3,
+      "broken-link-false-positive": 4,
+      "freshness": 8,
+      "structural": 3,
+      "content": 5,
+      "vbd-coverage": 1
+    },
+    "byFixPhase": {
+      "phase3": 28,
+      "phase4": 1,
+      "phase7": 1,
+      "phase8": 2,
+      "no-fix-needed": 4
+    },
+    "resolvedInPhase3": 28
+  },
+  "issues": [
+    {
+      "id": "KI-001",
+      "category": "structural",
+      "severity": "warning",
+      "file": "docs/18-github-rename-org-impact.md",
+      "description": "Missing H1 heading \u2014 document uses H2 as top-level headings",
+      "fixPhase": "phase3",
+      "notes": "Add proper H1 with front matter title",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-002",
+      "category": "structural",
+      "severity": "warning",
+      "file": "README.md",
+      "description": "README says 'L400' but VBD spec is 'Level 300 - Advanced'",
+      "fixPhase": "phase3",
+      "notes": "Update to L300 when VBD structural materials are in place",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-003",
+      "category": "structural",
+      "severity": "info",
+      "file": "CODEOWNERS",
+      "description": "CODEOWNERS points to @CalinL (original author) \u2014 needs updating",
+      "fixPhase": "phase7",
+      "notes": "Update after workshop content is finalized",
+      "status": "resolved",
+      "resolution": "No CODEOWNERS file exists in repo \u2014 original was removed. Not needed for workshop delivery."
+    },
+    {
+      "id": "KI-004",
+      "category": "content",
+      "severity": "warning",
+      "file": "labs/lab01.md",
+      "description": "Missing duration field",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-005",
+      "category": "content",
+      "severity": "warning",
+      "file": "labs/lab02.md",
+      "description": "Missing duration field",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-006",
+      "category": "content",
+      "severity": "warning",
+      "file": "labs/lab03.md",
+      "description": "Missing duration field AND uses legacy branch protection (needs Rulesets rewrite)",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-007",
+      "category": "content",
+      "severity": "warning",
+      "file": "labs/lab04.md",
+      "description": "Missing duration field",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-008",
+      "category": "content",
+      "severity": "warning",
+      "file": "labs/lab05.md",
+      "description": "Missing duration field; uses actions/github-script@v6 — updated to @v8",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-009",
+      "category": "freshness",
+      "severity": "warning",
+      "file": "multiple",
+      "description": "34 references to 'GitHub Advanced Security' as unified product \u2014 GHAS split into Secret Protection & Code Security (April 2025)",
+      "affectedFiles": [
+        "docs/01-enterprise-hierarchy.md",
+        "docs/02-organization-strategies.md",
+        "docs/04-enterprise-managed-users.md",
+        "docs/06-policy-inheritance.md",
+        "docs/08-security-compliance.md",
+        "docs/09-best-practices-waf.md",
+        "docs/10-reference-architecture.md",
+        "docs/13-github-onboarding-implementation-plan.md",
+        "docs/ado-to-github-migration-assessment.md",
+        "docs/ADO-to-GitHub-Migration-Business-Case.md"
+      ],
+      "fixPhase": "phase3",
+      "notes": "Need to update references to reflect Secret Protection and Code Security as separate products where appropriate",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-010",
+      "category": "freshness",
+      "severity": "warning",
+      "file": "docs/09-best-practices-waf.md",
+      "description": "5 instances of actions/setup-node@v3 (current is v4+)",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-011",
+      "category": "freshness",
+      "severity": "warning",
+      "file": "docs/08-security-compliance.md",
+      "description": "1 instance of actions/checkout@v3 (current is v4+)",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-012",
+      "category": "freshness",
+      "severity": "warning",
+      "file": "docs/03-identity-access-management.md",
+      "description": "1 instance of actions/checkout@v3 (current is v4+)",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-013",
+      "category": "freshness",
+      "severity": "warning",
+      "file": "labs/lab05.md",
+      "description": "2 instances of actions/github-script@v6 — updated to @v8",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-014",
+      "category": "freshness",
+      "severity": "warning",
+      "file": "labs/lab03.md",
+      "description": "Lab demonstrates legacy branch protection instead of modern Repository Rulesets",
+      "fixPhase": "phase3",
+      "notes": "Major rewrite needed to demonstrate Rulesets as primary, branch protection as legacy",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-015",
+      "category": "freshness",
+      "severity": "info",
+      "file": "docs/initial-prompt.md",
+      "description": "AI generation artifact from original author \u2014 delete",
+      "fixPhase": "phase8",
+      "status": "resolved",
+      "resolution": "Files deleted in Phase 8 cleanup."
+    },
+    {
+      "id": "KI-016",
+      "category": "freshness",
+      "severity": "info",
+      "file": "docs/final-prompt-plan.md",
+      "description": "AI generation artifact from original author \u2014 delete",
+      "fixPhase": "phase8",
+      "status": "resolved",
+      "resolution": "Files deleted in Phase 8 cleanup."
+    },
+    {
+      "id": "KI-017",
+      "category": "vbd-coverage",
+      "severity": "warning",
+      "file": "tests/fixtures/vbd-coverage-map.json",
+      "description": "VBD coverage baseline: 50% docs (11/22 agenda items), 32% labs (7/22 agenda items). 11 agenda items have no docs, 15 have no labs.",
+      "fixPhase": "phase4",
+      "notes": "New docs in Phase 4, new labs in Phase 5 will close the gap",
+      "status": "resolved",
+      "resolution": "VBD coverage: 100% docs (22/22), 91% labs (20/22). Items 1.6 and 1.7 are P1 presentation-only by design."
+    },
+    {
+      "id": "KI-018",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/02-organization-strategies.md",
+      "description": "3 broken GitHub docs links (404): establishing-a-github-enterprise, admin/code-security, data-residency-for-your-enterprise",
+      "fixPhase": "phase3",
+      "links": [
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/overview/establishing-a-github-enterprise",
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/code-security",
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/configuration/configuring-data-residency-for-your-enterprise"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-019",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/03-identity-access-management.md",
+      "description": "4 broken external links (404): Okta LCM, 2x PingFederate, CIS benchmark",
+      "fixPhase": "phase3",
+      "links": [
+        "https://help.okta.com/en-us/Content/Topics/Provisioning/lcm/lcm-main.htm",
+        "https://docs.pingidentity.com/r/en-us/pingfederate-112/help_samlquickconnectiontasklet_samlquickconnectionstate",
+        "https://docs.pingidentity.com/r/en-us/pingfederate-112/pf_sp_connections_overview",
+        "https://www.cisecurity.org/benchmark/github"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-020",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/04-enterprise-managed-users.md",
+      "description": "4 broken links: 3 GitHub docs (404 \u2014 paths restructured), 1 GitHub blog tag",
+      "fixPhase": "phase3",
+      "links": [
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/using-enterprise-managed-users-and-oidc-for-iam/configuring-oidc-for-enterprise-managed-users",
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/using-enterprise-managed-users-and-saml-for-iam/configuring-scim-provisioning-for-enterprise-managed-users-with-azure-active-directory",
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/identity-and-access-management/using-enterprise-managed-users-and-saml-for-iam/configuring-scim-provisioning-for-enterprise-managed-users-with-pingfederate",
+        "https://github.blog/tag/enterprise-managed-users/"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-021",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/05-teams-permissions.md",
+      "description": "1 broken link (404): AICPA SOC2 report page moved",
+      "fixPhase": "phase3",
+      "links": [
+        "https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/aicpasoc2report.html"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-022",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/06-policy-inheritance.md",
+      "description": "4 broken GitHub docs links (404): enterprise policies, actions settings, org security settings, FedRAMP marketplace",
+      "fixPhase": "phase3",
+      "links": [
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/about-enterprise-policies",
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/managing-github-actions-for-your-enterprise/managing-github-actions-settings-for-your-enterprise",
+        "https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/managing-security-settings-for-your-organization",
+        "https://marketplace.fedramp.gov/products/github-enterprise-cloud"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-023",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/07-repository-governance.md",
+      "description": "1 broken GitHub blog link (404): rulesets GA announcement",
+      "fixPhase": "phase3",
+      "links": [
+        "https://github.blog/changelog/2023-07-24-github-repository-rules-now-generally-available/"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-024",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/08-security-compliance.md",
+      "description": "5 broken links: CodeQL docs, admin security, audit logs, compliance, audit streaming",
+      "fixPhase": "phase3",
+      "links": [
+        "https://codeql.github.io/docs/",
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/security",
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-managing-and-maintaining-your-instance/reviewing-audit-logs-for-your-enterprise",
+        "https://github.com/security/compliance",
+        "https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-managing-and-maintaining-your-instance/streaming-the-audit-log-for-your-enterprise"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-025",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/09-best-practices-waf.md",
+      "description": "1 broken link (404): GitHub enterprise blog",
+      "fixPhase": "phase3",
+      "links": [
+        "https://github.blog/enterprise/"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-026",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/11-security-by-default-policies.md",
+      "description": "2 broken GitHub docs links (404): required workflows, token auth",
+      "fixPhase": "phase3",
+      "links": [
+        "https://docs.github.com/en/enterprise-cloud@latest/actions/using-workflows/required-workflows",
+        "https://docs.github.com/en/enterprise-cloud@latest/actions/reference/authentication/automatic-token-authentication#modifying-the-permissions-for-the-github_token"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-027",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/12-github-copilot-governance.md",
+      "description": "1 broken link (404): Copilot MCP concepts page",
+      "fixPhase": "phase3",
+      "links": [
+        "https://docs.github.com/en/copilot/concepts/mcp"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-028",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "docs/ado-to-github-migration-assessment.md",
+      "description": "5 broken GitHub docs links (404): custom roles, issue forms, required workflows, PR templates, security configs",
+      "fixPhase": "phase3",
+      "links": [
+        "https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/managing-custom-repository-roles",
+        "https://docs.github.com/en/communities/using-templates-to-encourage-useful-contributions/syntax-for-issue-forms",
+        "https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/configuring-required-workflows-for-your-organization",
+        "https://docs.github.com/en/communities/using-templates-to-encourage-useful-contributions/creating-a-pull-request-template-for-your-repository",
+        "https://docs.github.com/en/enterprise-cloud@latest/code-security/securing-your-organization/introduction-to-securing-your-organization-at-scale/about-security-configurations"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-029",
+      "category": "broken-link-external",
+      "severity": "warning",
+      "file": "README.md",
+      "description": "2 broken GitHub blog links (404): enterprise category, changelog admin label",
+      "fixPhase": "phase3",
+      "links": [
+        "https://github.blog/category/enterprise/",
+        "https://github.blog/changelog/label/admin/"
+      ],
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-030",
+      "category": "broken-link-internal",
+      "severity": "warning",
+      "file": "docs/03-identity-access-management.md",
+      "description": "Broken relative link: ./06-security-compliance.md (should be ./08-security-compliance.md)",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-031",
+      "category": "broken-link-internal",
+      "severity": "warning",
+      "file": "docs/04-enterprise-managed-users.md",
+      "description": "Broken relative links: ./02-teams-permissions.md (should be ./05-teams-permissions.md), ./05-security-compliance.md (should be ./08-security-compliance.md), ./README.md (wrong relative path)",
+      "fixPhase": "phase3",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-032",
+      "category": "broken-link-internal",
+      "severity": "warning",
+      "file": "docs/09-best-practices-waf.md",
+      "description": "3 broken relative links to nonexistent runbook files: ./db-replication-lag.md, ./high-error-rate.md, ./deployment-rollback.md",
+      "fixPhase": "phase3",
+      "notes": "These are example runbook references \u2014 either create the files or remove/adjust the links",
+      "status": "resolved",
+      "resolvedDate": "2026-04-02"
+    },
+    {
+      "id": "KI-033",
+      "category": "broken-link-false-positive",
+      "severity": "info",
+      "file": "multiple",
+      "description": "18 links using absolute repo paths (/labs/*, /.github/*) return 400 locally but work on GitHub. These are false positives for local link checking.",
+      "affectedFiles": [
+        "labs/lab02.md",
+        "labs/lab04.md",
+        "labs/lab05.md",
+        "README.md"
+      ],
+      "fixPhase": "no-fix-needed",
+      "notes": "Should be added to link-check-config.json ignorePatterns for local testing",
+      "status": "resolved",
+      "resolution": "False positive \u2014 link works on GitHub Pages. No fix needed."
+    },
+    {
+      "id": "KI-034",
+      "category": "broken-link-false-positive",
+      "severity": "info",
+      "file": "docs/09-best-practices-waf.md",
+      "description": "https://github.com/marketplace returns 400 locally (rate-limited/bot-blocked) but is valid",
+      "fixPhase": "no-fix-needed",
+      "status": "resolved",
+      "resolution": "False positive \u2014 link works on GitHub Pages. No fix needed."
+    },
+    {
+      "id": "KI-035",
+      "category": "broken-link-false-positive",
+      "severity": "info",
+      "file": "docs/09-best-practices-waf.md",
+      "description": "https://learning.oreilly.com/ returns 403 (requires auth) \u2014 valid link but behind paywall",
+      "fixPhase": "no-fix-needed",
+      "status": "resolved",
+      "resolution": "False positive \u2014 link works on GitHub Pages. No fix needed."
+    },
+    {
+      "id": "KI-036",
+      "category": "broken-link-false-positive",
+      "severity": "info",
+      "file": "docs/ADO-to-GitHub-Migration-Business-Case.md",
+      "description": "https://cacm.acm.org/research/... returns 403 (bot-blocked) \u2014 valid academic link",
+      "fixPhase": "no-fix-needed",
+      "status": "resolved",
+      "resolution": "False positive \u2014 link works on GitHub Pages. No fix needed."
+    }
+  ]
+}

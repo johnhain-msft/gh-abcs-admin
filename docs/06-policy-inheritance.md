@@ -212,7 +212,7 @@ graph TD
     C --> F[Repo B1 Workflow]
     
     A -->|Enforced: Only Approved Actions| G[Enterprise Allowlist]
-    G -->|Contains| H["actions/checkout@v4<br/>actions/setup-node@v4<br/>github/codeql-action/*"]
+    G -->|Contains| H["actions/checkout@v6<br/>actions/setup-node@v4<br/>github/codeql-action/*"]
     
     B -->|Org A Adds| I["Org-Specific Actions<br/>org-a/deploy-action@v1"]
     C -->|Org B Restricts Further| J[No Self-Hosted Runners]
@@ -291,15 +291,67 @@ Controls the publication of static websites from repositories:
 
 Pages policies balance the value of documentation and project websites against security concerns about inadvertent data exposure. Many enterprises disable public Pages or require approval workflows for Pages publication.
 
-### Project Visibility Policies
+### Projects (New) Administration
 
-GitHub Projects (project boards) have separate visibility controls:
+GitHub Projects (new) provide flexible planning and tracking capabilities at both the organization and repository level. For comprehensive documentation, see the [GitHub Projects docs](https://docs.github.com/en/issues/planning-and-tracking-with-projects).
 
-- **Organization projects:** Whether organizations can create projects visible to all organization members
-- **Repository projects:** Controls on repository-level project visibility
-- **Enterprise-wide projects:** Availability of enterprise-level project tracking
+#### Organization-Level Project Settings
 
-Projects can contain sensitive planning information, making visibility controls important for enterprises with confidential product roadmaps or competitive intelligence concerns.
+- **Project creation permissions:** Org owners can control who creates org-level projects—all members or admins only
+- **Repository linking:** Projects can be linked to one or more repositories, enabling cross-repo issue and PR tracking within a single board
+- **Org-level visibility:** Org-level projects are visible based on the project's visibility setting (see below), not repository permissions
+
+#### Project Visibility
+
+Projects support three visibility levels, each with distinct access implications:
+
+- **Private** — only users explicitly added to the project can view or access it
+- **Organization** — all organization members can view the project (default for org-level projects)
+- **Public** — anyone on GitHub can view the project (available only for user-owned projects)
+
+Enterprise policy can restrict project visibility options at the organization level, preventing org projects from being made public or limiting creation to administrators. This is critical for enterprises managing confidential roadmaps or competitive intelligence.
+
+#### Project Roles and Permissions
+
+Access to a project is controlled through four permission levels:
+
+- **No access** — the user cannot see the project at all
+- **Read** — the user can view the project and its items but cannot make changes
+- **Write** — the user can edit items, modify field values, and manage views
+- **Admin** — full control including project settings, field definitions, workflow configuration, and member management
+
+Org-level projects also inherit a base permission for all organization members (similar to repository base permissions). Org owners can set this base to Read, Write, or No access depending on governance needs.
+
+#### Custom Fields and Field Types
+
+Projects support several field types for structured tracking:
+
+- **Text** — free-form text for notes or descriptions
+- **Number** — numeric values for sizing, priority scores, or estimates
+- **Date** — calendar dates for deadlines or milestones
+- **Single select** — predefined options for status tracking (e.g., Todo / In Progress / Done)
+- **Iteration** — time-boxed sprint cycles with configurable start and end dates
+
+Fields are defined per-project and are not shared across projects. Organizations should establish naming conventions to maintain consistency (e.g., always using "Status" and "Priority" with the same option values across team projects).
+
+#### Built-in Workflows (Automations)
+
+Projects include configurable automation workflows accessible via the **Workflows** tab:
+
+- **Auto-add:** Automatically add issues or pull requests when they are opened in linked repositories
+- **Auto-set status:** Set a field value when items are closed, merged, or reopened
+- **Auto-archive:** Archive items after a configurable period of inactivity
+- **Auto-close:** Mark items as done when the linked issue or PR is closed
+
+Workflows are configured per-project and do not cascade from org-level settings. Each project owner or admin must enable the desired automations independently.
+
+#### Governance Recommendations
+
+- Use **org-level projects** for cross-team or leadership visibility into work streams
+- **Standardize field definitions** across projects using documented naming conventions to enable consistent reporting
+- Enterprise admins should **set a policy on who can create org-level projects** to prevent sprawl and ensure projects align with organizational structure
+- Consider creating **project templates** (by duplicating a well-configured project) to ensure consistent structure, fields, and workflows across teams
+- Regularly audit project membership to ensure access aligns with current team composition, especially for private projects containing sensitive planning data
 
 ### Member Privilege Policies
 
@@ -516,9 +568,9 @@ When policies apply to different scopes, narrower scope policies apply within br
 
 **Scenario 2: Actions Workflow Conflict**
 
-- Enterprise: Enforces approved Actions list containing `actions/checkout@v4`
-- Organization: Further restricts to specific actions, excluding `actions/checkout@v4`
-- Repository: Workflow attempts to use `actions/checkout@v4`
+- Enterprise: Enforces approved Actions list containing `actions/checkout@v6`
+- Organization: Further restricts to specific actions, excluding `actions/checkout@v6`
+- Repository: Workflow attempts to use `actions/checkout@v6`
 
 **Resolution:** Workflow execution is blocked because organization policy explicitly excludes the action. Both enterprise and organization policies must be satisfied, and organization policy is more restrictive.
 
@@ -541,7 +593,7 @@ When policies apply to different scopes, narrower scope policies apply within br
 ### Policy Precedence Matrix
 
 | Enterprise Policy | Organization Policy | Effective Result |
-|------------------|---------------------|------------------|
+| --- | --- | --- |
 | Enforced (Required) | Any | Enterprise policy applies, organization cannot change |
 | Allowed | Enabled | Feature available, organization choice respected |
 | Allowed | Disabled | Feature unavailable in organization |
@@ -711,7 +763,7 @@ Implement layered policy controls where multiple independent policy mechanisms p
 
 **Example: Code Quality Enforcement**
 
-- **Enterprise layer:** Require GitHub Advanced Security license for all organizations
+- **Enterprise layer:** Require GitHub Secret Protection and Code Security licenses for all organizations
 - **Organization layer:** Enable required status checks for all repositories
 - **Repository layer:** Configure branch protection requiring code scanning and test passage
 - **Workflow layer:** Implement rulesets enforcing required workflows for CI/CD
@@ -942,7 +994,7 @@ Allowed Actions:
 ├── Allow actions created by GitHub: enabled
 ├── Allow actions by verified creators: enabled  
 ├── Allow specified actions and reusable workflows:
-│   ├── actions/checkout@v4
+│   ├── actions/checkout@v6
 │   ├── actions/setup-node@v4
 │   ├── actions/cache@v3
 │   ├── github/codeql-action/*
@@ -1070,7 +1122,7 @@ Exclusion Configuration:
 **Objective:** Meet SOC 2, ISO 27001, and FedRAMP compliance requirements
 
 **Enterprise Policies:**
-- Enforce GitHub Advanced Security for all organizations
+- Enforce GitHub Secret Protection and Code Security for all organizations
 - Enforce secret scanning (no bypass)
 - Enforce two-factor authentication
 - Disable public and internal repositories (private only)
@@ -1128,17 +1180,17 @@ Understanding policy inheritance requires familiarity with the broader GitHub En
 
 **Enterprise Policy Management**
 - [Enforcing Policies in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies) - Comprehensive guide to all enterprise policy domains
-- [About Enterprise Policies](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/about-enterprise-policies) - Policy model and enforcement fundamentals
+- [About Enterprise Policies](https://docs.github.com/en/enterprise-cloud@latest/admin/concepts/security-and-compliance/enterprise-policies) - Policy model and enforcement fundamentals
 - [Enforcing Repository Management Policies](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-repository-management-policies-in-your-enterprise) - Repository-specific policy controls
 
 **GitHub Actions Policies**
 - [Enforcing GitHub Actions Policies](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-github-actions-in-your-enterprise) - Actions policy configuration and inheritance
-- [Managing GitHub Actions Settings](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-github-actions-for-your-enterprise/managing-github-actions-settings-for-your-enterprise) - Enterprise Actions management
+- [Managing GitHub Actions Settings](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-github-actions-in-your-enterprise) - Enterprise Actions management
 - [Security Hardening for GitHub Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions) - Actions security best practices
 
 **Organization Settings**
 - [Managing Organization Settings](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings) - Organization-level policy configuration
-- [Managing Security Settings for Your Organization](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/managing-security-settings-for-your-organization) - Organization security policies
+- [Managing Security Settings for Your Organization](https://docs.github.com/en/enterprise-cloud@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization) - Organization security policies
 - [Organization Base Permissions](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/setting-base-permissions-for-an-organization) - Default access controls
 
 **Audit and Compliance**
@@ -1151,7 +1203,7 @@ Understanding policy inheritance requires familiarity with the broader GitHub En
 - [Configuring Content Exclusions](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise) - Content exclusion patterns
 
 **Security Features**
-- [GitHub Advanced Security](https://docs.github.com/en/enterprise-cloud@latest/get-started/learning-about-github/about-github-advanced-security) - GHAS features and licensing
+- [GitHub Advanced Security](https://docs.github.com/en/enterprise-cloud@latest/get-started/learning-about-github/about-github-advanced-security) - GHAS overview, Secret Protection and Code Security features and licensing
 - [Secret Scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning) - Secret detection policies
 - [Code Scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/code-scanning) - Automated security analysis
 
@@ -1175,7 +1227,7 @@ Understanding policy inheritance requires familiarity with the broader GitHub En
 
 **Regulatory Frameworks**
 - [SOC 2 Compliance](https://github.com/security) - GitHub's SOC 2 Type II certification
-- [FedRAMP Authorization](https://marketplace.fedramp.gov/products/github-enterprise-cloud) - Government compliance
+- [FedRAMP Authorization](https://marketplace.fedramp.gov/#/product/github-enterprise-cloud) - Government compliance
 - [ISO/IEC 27001](https://github.com/security) - Information security management
 
 **Industry Standards**

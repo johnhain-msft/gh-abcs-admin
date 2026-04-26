@@ -44,7 +44,8 @@ graph TB
         end
         
         subgraph "Security Layer"
-            GHAS[GitHub Advanced Security]
+            SecretProt[GitHub Secret Protection]
+            CodeSec[GitHub Code Security]
             CodeQL[Code Scanning]
             SecretScan[Secret Scanning]
             Dependabot[Dependabot]
@@ -74,11 +75,13 @@ graph TB
     Policies --> OrgDev
     Policies --> OrgSandbox
     
-    OrgProd --> GHAS
-    OrgDev --> GHAS
-    GHAS --> CodeQL
-    GHAS --> SecretScan
-    GHAS --> Dependabot
+    OrgProd --> SecretProt
+    OrgProd --> CodeSec
+    OrgDev --> SecretProt
+    OrgDev --> CodeSec
+    SecretProt --> SecretScan
+    CodeSec --> CodeQL
+    CodeSec --> Dependabot
     
     Policies --> Rulesets
     Rulesets --> OrgProd
@@ -89,7 +92,8 @@ graph TB
     OrgProd -->|Workflows| CICD
     
     style Enterprise fill:#0366d6,color:#fff
-    style GHAS fill:#28a745,color:#fff
+    style SecretProt fill:#28a745,color:#fff
+    style CodeSec fill:#0366d6,color:#fff
     style Policies fill:#6f42c1,color:#fff
 ```
 
@@ -98,7 +102,7 @@ graph TB
 1. **Identity Provider Layer**: Centralized authentication and user provisioning
 2. **IAM Layer**: SAML SSO, SCIM provisioning, and Enterprise Managed Users
 3. **Organization Layer**: Multi-org topology for environment separation
-4. **Security Layer**: GitHub Advanced Security features
+4. **Security Layer**: GitHub Advanced Security features (Secret Protection & Code Security)
 5. **Governance Layer**: Enterprise policies, rulesets, and audit logging
 6. **Integration Layer**: External systems (SIEM, backup, CI/CD)
 
@@ -328,7 +332,7 @@ graph LR
 
 ## Security Scanning Architecture
 
-### GitHub Advanced Security Pipeline
+### GitHub Advanced Security Pipeline (Secret Protection & Code Security)
 
 ```mermaid
 graph TB
@@ -515,6 +519,91 @@ graph LR
     style Staging fill:#ffc107,color:#000
     style Prod fill:#dc3545,color:#fff
 ```
+
+### GitHub-Hosted Larger Runners
+
+GitHub Enterprise Cloud provides larger runner options beyond the standard 2-vCPU runner for demanding workloads:
+
+| Runner Type | vCPU | RAM | Storage | OS |
+|-------------|------|-----|---------|-----|
+| Standard | 2 | 7 GB | 14 GB | Linux, Windows |
+| 4-vCPU | 4 | 16 GB | 150 GB | Linux, Windows |
+| 8-vCPU | 8 | 32 GB | 300 GB | Linux, Windows |
+| 16-vCPU | 16 | 64 GB | 600 GB | Linux, Windows |
+| 32-vCPU | 32 | 128 GB | 1200 GB | Linux, Windows |
+| 64-vCPU | 64 | 256 GB | 2040 GB | Linux, Windows |
+| GPU (Linux) | 4 | 28 GB | 176 GB | Linux (T4 GPU) |
+| macOS M1 | 3 | 7 GB | 14 GB | macOS |
+
+**Creating Larger Runners:** Navigate to Enterprise or Organization Settings → Actions → Runners → New runner → select "GitHub-hosted," choose a size (2/4/8/16/32/64 vCPU), give it a name, and assign it to a runner group. The runner name becomes the label you reference in `runs-on`.
+
+**Pricing:** Larger runners have per-minute cost multipliers over standard runners. A 4-core Linux runner costs approximately 2× the standard rate, 8-core is 4×, and GPU runners carry premium pricing. Larger runners are always billed—there are no included free minutes, even for public repositories. Review the [GitHub Actions billing documentation](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions) for current rates.
+
+**ARM64 Runners:** ARM-based Linux runners are available for workloads that benefit from ARM-native builds, such as mobile apps, embedded systems, or ARM container images. Target them with `runs-on: ubuntu-24.04-arm` or the equivalent label configured on your larger runner.
+
+**Static IP Ranges:** Larger runners support static IP egress, which enables firewall allowlisting for external services that require known source IPs. Configure static IP networking in the runner's networking settings at the enterprise or organization level.
+
+**Auto-Scaling:** GitHub manages scaling automatically for hosted larger runners. The maximum concurrency is determined by your GitHub plan limits. No manual scaling or capacity configuration is required—runners spin up and down on demand.
+
+**Azure Private Networking (VNET Injection):** GitHub-hosted runners can be deployed into your Azure VNET, allowing them to access private Azure resources (databases, storage accounts, internal APIs) without exposing those services to the public internet. VNET injection is configured at the enterprise or organization level and requires an Azure subscription linked to your GitHub enterprise. This is the recommended pattern when jobs need both the managed infrastructure of GitHub-hosted runners and secure access to corporate network resources.
+
+**When to use larger runners:**
+- CI builds that exceed 10 minutes on standard 2-vCPU runners
+- Memory-intensive test suites or monorepo builds
+- Docker image builds that benefit from additional CPU and storage
+- GPU-accelerated ML/AI workloads (training, inference testing)
+- Workloads requiring static IP egress for firewall rules
+
+**When to use larger runners vs self-hosted:**
+- **Larger runners:** Zero maintenance, clean environment per job, best for most build workloads needing more resources
+- **Self-hosted with VNET:** When you need private network access AND custom software preinstalled
+- **GPU runners:** ML model training, GPU-accelerated testing
+
+> **Reference:** [About larger runners](https://docs.github.com/en/actions/using-github-hosted-runners/using-larger-runners)
+
+### Runner Group Hierarchy
+
+Runner groups control which repositories and workflows can execute on specific runners. Groups exist at two levels—enterprise and organization—and follow a hierarchical access model.
+
+**Enterprise Runner Groups:** Created at the enterprise level and shared across organizations. Enterprise owners define which organizations can access each group. Use enterprise groups when runners (or runner configurations) need to serve multiple organizations, such as a shared pool of high-capacity build runners.
+
+**Organization Runner Groups:** Created at the organization level and scoped to repositories within that organization. Organization owners control which repositories can access each group. Use organization groups for workload isolation within a single org—for example, separating CI runners from deployment runners.
+
+**Default Group:** Every organization has a built-in "Default" group. All self-hosted runners are placed in the Default group unless explicitly moved to another group. The Default group allows access from all repositories in the organization by default. For tighter controls, move runners out of Default and into purpose-specific groups.
+
+**Workflow Targeting:** Workflows target a runner group using the `group` key in `runs-on`. You can combine group targeting with labels to further narrow runner selection:
+
+```yaml
+jobs:
+  build:
+    runs-on:
+      group: production-runners
+      labels: [self-hosted, linux, x64]
+```
+
+This ensures the job runs only on runners that belong to the `production-runners` group **and** carry all the specified labels.
+
+**API Management:** Runner groups can be managed programmatically with the GitHub REST API or the `gh` CLI:
+
+```bash
+# List organization runner groups
+gh api /orgs/ORG/actions/runner-groups
+
+# List enterprise runner groups
+gh api /enterprises/ENT/actions/runner-groups
+
+# Create a new organization runner group
+gh api --method POST /orgs/ORG/actions/runner-groups \
+  -f name="deploy-runners" \
+  -f visibility="selected" \
+  -F selected_repository_ids[]="REPO_ID"
+```
+
+**Security Best Practices for Runner Groups:**
+- Restrict production/deployment runner groups to deployment repositories only—do not allow general CI workloads on runners with production credentials
+- Use separate groups for CI (build/test) vs CD (deploy) workloads to limit blast radius
+- Audit group membership regularly using the API; unexpected repository access is a common misconfiguration
+- Combine runner groups with environment protection rules for defense-in-depth on deployment pipelines
 
 ---
 
@@ -726,17 +815,17 @@ graph TD
 
 ### Security Features Matrix
 
-| Feature | Free | Team | Enterprise with GHAS |
+| Feature | Free | Team | Enterprise with Secret Protection / Code Security |
 |---------|------|------|----------------------|
 | **Dependabot Alerts** | Public repos | All repos | All repos |
 | **Dependabot Security Updates** | Public repos | All repos | All repos |
 | **Dependabot Version Updates** | ✅ | ✅ | ✅ |
-| **Dependency Review** | Public repos | ❌ | ✅ |
-| **Code Scanning (CodeQL)** | Public repos | ❌ | ✅ |
-| **Secret Scanning** | Public repos | ❌ | ✅ |
-| **Secret Push Protection** | Public repos | ❌ | ✅ |
-| **Custom Secret Patterns** | ❌ | ❌ | ✅ |
-| **Security Overview** | ❌ | ❌ | ✅ |
+| **Dependency Review** (Code Security) | Public repos | ✅ | ✅ |
+| **Code Scanning (CodeQL)** (Code Security) | Public repos | ✅ | ✅ |
+| **Secret Scanning** (Secret Protection) | Public repos | ✅ | ✅ |
+| **Secret Push Protection** (Secret Protection) | Public repos | ✅ | ✅ |
+| **Custom Secret Patterns** (Secret Protection) | ❌ | ✅ | ✅ |
+| **Security Overview** | ❌ | ✅ | ✅ |
 
 ### Rulesets vs Branch Protection
 
@@ -969,7 +1058,7 @@ This reference architecture document provides consolidated views of:
 1. **Complete Enterprise Architecture** - All components and relationships
 2. **Organization Topologies** - Single, multi-org, and business unit patterns
 3. **IAM Integration** - EMU and personal account flows
-4. **Security Architecture** - GHAS features and scanning pipelines
+4. **Security Architecture** - Secret Protection and Code Security features and scanning pipelines
 5. **CI/CD Governance** - Actions policies and deployment patterns
 6. **Hybrid Integration** - On-premises and multi-cloud connections
 7. **Migration Patterns** - Moving to GitHub Enterprise Cloud
@@ -984,7 +1073,7 @@ This reference architecture document provides consolidated views of:
 - [Teams & Permissions](05-teams-permissions.md) - Team structures
 - [Policy Inheritance](06-policy-inheritance.md) - Policy enforcement
 - [Repository Governance](07-repository-governance.md) - Repo settings and rulesets
-- [Security & Compliance](08-security-compliance.md) - GHAS and compliance
+- [Security & Compliance](08-security-compliance.md) - Secret Protection, Code Security, and compliance
 - [Best Practices & WAF](09-best-practices-waf.md) - Well-Architected Framework
 
 ---

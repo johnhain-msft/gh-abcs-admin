@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHEC Admin — Day 2 Supplement Slides</title>
+<style>
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: #0d1117; color: #f0f6fc; }
+
+/* ── Slide container ── */
+.deck { position: relative; width: 100vw; height: 100vh; }
+.slide { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; padding: 4rem 6rem; opacity: 0; pointer-events: none; transition: opacity .35s ease; }
+.slide.active { opacity: 1; pointer-events: auto; }
+
+/* ── Overview grid ── */
+body.overview .deck { display: flex; flex-wrap: wrap; align-content: flex-start; overflow-y: auto; padding: 1rem; gap: .75rem; }
+body.overview .slide { position: static; width: 280px; height: 180px; padding: 1rem 1.2rem; border: 2px solid #30363d; border-radius: 8px; cursor: pointer; opacity: 1; pointer-events: auto; flex-shrink: 0; transform: scale(1); font-size: .45rem; justify-content: flex-start; overflow: hidden; }
+body.overview .slide.active { border-color: #1f6feb; box-shadow: 0 0 0 3px rgba(31,111,235,.4); }
+body.overview .slide h1 { font-size: 1.4em; }
+body.overview .slide h2, body.overview .slide h3 { font-size: 1.1em; }
+body.overview .slide p, body.overview .slide li, body.overview .slide td, body.overview .slide th, body.overview .slide code { font-size: 1em; }
+body.overview #slide-num, body.overview #progress, body.overview #notes-panel { display: none !important; }
+
+/* ── Typography ── */
+h1 { font-size: 2.6rem; font-weight: 700; margin-bottom: 1rem; }
+h2 { font-size: 2rem; font-weight: 600; margin-bottom: .75rem; color: #58a6ff; }
+h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: .5rem; color: #7ee787; }
+p, li { font-size: 1.25rem; line-height: 1.6; }
+ul, ol { margin-left: 1.5rem; margin-bottom: .75rem; }
+li { margin-bottom: .35rem; }
+strong { color: #f0f6fc; }
+em { color: #8b949e; font-style: normal; }
+code { background: #161b22; padding: .15em .4em; border-radius: 4px; font-size: .95em; color: #7ee787; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
+
+/* ── Section title slides ── */
+.slide.section-title { text-align: center; justify-content: center; }
+.slide.section-title h1 { font-size: 2.8rem; }
+.slide.section-title .subtitle { font-size: 1.4rem; color: #8b949e; margin-top: .5rem; }
+
+/* ── Accent bar on section titles ── */
+.slide.section-title::before { content: ''; display: block; width: 120px; height: 4px; background: linear-gradient(90deg, #238636, #1f6feb); margin: 0 auto 2rem; border-radius: 2px; }
+
+/* ── Comparison table ── */
+table { width: 100%; border-collapse: collapse; margin-top: .75rem; font-size: 1.05rem; }
+th, td { padding: .55rem .8rem; text-align: left; border-bottom: 1px solid #21262d; }
+th { background: #161b22; color: #58a6ff; font-weight: 600; white-space: nowrap; }
+td:first-child { color: #8b949e; white-space: nowrap; }
+
+/* ── Two-column layout ── */
+.cols { display: flex; gap: 3rem; }
+.cols > * { flex: 1; }
+
+/* ── Badges / pills ── */
+.badge { display: inline-block; padding: .15em .6em; border-radius: 12px; font-size: .85rem; font-weight: 600; }
+.badge-green { background: rgba(35,134,54,.25); color: #7ee787; border: 1px solid #238636; }
+.badge-blue  { background: rgba(31,111,235,.2); color: #58a6ff; border: 1px solid #1f6feb; }
+.badge-yellow { background: rgba(210,153,34,.2); color: #e3b341; border: 1px solid #d29922; }
+.badge-red { background: rgba(248,81,73,.15); color: #f85149; border: 1px solid #da3633; }
+
+/* ── Flow diagram (text-based) ── */
+.flow { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin: 1rem 0; font-size: 1.1rem; }
+.flow .step { background: #161b22; border: 1px solid #30363d; padding: .5rem 1rem; border-radius: 8px; }
+.flow .arrow { color: #484f58; font-size: 1.4rem; }
+
+/* ── Slide number indicator ── */
+#slide-num { position: fixed; bottom: 1.2rem; right: 1.5rem; font-size: .9rem; color: #484f58; z-index: 100; font-variant-numeric: tabular-nums; }
+
+/* ── Progress bar ── */
+#progress { position: fixed; bottom: 0; left: 0; height: 3px; background: linear-gradient(90deg, #238636, #1f6feb); z-index: 100; transition: width .3s ease; }
+
+/* ── Speaker notes (hidden in presentation) ── */
+.notes { display: none; }
+
+/* ── Section label ── */
+.section-label { font-size: .85rem; text-transform: uppercase; letter-spacing: .12em; color: #7ee787; margin-bottom: .8rem; font-weight: 600; }
+
+/* ── Notes panel ── */
+#notes-panel { display: none; position: fixed; bottom: 0; left: 0; right: 0; max-height: 30vh; background: #1c2128; border-top: 2px solid #30363d; padding: 1rem 2rem; overflow-y: auto; font-size: .95rem; color: #8b949e; z-index: 200; }
+#notes-panel.visible { display: block; }
+#notes-panel h4 { color: #58a6ff; margin-bottom: .4rem; font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; }
+
+/* ── Transition lab slide ── */
+.slide.lab { border-left: 4px solid #238636; padding-left: 5.5rem; }
+.slide.lab h2 { color: #7ee787; }
+
+/* ── Key-value highlight ── */
+.kv { display: flex; gap: .5rem; align-items: baseline; margin-bottom: .3rem; }
+.kv .k { color: #8b949e; min-width: 10rem; }
+.kv .v { color: #f0f6fc; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="slide-num"></div>
+
+<!-- ── Notes panel (toggle with N key) ── -->
+<div id="notes-panel">
+  <h4>Speaker Notes</h4>
+  <div id="notes-content"></div>
+</div>
+
+<div class="deck">
+
+<!-- ═══════════════════════════════════════════
+     SECTION 1 — Repository Rulesets Deep Dive
+     ═══════════════════════════════════════════ -->
+
+<!-- Slide 1 -->
+<div class="slide section-title" data-notes="Introduce rulesets as the modern replacement for branch protection rules. Emphasize this is the governance foundation for Labs 3 & 6.">
+  <div class="section-label">Section 1 · ~15 min</div>
+  <h1>Repository Rulesets</h1>
+  <p class="subtitle">Modern Branch &amp; Tag Governance</p>
+</div>
+
+<!-- Slide 2 -->
+<div class="slide" data-notes="Walk through each row. Key takeaway: rulesets are the clear winner for org-scale governance. Branch protection still works for simple single-repo cases but doesn't scale.">
+  <h2>Rulesets vs Legacy Branch Protection</h2>
+  <table>
+    <tr><th>Capability</th><th>Branch Protection <span class="badge badge-yellow">Legacy</span></th><th>Rulesets <span class="badge badge-green">Modern</span></th></tr>
+    <tr><td>Scope</td><td>Single repo only</td><td>Organization <em>or</em> repository</td></tr>
+    <tr><td>Enforcement modes</td><td>On / Off</td><td>Active · Evaluate · Disabled</td></tr>
+    <tr><td>Layering</td><td>One rule per branch pattern</td><td>Multiple rulesets stack; most restrictive wins</td></tr>
+    <tr><td>Targets</td><td>Branches only</td><td>Branches, tags, <em>and</em> push rules</td></tr>
+    <tr><td>Bypass</td><td>Admin override (all-or-nothing)</td><td>Granular bypass actors &amp; modes</td></tr>
+    <tr><td>Import / Export</td><td>None</td><td>JSON import &amp; export</td></tr>
+    <tr><td>Audit trail</td><td>Limited</td><td>Rule Insights dashboard</td></tr>
+    <tr><td>Visibility</td><td>Admins / Maintainers</td><td>All contributors can view</td></tr>
+  </table>
+</div>
+
+<!-- Slide 3 -->
+<div class="slide" data-notes="Show the anatomy: a ruleset is a bundle of targets, rules, bypass actors, and an enforcement toggle. The JSON snippet is directly from the API. Point out that evaluation mode lets you dry-run before enforcing.">
+  <h2>Ruleset Anatomy</h2>
+  <div class="flow">
+    <span class="step"><strong>Targets</strong><br>branches / tags</span>
+    <span class="arrow">→</span>
+    <span class="step"><strong>Rules</strong><br>what's enforced</span>
+    <span class="arrow">→</span>
+    <span class="step"><strong>Bypass Actors</strong><br>who can skip</span>
+    <span class="arrow">→</span>
+    <span class="step"><strong>Enforcement</strong><br>Active · Evaluate · Disabled</span>
+  </div>
+  <h3 style="margin-top:1.5rem;">Targeting patterns</h3>
+  <ul>
+    <li>Include: <code>refs/heads/main</code>, <code>refs/heads/release/**</code></li>
+    <li>Exclude: <code>hotfix/*</code></li>
+    <li>Default branch shortcut — applies regardless of name</li>
+    <li>Target by <strong>repository custom properties</strong>: <code>environment = production</code></li>
+  </ul>
+  <h3>Evaluation Mode = Dry Run</h3>
+  <p>Gathers compliance data via <strong>Rule Insights</strong> without blocking anyone — ideal for rollout</p>
+</div>
+
+<!-- Slide 4 -->
+<div class="slide" data-notes="Org rulesets cascade to every repo (including future ones). Repo-level rulesets add on top. Most restrictive combination wins. Evaluate mode is available at both levels.">
+  <h2>Organization vs Repository Rulesets</h2>
+  <div class="cols">
+    <div>
+      <h3>Organization Rulesets</h3>
+      <ul>
+        <li>Defined once at org level</li>
+        <li>Automatically cascade to <strong>all repos</strong> (incl. new ones)</li>
+        <li>Can target repos by <strong>custom properties</strong></li>
+        <li>Only org owners can create / edit</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Repository Rulesets</h3>
+      <ul>
+        <li>Scoped to a single repo</li>
+        <li>Repo admins can create / edit</li>
+        <li><strong>Stack</strong> with org rulesets</li>
+        <li>Cannot weaken an org ruleset</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:1.5rem;"><span class="badge badge-blue">Key principle</span> &nbsp;Multiple rulesets can apply — the <strong>most restrictive combination</strong> wins.</p>
+</div>
+
+<!-- Slide 5 -->
+<div class="slide" data-notes="Run through each rule type quickly. These map to what students will configure in Labs 3 & 6. Signed commits and linear history are the most commonly new for teams coming from branch protection.">
+  <h2>Key Ruleset Rules</h2>
+  <div class="cols">
+    <div>
+      <ul>
+        <li><strong>Require pull requests</strong> — no direct push to target</li>
+        <li><strong>Required reviews</strong> — 1, 2, or more approvals</li>
+        <li><strong>Dismiss stale reviews</strong> — new push invalidates prior approval</li>
+        <li><strong>Require CODEOWNERS review</strong> — owners must approve</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li><strong>Required status checks</strong> — CI must pass; lock to integration ID</li>
+        <li><strong>Require signed commits</strong> — GPG, SSH, or S/MIME</li>
+        <li><strong>Require linear history</strong> — squash or rebase only</li>
+        <li><strong>Block force pushes</strong> — prevent history rewriting</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:1rem;"><span class="badge badge-green">+ Push rules</span> &nbsp;File path restrictions, file size limits, commit-message patterns, author email patterns</p>
+</div>
+
+<!-- Slide 6 -->
+<div class="slide" data-notes="Bypass modes: 'always' means the actor can skip on direct push AND pull requests. 'Pull requests only' means bypass only works through PR merge — direct push still blocked. Every bypass event is logged in Rule Insights for audit.">
+  <h2>Bypass Actors &amp; Modes</h2>
+  <table>
+    <tr><th>Bypass Mode</th><th>Direct Push</th><th>PR Merge</th><th>Use Case</th></tr>
+    <tr><td><span class="badge badge-red">Always</span></td><td>✅ Bypasses</td><td>✅ Bypasses</td><td>Emergency hotfix, release bots</td></tr>
+    <tr><td><span class="badge badge-yellow">Pull-requests only</span></td><td>❌ Blocked</td><td>✅ Bypasses</td><td>Trusted teams that still go through PR</td></tr>
+  </table>
+  <h3 style="margin-top:1.5rem;">Who can be a bypass actor?</h3>
+  <ul>
+    <li>Repository admins · Organization admins</li>
+    <li>Specific <strong>teams</strong></li>
+    <li><strong>GitHub Apps</strong> &amp; deploy keys</li>
+  </ul>
+  <p style="margin-top:.75rem;"><strong>Audit trail:</strong> Every bypass logged in <span class="badge badge-blue">Rule Insights</span> — who, when, which rule, which ref</p>
+</div>
+
+<!-- Slide 7 -->
+<div class="slide" data-notes="Tag rulesets protect release history. Pattern examples: v* for all version tags, v[0-9].[0-9].* for strict semver. Restrict creation, update, AND deletion. Only the release team (bypass actor) can cut releases.">
+  <h2>Tag Rulesets</h2>
+  <div class="cols">
+    <div>
+      <h3>Why protect tags?</h3>
+      <ul>
+        <li>Tags mark <strong>releases &amp; milestones</strong></li>
+        <li>Consumers pin to tags — reuse breaks reproducibility</li>
+        <li>Deletion erases release history</li>
+      </ul>
+      <h3 style="margin-top:1rem;">Common patterns</h3>
+      <ul>
+        <li><code>v*</code> — all version tags</li>
+        <li><code>v[0-9].[0-9].*</code> — strict semver</li>
+        <li><code>release-*</code> — release candidates</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Rules to enable</h3>
+      <ul>
+        <li><strong>Restrict creation</strong> — only release managers</li>
+        <li><strong>Block updates</strong> — tags are immutable after creation</li>
+        <li><strong>Block deletion</strong> — require escalated approval</li>
+      </ul>
+      <h3 style="margin-top:1rem;">Bypass actor</h3>
+      <p>Release engineering team with <code>always</code> bypass mode, automated via GitHub Actions</p>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 8 — Lab transition -->
+<div class="slide lab" data-notes="Tell students to open the lab guide. Lab 3 covers basic ruleset creation; Lab 6 covers org-level rulesets, evaluation mode, and push rules. Encourage them to try evaluate mode first.">
+  <h2>🔬 Hands-on Labs</h2>
+  <h3 style="margin-top:1rem;">Lab 3 — Repository Rulesets</h3>
+  <ul>
+    <li>Create a branch ruleset on <code>main</code></li>
+    <li>Configure required PRs, reviews, and status checks</li>
+    <li>Test enforcement by pushing directly</li>
+  </ul>
+  <h3 style="margin-top:1.5rem;">Lab 6 — Advanced Rulesets</h3>
+  <ul>
+    <li>Org-level rulesets with property-based targeting</li>
+    <li>Evaluation mode → review Rule Insights</li>
+    <li>Tag protection &amp; push rules (file path restrictions)</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 2 — Security Scanning & Push Protection
+     ═══════════════════════════════════════════════ -->
+
+<!-- Slide 9 -->
+<div class="slide section-title" data-notes="Transition to security. Emphasize that GitHub security is now two separate products — Secret Protection and Code Security — each independently purchasable. Free on public repos.">
+  <div class="section-label">Section 2 · ~15 min</div>
+  <h1>Security in the Cloud</h1>
+  <p class="subtitle">Scanning, Protection &amp; Compliance</p>
+</div>
+
+<!-- Slide 10 -->
+<div class="slide" data-notes="As of 2025, GHAS is rebranded into two standalone products. Both available on GitHub Team and Enterprise plans. Licensed per active committer (commit in last 90 days to a repo with the feature enabled). Free on public repos.">
+  <h2>GitHub Security Products</h2>
+  <div class="cols">
+    <div>
+      <h3>Secret Protection <span class="badge badge-yellow">$19/committer/mo</span></h3>
+      <ul>
+        <li>Secret scanning (200+ partner patterns)</li>
+        <li>Push protection (blocks before commit lands)</li>
+        <li>Custom secret patterns</li>
+        <li>AI-powered generic detection</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Code Security <span class="badge badge-blue">$30/committer/mo</span></h3>
+      <ul>
+        <li>CodeQL code scanning (semantic SAST)</li>
+        <li>Copilot Autofix (AI remediation)</li>
+        <li>Dependabot (alerts + auto-PRs)</li>
+        <li>Dependency review &amp; license checks</li>
+        <li>Security campaigns</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:1rem;"><em>Active committer = ≥1 commit in 90 days to an enabled repo. Free on all public repos.</em></p>
+</div>
+
+<!-- Slide 11 -->
+<div class="slide" data-notes="Secret scanning detects 200+ token patterns from major cloud providers and SaaS platforms. Push protection stops the secret before it reaches the repo. Bypass options: mark as test, false positive, or fix later — all logged. Delegated bypass routes the request to a security reviewer.">
+  <h2>Secret Scanning &amp; Push Protection</h2>
+  <div class="flow">
+    <span class="step">Developer pushes</span>
+    <span class="arrow">→</span>
+    <span class="step">Pattern scan<br><em>200+ token types</em></span>
+    <span class="arrow">→</span>
+    <span class="step" style="border-color:#da3633;">Secret found?<br><strong>Push blocked</strong></span>
+    <span class="arrow">→</span>
+    <span class="step">Remove secret<br><em>or</em> request bypass</span>
+  </div>
+  <h3 style="margin-top:1.5rem;">Bypass Options</h3>
+  <ul>
+    <li><strong>It's a test / false positive</strong> — developer self-attests</li>
+    <li><strong>I'll fix it later</strong> — creates a tracking alert</li>
+    <li><strong>Delegated bypass</strong> — routes to security reviewer for approval</li>
+  </ul>
+  <p style="margin-top:.75rem;">Every bypass is <strong>audit-logged</strong> with actor, justification, and timestamp.</p>
+  <p style="margin-top:.5rem;"><strong>Custom patterns:</strong> Define regex for internal tokens (e.g., <code>api_token_[a-zA-Z0-9]{32}</code>)</p>
+</div>
+
+<!-- Slide 12 -->
+<div class="slide" data-notes="Enable via Security Configurations. Default Setup is zero-config — recommended for most repos. CodeQL details are covered in the GHAS-specific workshop.">
+  <h2>Code Scanning — Admin Enablement</h2>
+  <div class="cols">
+    <div>
+      <h3>What it does</h3>
+      <p>CodeQL analyzes source code to find security vulnerabilities before they reach production.</p>
+      <h3 style="margin-top:1rem;">How to enable</h3>
+      <ul>
+        <li><strong>Security Configurations</strong> — apply at org level, repos inherit</li>
+        <li><strong>Default Setup</strong> — zero-config; admin enables it, GitHub handles the rest</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Cost</h3>
+      <p>Part of <strong>GitHub Code Security</strong> — $30/active committer/month. Only committers to enabled repos count.</p>
+      <h3 style="margin-top:1rem;">Monitoring</h3>
+      <p>Track rollout and alert trends in the <strong>Security Overview</strong> dashboard (Coverage + Risk tabs).</p>
+    </div>
+  </div>
+  <p style="margin-top:1rem;"><span class="badge badge-green">Copilot Autofix</span> &nbsp;AI generates fix suggestions — reduces mean time to remediation and developer friction</p>
+</div>
+
+<!-- Slide 13 -->
+<div class="slide" data-notes="Dependabot is free — no active committer cost. This is a cost-effective baseline security layer. Detailed Dependabot configuration is covered in the GHAS workshop.">
+  <h2>Dependabot</h2>
+  <p>Automated vulnerability alerts and dependency updates — <strong>free on all repos</strong>, no additional cost.</p>
+  <h3 style="margin-top:1.25rem;">Three tiers</h3>
+  <ul>
+    <li><strong>Alerts</strong> — passive notification when a dependency has a known CVE</li>
+    <li><strong>Security updates</strong> — auto-opens PRs to patch vulnerable versions</li>
+    <li><strong>Version updates</strong> — proactive PRs to keep dependencies fresh</li>
+  </ul>
+  <p style="margin-top:1rem;">Enable via <strong>Security Configurations</strong> at the org level. Dependabot is a cost-effective baseline — layer it with Code Security for deeper analysis.</p>
+</div>
+
+<!-- Slide 14 -->
+<div class="slide" data-notes="Security configurations are org-level presets that bundle scanning settings. Apply the GitHub-recommended config or create a custom one. Apply to all repos or selected repos in one action — no per-repo setup needed. Great for onboarding new repos.">
+  <h2>Security Configurations</h2>
+  <div class="cols">
+    <div>
+      <h3>What is it?</h3>
+      <p>Org-level <strong>policy bundles</strong> that define which security features are enabled and how</p>
+      <h3 style="margin-top:1rem;">Options</h3>
+      <ul>
+        <li><span class="badge badge-green">GitHub Recommended</span> — sensible defaults</li>
+        <li><span class="badge badge-blue">Custom Config</span> — pick features &amp; settings</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Includes toggles for</h3>
+      <ul>
+        <li>Code scanning (default / advanced)</li>
+        <li>Secret scanning + push protection</li>
+        <li>Dependabot alerts &amp; updates</li>
+        <li>Dependency review enforcement</li>
+        <li>Private vulnerability reporting</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:1rem;"><strong>Apply at scale:</strong> Select repos → Apply config → Done. New repos can auto-inherit.</p>
+</div>
+
+<!-- Slide 15 -->
+<div class="slide" data-notes="Security Overview is the org-level dashboard that aggregates all security alerts. Filter by severity, tool (CodeQL, secret scanning, Dependabot), and repo. The Coverage tab shows which repos don't have features enabled — useful for gap analysis.">
+  <h2>Security Overview Dashboard</h2>
+  <div class="cols">
+    <div>
+      <h3>Single pane of glass</h3>
+      <ul>
+        <li>All secret scanning alerts across org</li>
+        <li>All code scanning alerts across org</li>
+        <li>All Dependabot alerts across org</li>
+        <li>Filter by <strong>severity</strong>, <strong>tool</strong>, <strong>repo</strong>, <strong>state</strong></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Key tabs</h3>
+      <ul>
+        <li><strong>Risk</strong> — repos sorted by open alert count</li>
+        <li><strong>Coverage</strong> — which repos lack which features</li>
+        <li><strong>Campaigns</strong> — coordinated remediation progress</li>
+      </ul>
+      <h3 style="margin-top:1rem;">Campaigns</h3>
+      <p>Coordinated remediation at scale — manage directly from the Security Overview dashboard.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 16 — Lab transition -->
+<div class="slide lab" data-notes="Lab 7 focuses on admin enablement — students enable security features at the org level and verify they're working. The focus is on the admin workflow (enable, configure, monitor), not security investigation.">
+  <h2>🔬 Hands-on: Lab 7</h2>
+  <h3 style="margin-top:1rem;">Security Scanning &amp; Push Protection</h3>
+  <ul>
+    <li>Enable secret scanning &amp; push protection on your repo</li>
+    <li>Commit a test secret → observe the push block</li>
+    <li>Enable CodeQL default setup → review findings in Security tab</li>
+    <li>Review Dependabot alerts and auto-PRs</li>
+    <li>Explore the Security Overview dashboard</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 2b — GHAS: Best Practices & Cost Optimization
+     ═══════════════════════════════════════════════════════ -->
+
+<!-- Slide 17 -->
+<div class="slide section-title" data-notes="This mini-section bridges the security features we just covered with practical cost governance. Executives always ask 'what will this cost?' — these slides give admins the data and strategies to answer confidently.">
+  <div class="section-label">Section 2b · ~10 min</div>
+  <h1>GHAS: Best Practices &amp; Cost Optimization</h1>
+  <p class="subtitle">Implementation strategy, cost modeling, and savings techniques</p>
+</div>
+
+<!-- Slide 18 -->
+<div class="slide" data-notes="These numbers usually get executives' attention — show real annual spend. Secret Protection alone is often the quick win since it's cheaper and catches the highest-risk issues (leaked credentials). Combined cost adds up fast at scale.">
+  <h2>The GHAS Cost Model</h2>
+  <div class="cols">
+    <div>
+      <h3>Two Products, Independent Pricing</h3>
+      <ul>
+        <li><strong>Secret Protection</strong> <span class="badge badge-yellow">$19/committer/mo</span></li>
+        <li><strong>Code Security</strong> <span class="badge badge-yellow">$30/committer/mo</span></li>
+        <li><strong>Combined:</strong> $49/committer/mo = <strong>$588/year</strong></li>
+      </ul>
+      <h3 style="margin-top:1rem;">Active Committer</h3>
+      <p>≥1 commit in the last <strong>90 days</strong> to any repo with the feature enabled. Counted <em>per unique user</em>, not per repo.</p>
+    </div>
+    <div>
+      <h3>Annual Cost at Scale</h3>
+      <table>
+        <tr><th>Committers</th><th>Secret Prot.</th><th>Both</th></tr>
+        <tr><td>100</td><td>$22,800</td><td>$58,800</td></tr>
+        <tr><td>500</td><td>$114,000</td><td>$294,000</td></tr>
+        <tr><td>1,000</td><td>$228,000</td><td>$588,000</td></tr>
+        <tr><td>5,000</td><td>$1,140,000</td><td>$2,940,000</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 19 -->
+<div class="slide" data-notes="Never go org-wide on day 1 — costs will spike and you won't have remediation capacity. Each phase builds institutional muscle for triaging and fixing findings before expanding scope. Pilot should take 2-4 weeks, not months.">
+  <h2>Phased Rollout Strategy</h2>
+  <div class="flow">
+    <span class="step"><strong>Phase 1</strong><br>Pilot<br><em>5–10 repos</em></span>
+    <span class="arrow">→</span>
+    <span class="step"><strong>Phase 2</strong><br>Critical &amp; Regulated<br><em>compliance repos</em></span>
+    <span class="arrow">→</span>
+    <span class="step"><strong>Phase 3</strong><br>High-Value<br><em>customer-facing</em></span>
+    <span class="arrow">→</span>
+    <span class="step"><strong>Phase 4</strong><br>Org-Wide<br><em>full coverage</em></span>
+  </div>
+  <h3 style="margin-top:1.5rem;">Timeline Recommendations</h3>
+  <ul>
+    <li><strong>Phase 1:</strong> 2–4 weeks — validate workflows, tune alert noise</li>
+    <li><strong>Phase 2:</strong> 1–2 months — build remediation playbooks</li>
+    <li><strong>Phase 3:</strong> 1–2 months — expand with confidence</li>
+    <li><strong>Phase 4:</strong> Ongoing — roll out remaining repos incrementally</li>
+  </ul>
+  <p style="margin-top:1rem;"><span class="badge badge-green">Tip</span> &nbsp;Use <strong>Security Configurations</strong> to apply settings consistently at each phase</p>
+</div>
+
+<!-- Slide 20 -->
+<div class="slide" data-notes="The 90-day window means committers don't drop off immediately — plan for this. A developer who pushed one commit 89 days ago still counts. GitHub App bots (Dependabot, Renovate) are excluded from billing, but user-type accounts used for automation do count.">
+  <h2>Active Committer Optimization</h2>
+  <div class="cols">
+    <div>
+      <h3>Key Optimization Techniques</h3>
+      <ul>
+        <li><strong>Enable only on repos with active development</strong> — skip archived, read-only, and dormant repos</li>
+        <li><strong>Unique user counting</strong> — one dev committing to 10 enabled repos = 1 committer</li>
+        <li><strong>Bot accounts</strong> — GitHub App bots (Dependabot, Renovate) are <em>excluded</em> from billing; user-type automation accounts <em>do</em> count</li>
+      </ul>
+    </div>
+    <div>
+      <h3>The 90-Day Trailing Window</h3>
+      <ul>
+        <li>Committer stays active for <strong>90 days</strong> after their last commit</li>
+        <li>Disabling a feature doesn't immediately reduce count</li>
+        <li>Plan for a <strong>lag period</strong> when projecting cost savings</li>
+        <li>Use the billing API to track active committer trends</li>
+      </ul>
+      <p style="margin-top:.75rem;"><span class="badge badge-yellow">Watch out</span> &nbsp;Archive dormant repos <em>before</em> enabling GHAS to avoid paying for inactive committers</p>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 21 -->
+<div class="slide" data-notes="Tiered deployment is the recommended approach — most cost-effective while covering the highest risks. Not every repo needs the full $49/committer stack. Free Dependabot alerts alone cover a lot of ground for low-risk repos.">
+  <h2>Tiered Deployment Strategy</h2>
+  <table>
+    <tr><th>Tier</th><th>Repos</th><th>Features Enabled</th><th>Cost per Committer</th></tr>
+    <tr><td><span class="badge badge-red">Tier 1 — Critical</span></td><td>Production, regulated, PII-handling</td><td>Secret Protection + Code Security</td><td><span class="badge badge-yellow">$49/mo</span></td></tr>
+    <tr><td><span class="badge badge-yellow">Tier 2 — Standard</span></td><td>Internal tools, shared libraries</td><td>Secret Protection only</td><td><span class="badge badge-yellow">$19/mo</span></td></tr>
+    <tr><td><span class="badge badge-green">Tier 3 — Low Risk</span></td><td>Docs, experiments, archived</td><td>Free: Dependabot alerts, basic scanning</td><td>$0</td></tr>
+  </table>
+  <h3 style="margin-top:1.5rem;">Cost Comparison — 1,000-Committer Org</h3>
+  <div class="cols">
+    <div>
+      <p><strong>Full enablement (all repos):</strong><br><span class="badge badge-yellow">$588,000/year</span></p>
+    </div>
+    <div>
+      <p><strong>Tiered (300 T1 / 400 T2 / 300 T3):</strong><br><span class="badge badge-green">$267,600/year</span> — <strong>~54% savings</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 22 -->
+<div class="slide" data-notes="Connect back to Day 1 cost centers content — GHAS is the #1 item enterprises want to track separately. Setting budgets before rollout prevents surprise bills. Alert-only budgets are great for monitoring without disrupting developers.">
+  <h2>Budget Controls &amp; Cost Centers</h2>
+  <div class="cols">
+    <div>
+      <h3>GHAS-Specific Budgets</h3>
+      <ul>
+        <li>Set <strong>spending limits</strong> for Secret Protection &amp; Code Security independently</li>
+        <li><strong>Alert-only budget</strong> — notifies admins at threshold, no disruption</li>
+        <li><strong>⚠️ Alert-only for GHAS</strong> — stop-usage budgets do <em>not</em> apply to license-based products; cost control requires manual governance</li>
+        <li>Configure at enterprise or org level</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Monthly Monitoring Workflow</h3>
+      <ul>
+        <li>Review active committer count in <strong>Billing → Usage</strong></li>
+        <li>Allocate GHAS spend to <strong>cost centers</strong> by team or business unit</li>
+        <li>Track month-over-month growth trends</li>
+        <li>Investigate spikes — new repo enabled? Contractor onboarding?</li>
+      </ul>
+      <p style="margin-top:.75rem;"><span class="badge badge-blue">Day 1 link</span> &nbsp;Uses the same cost center framework covered in Day 1 billing</p>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 23 -->
+<div class="slide" data-notes="This is the slide to screenshot and share with your finance team. It's the actionable summary of everything in this section. Each item maps to a specific cost-saving lever covered in previous slides. Transition: now that we've covered cost governance, let's look at the automation tools that can help implement these practices.">
+  <h2>Cost Optimization Checklist</h2>
+  <div class="cols">
+    <div>
+      <h3>Before Rollout</h3>
+      <ul>
+        <li>✅ Audit repo list — identify active vs dormant repos</li>
+        <li>✅ Set budgets before enabling any paid features</li>
+        <li>✅ Use Security Configurations for targeted enablement</li>
+        <li>✅ Classify repos into tiers (Critical / Standard / Low-risk)</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Ongoing</h3>
+      <ul>
+        <li>✅ Monitor active committer growth weekly during rollout</li>
+        <li>✅ Quarterly committer audit — disable on inactive repos</li>
+        <li>✅ Leverage free public repo coverage</li>
+        <li>✅ Track ROI: vulnerabilities found vs cost</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:1.5rem;"><span class="badge badge-green">Pro tip</span> &nbsp;Automate repo audits with <code>gh api</code> — list repos with GHAS enabled, cross-reference with last-commit date, flag candidates for disablement</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SECTION 3 — Actions, Automation & Marketplace
+     ═══════════════════════════════════════════════ -->
+
+<!-- Slide 24 -->
+<div class="slide section-title" data-notes="Shift to automation. This section covers the gh CLI for admin tasks, common automation patterns, and how external CI integrates with GitHub. Leads into Lab 13.">
+  <div class="section-label">Section 3 · ~10 min</div>
+  <h1>Automation, gh CLI &amp; Marketplace</h1>
+  <p class="subtitle">Scripting admin at scale</p>
+</div>
+
+<!-- Slide 25 -->
+<div class="slide" data-notes="gh api is the Swiss-army knife — it handles auth automatically, supports --paginate for all results, and --jq for filtering. Pre-authenticated on Actions runners via GITHUB_TOKEN. Useful env vars: GH_TOKEN, GH_ENTERPRISE_TOKEN, GH_HOST.">
+  <h2><code>gh</code> CLI for Admin</h2>
+  <div class="cols">
+    <div>
+      <h3>Why <code>gh</code>?</h3>
+      <ul>
+        <li>Pre-authenticated on GitHub-hosted runners</li>
+        <li>Wraps REST <em>and</em> GraphQL APIs</li>
+        <li>Built-in <code>--paginate</code> for full result sets</li>
+        <li><code>--jq</code> for inline JSON filtering</li>
+        <li>Extensions for custom admin commands</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Key commands</h3>
+      <p><code>gh api /orgs/{org}/repos --paginate --jq '.[]'</code></p>
+      <p style="margin-top:.5rem;"><code>gh repo list my-org --json name,visibility</code></p>
+      <p style="margin-top:.5rem;"><code>gh api /enterprises/{ent}/audit-log</code></p>
+      <p style="margin-top:.75rem;"><strong>Env vars:</strong> <code>GH_TOKEN</code>, <code>GH_ENTERPRISE_TOKEN</code>, <code>GH_HOST</code></p>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 26 -->
+<div class="slide" data-notes="Walk through real-world automation examples. Bulk archive stale repos, export audit logs for SIEM, find dormant users, audit repo access. Show that these are 5-10 line bash scripts, not complex apps.">
+  <h2>Admin Automation Patterns</h2>
+  <div class="cols">
+    <div>
+      <h3>Bulk team management</h3>
+      <p><code>gh api orgs/{org}/teams --paginate</code><br>Add / remove members in bulk via loop</p>
+      <h3 style="margin-top:1rem;">Audit log export</h3>
+      <p><code>gh api /enterprises/{ent}/audit-log<br>&nbsp; --method GET -F phrase='action:repo.create'<br>&nbsp; --paginate</code></p>
+    </div>
+    <div>
+      <h3>Dormant user reports</h3>
+      <p>List members → check last activity via <code>gh api</code> → flag inactive accounts</p>
+      <h3 style="margin-top:1rem;">Repo access audits</h3>
+      <p><code>gh api repos/{owner}/{repo}/collaborators<br>&nbsp; --paginate --jq '.[] | [.login, .role_name]'</code></p>
+    </div>
+  </div>
+  <p style="margin-top:1rem;"><em>Pattern: </em><code>gh repo list</code> → loop → <code>gh api</code> per repo → aggregate results</p>
+</div>
+
+<!-- Slide 27 -->
+<div class="slide" data-notes="External CI tools report to GitHub via the Commit Status API (older) or the Check Runs API (modern, richer). Required status checks in rulesets reference these by context name. Lock to integration_id to prevent spoofing.">
+  <h2>Commit Statuses &amp; Check Runs</h2>
+  <div class="cols">
+    <div>
+      <h3>Status API <em>(legacy)</em></h3>
+      <ul>
+        <li>States: <code>pending</code> · <code>success</code> · <code>failure</code> · <code>error</code></li>
+        <li>External CI posts status to a commit SHA</li>
+        <li>Context string identifies the check</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Check Runs API <em>(modern)</em></h3>
+      <ul>
+        <li>Rich output: annotations, summaries, images</li>
+        <li>Actions: re-run, request changes</li>
+        <li>Scoped to a GitHub App installation</li>
+      </ul>
+    </div>
+  </div>
+  <h3 style="margin-top:1.5rem;">Tying it together with Rulesets</h3>
+  <p><strong>Required status checks</strong> reference these by <code>context</code> name. Best practice: lock to <code>integration_id</code> to prevent impersonation from similarly named checks.</p>
+</div>
+
+<!-- Slide 28 — Lab transition -->
+<div class="slide lab" data-notes="Lab 13 has students write gh CLI scripts for admin automation. They'll use gh api with --paginate and --jq, write a bulk operation script, and explore audit log queries.">
+  <h2>🔬 Hands-on: Lab 13</h2>
+  <h3 style="margin-top:1rem;">Scripts &amp; <code>gh</code> CLI Automation</h3>
+  <ul>
+    <li>Authenticate and explore <code>gh api</code> endpoints</li>
+    <li>Use <code>--paginate</code> and <code>--jq</code> for data extraction</li>
+    <li>Write a bulk admin script (archive stale repos)</li>
+    <li>Query the audit log for specific events</li>
+    <li>Explore <code>gh</code> extensions for admin workflows</li>
+  </ul>
+</div>
+
+</div><!-- /.deck -->
+
+<script>
+(function () {
+  'use strict';
+
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total  = slides.length;
+  const numEl  = document.getElementById('slide-num');
+  const barEl  = document.getElementById('progress');
+  const notesPanel = document.getElementById('notes-panel');
+  const notesContent = document.getElementById('notes-content');
+  let cur = 0;
+
+  function go(n) {
+    if (document.body.classList.contains('overview')) return;
+    if (n < 0 || n >= slides.length) return;
+    cur = n;
+    slides.forEach((s, i) => s.classList.toggle('active', i === cur));
+    numEl.textContent = (cur + 1) + ' / ' + total;
+    barEl.style.width = ((cur + 1) / total * 100) + '%';
+    const note = slides[cur].getAttribute('data-notes');
+    notesContent.textContent = note || '(no notes)';
+    history.replaceState(null, '', '#' + (cur + 1));
+  }
+
+  function toggleOverview() {
+    document.body.classList.toggle('overview');
+    if (!document.body.classList.contains('overview')) go(cur);
+  }
+
+  // Keyboard
+  document.addEventListener('keydown', function (e) {
+    if (document.body.classList.contains('overview')) {
+      if (e.key === 'Escape') toggleOverview();
+      return;
+    }
+    switch (e.key) {
+      case 'ArrowRight': case 'ArrowDown': case ' ':  go(cur + 1); break;
+      case 'ArrowLeft':  case 'ArrowUp':               go(cur - 1); break;
+      case 'Home':                                      go(0);       break;
+      case 'End':                                       go(total - 1); break;
+      case 'Escape':                                    toggleOverview(); break;
+      case 'n': case 'N':                               notesPanel.classList.toggle('visible'); break;
+    }
+  });
+
+  // Click in overview
+  document.querySelector('.deck').addEventListener('click', function (e) {
+    if (!document.body.classList.contains('overview')) return;
+    const slide = e.target.closest('.slide');
+    if (slide) { cur = slides.indexOf(slide); toggleOverview(); }
+  });
+
+  // Touch support
+  var touchX = 0;
+  document.addEventListener('touchstart', function(e) { touchX = e.touches[0].clientX; });
+  document.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) { dx < 0 ? go(cur + 1) : go(cur - 1); }
+  });
+
+  // Hash navigation
+  const hash = parseInt(location.hash.slice(1), 10);
+  go(hash > 0 && hash <= total ? hash - 1 : 0);
+})();
+</script>
+</body>
+</html>

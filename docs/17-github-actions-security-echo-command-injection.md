@@ -92,7 +92,7 @@ For complex operations, use actions or scripts:
 ```yaml
 - name: Sanitize input
   id: sanitize
-  uses: actions/github-script@v7
+  uses: actions/github-script@v8
   with:
     script: |
       const name = context.payload.inputs.name || 'World';
@@ -112,7 +112,7 @@ Consider alternatives to echo:
 
 ```yaml
 - name: Display input
-  uses: actions/github-script@v7
+  uses: actions/github-script@v8
   with:
     script: |
       console.log(`Hello ${context.payload.inputs.name}`);

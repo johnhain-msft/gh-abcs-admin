@@ -47,7 +47,7 @@ The following sections organize best practices around operational pillars that e
 - Enforce SAML SSO with IdP synchronization for all organization members
 - Require 2FA/MFA for all users, especially admins and privileged accounts
 - Implement IP allow lists for enterprise and organization access
-- Use GitHub Advanced Security (GHAS) with code scanning, secret scanning, and dependency review
+- Use GitHub Advanced Security (GHAS) — comprising GitHub Secret Protection (secret scanning, push protection) and GitHub Code Security (CodeQL code scanning, Copilot Autofix, dependency review)
 - Enable push protection to prevent secret commits in real-time
 - Configure branch protection rules with required reviews and status checks
 - Use environment protection rules with required reviewers for production deployments
@@ -120,7 +120,7 @@ The following sections organize best practices around operational pillars that e
 - Configure appropriate artifact and log retention periods
 - Optimize GitHub Packages storage usage with cleanup policies
 - Review and right-size GitHub Copilot seat assignments
-- Use GitHub Advanced Security efficiently with targeted repository enablement
+- Use GitHub Advanced Security (Secret Protection and Code Security) efficiently with targeted repository enablement
 - Implement workflow approval gates for expensive operations
 - Regular license utilization audits to remove unused seats
 - Use enterprise-level purchasing for volume discounts
@@ -163,7 +163,6 @@ graph TB
     style CST fill:#ffb,stroke:#333,stroke-width:2px
 ```
 
-
 ## Enterprise Setup Checklist
 
 ### Phase 1: Foundation (Weeks 1-2)
@@ -176,14 +175,14 @@ graph TB
   - [ ] Configure enterprise-level IP allow lists
 
 - [ ] **Identity and Access Management**
-  - [ ] Configure SAML SSO with corporate IdP (Okta, Azure AD, Ping)
+  - [ ] Configure SAML SSO with corporate IdP (Okta, Entra ID, Ping)
   - [ ] Enable SCIM provisioning for automated user lifecycle
   - [ ] Enforce 2FA/MFA for all enterprise members
   - [ ] Create initial team structure aligned with organizational hierarchy
   - [ ] Define custom organization roles for fine-grained permissions
 
 - [ ] **Security Baseline**
-  - [ ] Enable GitHub Advanced Security at enterprise level
+  - [ ] Enable GitHub Secret Protection and Code Security at enterprise level
   - [ ] Configure secret scanning with custom patterns
   - [ ] Enable push protection for secrets
   - [ ] Set up audit log streaming to SIEM (Splunk, Azure Sentinel)
@@ -323,7 +322,6 @@ graph TD
 - **Role Assignment:** Assign teams to repositories with appropriate roles (read, triage, write, maintain, admin)
 - **Least Privilege:** Start with minimal permissions and grant additional access as needed
 - **Team Maintainers:** Designate team maintainers for self-service management
-
 
 ## Repository Naming and Structure Conventions
 
@@ -709,12 +707,12 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       
       - name: Run CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: ['javascript', 'python']
       
@@ -726,7 +724,7 @@ jobs:
           head: HEAD
       
       - name: CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
   test:
     runs-on: ubuntu-latest
@@ -735,9 +733,9 @@ jobs:
       matrix:
         node-version: [18.x, 20.x]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
@@ -753,7 +751,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Deploy to production
         run: |
           echo "Deploying to production..."
@@ -772,7 +770,7 @@ jobs:
   check-policies:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Verify file changes
         run: |
@@ -1330,7 +1328,7 @@ done
 
 # Backup custom roles
 echo "Fetching custom roles..."
-gh api "orgs/${ORG}/roles/custom_roles" --jq '.[] | {id, name, permissions}' \
+gh api "orgs/${ORG}/custom-repository-roles" --jq '.custom_roles[] | {id, name, permissions}' \
     > custom-roles.json 2>/dev/null || true
 
 # Commit and push
@@ -1396,7 +1394,7 @@ jobs:
   validate-backups:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Download latest backups
         run: |
@@ -1835,7 +1833,7 @@ jobs:
       frontend: ${{ steps.detect.outputs.frontend }}
       infrastructure: ${{ steps.detect.outputs.infrastructure }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       
@@ -1861,7 +1859,7 @@ jobs:
       matrix:
         service: [auth-service, api-gateway, payments-service]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build ${{ matrix.service }}
         run: |
           cd services/${{ matrix.service }}
@@ -1873,8 +1871,8 @@ jobs:
     if: ${{ needs.detect-changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: npm
@@ -1892,7 +1890,7 @@ jobs:
     needs: [build-services, build-frontend]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run integration tests
         run: |
           docker-compose -f docker-compose.test.yml up --abort-on-container-exit
@@ -1961,7 +1959,7 @@ jobs:
       redis:
         image: redis:7
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-go@v4
         with:
           go-version: 1.21
@@ -1982,7 +1980,7 @@ jobs:
     outputs:
       image-tag: ${{ steps.image.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - id: image
         run: |
@@ -2007,7 +2005,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - uses: azure/setup-kubectl@v3
         with:
@@ -2062,7 +2060,7 @@ jobs:
   build-docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Aggregate OpenAPI specs
         run: |
@@ -2139,7 +2137,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: production-${{ matrix.region }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Deploy to ${{ matrix.region }}
         env:
@@ -2159,7 +2157,6 @@ jobs:
 ```
 
 **Cross-reference:** See [Organization Strategies](02-organization-strategies.md) for multi-organization patterns.
-
 
 ## Common Anti-Patterns to Avoid
 
@@ -2310,8 +2307,8 @@ jobs:
     runs-on: ubuntu-latest
     # Run immediately, fail fast
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: npm
@@ -2324,9 +2321,9 @@ jobs:
   security-scan-parallel:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: github/codeql-action/init@v2
-      - uses: github/codeql-action/analyze@v2
+      - uses: actions/checkout@v6
+      - uses: github/codeql-action/init@v3
+      - uses: github/codeql-action/analyze@v3
       - uses: aquasecurity/trivy-action@master
         # Parallel with tests: 10-12 minutes total
 
@@ -2337,8 +2334,8 @@ jobs:
       matrix:
         node-version: [18.x, 20.x]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -2387,12 +2384,12 @@ jobs:
   enforce-standards:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       
       # Prevent merge without required reviewers
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v8
         with:
           script: |
             const { owner, repo, number } = context.issue;
@@ -2404,7 +2401,7 @@ jobs:
             }
       
       # Enforce test coverage minimum
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           cache: npm
@@ -2464,7 +2461,7 @@ jobs:
     permissions:
       id-token: write  # For OIDC
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.inputs.version }}
       
@@ -2526,10 +2523,10 @@ jobs:
   collect-metrics:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Collect workflow metrics
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           PROMETHEUS_PUSHGATEWAY: ${{ secrets.PROMETHEUS_PUSHGATEWAY }}
         with:
@@ -2594,7 +2591,7 @@ jobs:
 # Principle of Least Privilege
 organizations:
   acme-platform:
-    custom_roles:
+    custom_repository_roles:
       - name: junior_developer
         permissions:
           - pull_requests: write
@@ -2692,9 +2689,9 @@ github_apps:
 
 #### Step 3: Execute Runbook
 Based on error pattern, execute appropriate runbook:
-- [Database replication lag](./db-replication-lag.md)
-- [High error rate](./high-error-rate.md)
-- [Deployment rollback](./deployment-rollback.md)
+- Database replication lag — verify replica status, check network latency, escalate to DBA
+- High error rate — identify error patterns, check recent deployments, enable debug logging
+- Deployment rollback — revert to last known good release, verify rollback success, run smoke tests
 
 #### Step 4: Communicate Status
 ```bash
@@ -2877,7 +2874,6 @@ class GitHubCostOptimizer:
 ```
 
 **Cross-reference:** See the Pillars section on Cost Optimization for detailed strategies.
-
 
 ## Key Performance Indicators (KPIs)
 
@@ -3176,7 +3172,7 @@ GitHub Enterprise Setup:
   - Enable audit log streaming
 
 SAML SSO Configuration:
-  - Integrate with corporate IdP (Okta/Azure AD)
+  - Integrate with corporate IdP (Okta/Entra ID)
   - Configure SCIM provisioning
   - Test SSO login
   - Enable MFA requirement
@@ -3192,7 +3188,7 @@ Initial Organization:
 
 ```yaml
 Security & Access:
-  - Enable GitHub Advanced Security
+  - Enable GitHub Secret Protection and Code Security
   - Configure secret scanning with custom patterns
   - Enable push protection for secrets
   - Set up audit log SIEM integration
@@ -3274,7 +3270,7 @@ Tools and Infrastructure:
 ### GitHub Documentation
 
 - [GitHub Enterprise Cloud Documentation](https://docs.github.com/en/enterprise-cloud@latest)
-- [GitHub Advanced Security Documentation](https://docs.github.com/en/code-security/secret-scanning)
+- [GitHub Advanced Security — Secret Protection & Code Security](https://docs.github.com/en/code-security/secret-scanning)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [GitHub REST API](https://docs.github.com/en/rest)
 - [GitHub GraphQL API](https://docs.github.com/en/graphql)
@@ -3322,7 +3318,7 @@ Tools and Infrastructure:
 
 ### External Resources
 
-- [GitHub Enterprise Blog](https://github.blog/enterprise/)
+- [GitHub Enterprise Blog](https://github.blog/enterprise-software/)
 - [GitHub Community Forum](https://github.community/)
 - [GitHub Education](https://education.github.com/)
 - [GitHub Skills](https://skills.github.com/)
@@ -3419,13 +3415,13 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       
       - name: Run CodeQL
         if: inputs.scan-type == 'full' || inputs.scan-type == 'codeql'
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
       
       - name: Run Secret Scanning
         uses: trufflesecurity/trufflehog@main
@@ -3435,7 +3431,7 @@ jobs:
           head: HEAD
       
       - name: Upload results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'results.sarif'
 ```
@@ -3447,4 +3443,3 @@ jobs:
 This comprehensive GitHub Well-Architected Framework document provides enterprise-grade guidance for implementing GitHub at scale. Organizations should use this as a reference for designing, implementing, and optimizing their GitHub infrastructure.
 
 For questions or updates, refer to the related documentation series or contact your GitHub Enterprise Account Team.
-

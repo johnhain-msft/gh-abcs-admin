@@ -13,6 +13,8 @@ keywords:
 estimated_reading_time: 8
 ---
 
+# Impact of Renaming a GitHub Organization on Copilot and Users
+
 ## Overview
 
 This document analyzes the impact of renaming a GitHub organization in an Enterprise Managed Users (EMU) setup, with specific focus on GitHub Copilot continuity for IDE users. It provides verified findings backed by official GitHub documentation.

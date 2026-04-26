@@ -1,0 +1,699 @@
+{
+  "_comment": "Phase 1 baseline expectations for all documentation files. Used by validate-structure.js for regression testing. minLines is set ~10% below current to allow minor editing without false failures.",
+  "01-enterprise-hierarchy": {
+    "expectedH1": "GitHub Enterprise Cloud Hierarchy",
+    "expectedH2s": [
+      "Overview",
+      "Enterprise Account Capabilities",
+      "Hierarchy Levels",
+      "Enterprise Roles",
+      "Enterprise Settings and Dashboard Navigation",
+      "Multi-Organization Management Patterns",
+      "Enterprise Admin Responsibilities Flow",
+      "Enterprise Audit Log and Compliance Features",
+      "Best Practices for Enterprise Administration",
+      "Advanced Topics",
+      "Migration and Onboarding Strategies",
+      "Troubleshooting Common Issues",
+      "References"
+    ],
+    "minLines": 690,
+    "minMermaidDiagrams": 3,
+    "hasFrontMatter": false,
+    "headingCount": 45
+  },
+  "02-organization-strategies": {
+    "expectedH1": "Organization Design Patterns and Strategies",
+    "expectedH2s": [
+      "Overview",
+      "Single Organization Pattern",
+      "Multi-Organization Patterns",
+      "Organization Naming Conventions",
+      "Migration Strategies Between Patterns",
+      "Organization Strategy Decision Matrix",
+      "Organization Lifecycle Management",
+      "Cross-References",
+      "References"
+    ],
+    "minLines": 1000,
+    "minMermaidDiagrams": 7,
+    "hasFrontMatter": false,
+    "headingCount": 41
+  },
+  "03-identity-access-management": {
+    "expectedH1": "Identity and Access Management (IAM)",
+    "expectedH2s": [
+      "Overview",
+      "Table of Contents",
+      "Enterprise Type Selection",
+      "Authentication Methods Overview",
+      "SAML Single Sign-On (SSO) Configuration",
+      "SCIM Provisioning Fundamentals",
+      "Personal Access Token (PAT) Policies",
+      "SSH Key and GPG Key Management",
+      "Two-Factor Authentication (2FA) Enforcement",
+      "Advanced IAM Considerations",
+      "References"
+    ],
+    "minLines": 1250,
+    "minMermaidDiagrams": 3,
+    "hasFrontMatter": true,
+    "headingCount": 70
+  },
+  "04-enterprise-managed-users": {
+    "expectedH1": "Enterprise Managed Users (EMU)",
+    "expectedH2s": [
+      "Overview",
+      "What are Enterprise Managed Users?",
+      "EMU Value Proposition",
+      "EMU vs Personal Accounts: Detailed Comparison",
+      "EMU Limitations and Considerations",
+      "Supported Identity Providers",
+      "EMU Configuration Best Practices",
+      "EMU Migration Strategies",
+      "EMU Operational Excellence",
+      "References"
+    ],
+    "minLines": 1475,
+    "minMermaidDiagrams": 8,
+    "hasFrontMatter": false,
+    "headingCount": 53
+  },
+  "05-teams-permissions": {
+    "expectedH1": "Teams and Permissions",
+    "expectedH2s": [
+      "Overview",
+      "Team Types and Visibility",
+      "Nested Teams and Hierarchy",
+      "Team Synchronization with Identity Provider",
+      "Permission Levels",
+      "Custom Repository Roles",
+      "Base Permissions Configuration",
+      "CODEOWNERS and Automatic Review Assignment",
+      "Team Maintainers vs Organization Owners",
+      "Advanced Permission Scenarios",
+      "Audit and Compliance",
+      "Troubleshooting Common Issues",
+      "References"
+    ],
+    "minLines": 1415,
+    "minMermaidDiagrams": 7,
+    "hasFrontMatter": false,
+    "headingCount": 58
+  },
+  "06-policy-inheritance": {
+    "expectedH1": "Policy Enforcement and Inheritance",
+    "expectedH2s": [
+      "Overview",
+      "Policy Enforcement Model",
+      "Enterprise-Level Policies",
+      "Organization-Level Policies",
+      "Repository-Level Settings",
+      "Policy Conflict Resolution",
+      "Policy Change Auditing",
+      "Advanced Policy Patterns",
+      "Key Policy Areas Deep Dive",
+      "Cross-Hierarchy Policy Scenarios",
+      "Related Documentation",
+      "References"
+    ],
+    "minLines": 1065,
+    "minMermaidDiagrams": 3,
+    "hasFrontMatter": false,
+    "headingCount": 52
+  },
+  "07-repository-governance": {
+    "expectedH1": "Repository Governance",
+    "expectedH2s": [
+      "Overview",
+      "Repository Visibility Models",
+      "Repository Templates and Standardization",
+      "Branch Protection Rules vs Repository Rulesets",
+      "Repository Ruleset Deep Dive",
+      "Tag Protection Rules",
+      "Push Rulesets and File Path Restrictions",
+      "Merge Strategies and Settings",
+      "Repository Lifecycle Management",
+      "Innersource Patterns with Internal Repositories",
+      "Governance at Scale",
+      "Best Practices Summary",
+      "References"
+    ],
+    "minLines": 1345,
+    "minMermaidDiagrams": 4,
+    "hasFrontMatter": true,
+    "headingCount": 46
+  },
+  "08-security-compliance": {
+    "expectedH1": "Security and Compliance",
+    "expectedH2s": [
+      "Overview",
+      "GitHub Advanced Security (GHAS)",
+      "Code Scanning with CodeQL",
+      "Secret Scanning",
+      "Dependency Management",
+      "Security Policies and Vulnerability Reporting",
+      "Audit Logging and SIEM Integration",
+      "Compliance Certifications",
+      "Enterprise-Scale Security Implementation",
+      "Security Operations Workflows",
+      "GHAS Implementation Best Practices and Cost Mitigation",
+      "References"
+    ],
+    "minLines": 1075,
+    "minMermaidDiagrams": 6,
+    "hasFrontMatter": true,
+    "headingCount": 77
+  },
+  "09-best-practices-waf": {
+    "expectedH1": "GitHub Well-Architected Framework: Best Practices and Principles",
+    "expectedH2s": [
+      "Overview",
+      "Enterprise Deployment Pillars",
+      "Pillars Relationship",
+      "Enterprise Setup Checklist",
+      "Organization Design Recommendations",
+      "Repository Naming and Structure Conventions",
+      "Branching Strategy Recommendations",
+      "CI/CD Governance Best Practices",
+      "Change Management Processes",
+      "Disaster Recovery and Backup Strategies",
+      "Enterprise Maturity Model",
+      "Scaling Patterns for Large Enterprises",
+      "Common Anti-Patterns to Avoid",
+      "Key Performance Indicators (KPIs)",
+      "Implementation Roadmap",
+      "References",
+      "Appendix: Configuration Templates"
+    ],
+    "minLines": 3100,
+    "minMermaidDiagrams": 7,
+    "hasFrontMatter": true,
+    "headingCount": 103,
+    "_note": "Many H2s in the initial extraction were inside code block examples (PR template, runbook template) and are correctly excluded by extractHeadings(). 'Pillars Relationship' and 'Appendix: Configuration Templates' are real non-code-block H2s that must be tracked."
+  },
+  "10-reference-architecture": {
+    "expectedH1": "Reference Architecture",
+    "expectedH2s": [
+      "Table of Contents",
+      "Complete Enterprise Architecture",
+      "Organization Topology Patterns",
+      "IAM Integration Architecture",
+      "Security Scanning Architecture",
+      "CI/CD Pipeline Governance Architecture",
+      "Hybrid and Multi-Cloud Integration",
+      "Migration Architecture",
+      "Quick Reference Cards",
+      "Architecture Decision Records",
+      "Integration Patterns",
+      "Summary",
+      "References"
+    ],
+    "minLines": 910,
+    "minMermaidDiagrams": 16,
+    "hasFrontMatter": false,
+    "headingCount": 46
+  },
+  "11-security-by-default-policies": {
+    "expectedH1": "GitHub Security-by-Default: Policies and Settings Recommendations",
+    "expectedH2s": [
+      "Table of Contents",
+      "Enterprise Level Policies",
+      "Organization Level Settings",
+      "Repository Level Settings",
+      "Quick Reference: Security Priority Matrix",
+      "References",
+      "Version History"
+    ],
+    "minLines": 290,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": 30
+  },
+  "12-github-copilot-governance": {
+    "expectedH1": "GitHub Copilot Governance",
+    "expectedH2s": [
+      "Table of Contents",
+      "Overview",
+      "GitHub Copilot Plans for Business",
+      "Policy Architecture",
+      "Configuring Enterprise Policies",
+      "Configuring Organization Policies",
+      "Content Exclusions",
+      "Network Configuration",
+      "License Management",
+      "Driving Enterprise Adoption",
+      "Best Practices for Using Copilot",
+      "Copilot Cloud Agent Governance",
+      "Audit and Compliance",
+      "Troubleshooting",
+      "Quick Reference: Copilot Security Priority Matrix",
+      "Summary",
+      "Related Documentation",
+      "References",
+      "Version History"
+    ],
+    "minLines": 875,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": false,
+    "headingCount": 71
+  },
+  "13-github-onboarding-implementation-plan": {
+    "expectedH1": "GitHub Enterprise Cloud Onboarding Implementation Plan",
+    "expectedH2s": [
+      "Table of Contents",
+      "Phase 0: Pre-Implementation Planning",
+      "Phase 1: Enterprise Foundation",
+      "Phase 2: Identity and Access Management",
+      "Phase 3: Organization Structure",
+      "Phase 4: Security-by-Default Configuration",
+      "Phase 5: Repository Governance and Rulesets",
+      "Phase 6: GitHub Actions Configuration",
+      "Phase 7: GitHub Copilot Governance",
+      "Phase 8: Migration Readiness",
+      "Phase 9: Developer Onboarding Enablement",
+      "Phase 10: Monitoring and Continuous Improvement",
+      "Implementation Timeline Summary",
+      "Critical Success Factors",
+      "References"
+    ],
+    "minLines": 805,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": false,
+    "headingCount": 75
+  },
+  "14-github-enterprise-importer-ado-guide": {
+    "expectedH1": "GitHub Enterprise Importer: Azure DevOps to GitHub Migration Guide",
+    "expectedH2s": [
+      "Table of Contents",
+      "Overview",
+      "What Gets Migrated",
+      "What Does NOT Get Migrated",
+      "Migration Limitations",
+      "Access Requirements",
+      "Migration Phases",
+      "Key Concepts",
+      "Post-Migration Tasks",
+      "Official Documentation References",
+      "Quick Reference: CLI Commands"
+    ],
+    "minLines": 360,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": 34
+  },
+  "15-azure-pipelines-github-repos-integration": {
+    "expectedH1": "Azure Pipelines with GitHub Repositories: Impact Analysis After Migration",
+    "expectedH2s": [
+      "Executive Summary",
+      "Table of Contents",
+      "Understanding the Hybrid Model",
+      "Critical Impact Areas",
+      "Pipeline Template References",
+      "Repository Resources and Checkout",
+      "Service Connections Requirements",
+      "Triggers and Automation Impact",
+      "Authentication and Authorization",
+      "Migration Scenarios and Solutions",
+      "Step-by-Step Remediation Guide",
+      "Best Practices and Recommendations",
+      "Summary: Key Takeaways",
+      "References"
+    ],
+    "minLines": 600,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": true,
+    "headingCount": 57
+  },
+  "16-azure-devops-to-github-migration-analysis": {
+    "expectedH1": "Azure DevOps to GitHub Migration: Pain Points Analysis and Solutions",
+    "expectedH2s": [
+      "Executive Summary",
+      "Table of Contents",
+      "Pain Point #1: Open Security Access",
+      "Pain Point #2: Overly Permissive Project Administrator Group",
+      "Pain Point #3: External Collaborator Management",
+      "Pain Point #4: Non-Human Identity Integrations",
+      "Pain Point #5: Azure DevOps Pipeline Migration",
+      "Pain Point #6: Work Item and Project Tracking",
+      "Pain Point #7: Azure Artifacts and Package Management",
+      "Pain Point #8: ADO-Specific Permissions Model Differences",
+      "Pain Point #9: Compliance and Audit Trail Continuity",
+      "Additional ADO to GitHub Migration Recommendations",
+      "Workshop Topics: GitHub Solutions",
+      "Summary: Feature Comparison",
+      "Next Steps",
+      "References"
+    ],
+    "minLines": 585,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": 70
+  },
+  "17-github-actions-security-echo-command-injection": {
+    "expectedH1": "GitHub Actions Security: Echo Command Injection Prevention",
+    "expectedH2s": [
+      "Overview",
+      "The Vulnerability",
+      "User-Controlled Inputs to Watch",
+      "Protection Methods",
+      "Real-World Examples Fixed",
+      "Branch Name Protection",
+      "Additional Security Best Practices",
+      "Testing for Vulnerabilities",
+      "References",
+      "Quick Reference Card"
+    ],
+    "minLines": 295,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": true,
+    "headingCount": 24
+  },
+  "18-github-rename-org-impact": {
+    "expectedH1": "Impact of Renaming a GitHub Organization on Copilot and Users",
+    "expectedH2s": [
+      "Overview",
+      "How GitHub Copilot Authentication Works",
+      "Key Finding: No Re-authentication Required",
+      "What Is Automatically Handled",
+      "What Is NOT Automatically Handled",
+      "EMU-Specific Considerations",
+      "Important Warning: Old Organization Name Reuse",
+      "Permanent Name Retirement for High-Visibility Assets",
+      "Recommended Action Plan",
+      "Public Community Research",
+      "Official Documentation References"
+    ],
+    "minLines": 140,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": true,
+    "headingCount": 12
+  },
+  "FAQ-workshop": {
+    "expectedH1": "GitHub Enterprise Admin Workshop - FAQ",
+    "expectedH2s": [
+      "Table of Contents",
+      "1. Git LFS Billing",
+      "2. Outside Collaborators and Internal Repositories",
+      "3. Migration from GitHub Enterprise Cloud to EMU",
+      "4. Audit Logs for GitHub Actions Policies",
+      "5. Enterprise Owner Assignment via Groups",
+      "Contributing to This FAQ"
+    ],
+    "minLines": 420,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": null
+  },
+  "ADO-to-GitHub-Migration-Business-Case": {
+    "expectedH1": "Business Case: Azure DevOps to GitHub Migration",
+    "expectedH2s": [
+      "Executive Summary",
+      "1. Strategic Context: Why Now?",
+      "2. Pillar 1 -- Development Practice Modernisation",
+      "3. Pillar 2 -- Standardisation",
+      "4. Pillar 3 -- Governance & Security",
+      "5. Pillar 4 -- Agentic DevOps & the AI-Native SDLC",
+      "6. Financial Analysis",
+      "7. Migration Approach: The Hybrid Strategy",
+      "8. Risk Assessment & Mitigation",
+      "9. Executive Recommendation",
+      "10. References & Sources"
+    ],
+    "minLines": 515,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": null
+  },
+  "ado-to-github-migration-assessment": {
+    "expectedH1": "Azure DevOps to GitHub Migration Assessment",
+    "expectedH2s": [
+      "Comprehensive Analysis: ADO DevSecOps Recommendations Mapped to GitHub",
+      "Table of Contents",
+      "1. R01–R71 Recommendations Mapped to GitHub",
+      "2. GitHub vs Azure DevOps Comparison Table",
+      "3. Impact Analysis: Staying on ADO vs Migrating to GitHub",
+      "4. Native AI and DevSecOps: GitHub vs ADO",
+      "5. All Advantages of Moving to GitHub",
+      "6. References"
+    ],
+    "minLines": 590,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": true,
+    "headingCount": null
+  },
+  "19-licenses-billing": {
+    "expectedH1": "Licenses and Billing",
+    "expectedH2s": [
+      "Overview",
+      "License Types",
+      "Billing Models",
+      "GitHub Copilot Licensing",
+      "Advanced Security Licensing",
+      "Billing Management and Cost Optimization",
+      "Budget Alerts and Cost Centers",
+      "Billing API and Reporting",
+      "License Compliance",
+      "References"
+    ],
+    "minLines": 1050,
+    "minMermaidDiagrams": 3,
+    "hasFrontMatter": true,
+    "headingCount": 115
+  },
+  "20-github-marketplace-apps": {
+    "expectedH1": "GitHub Marketplace and Apps",
+    "expectedH2s": [
+      "Overview",
+      "GitHub Apps vs OAuth Apps",
+      "GitHub Marketplace",
+      "App Installation and Permissions",
+      "Creating Internal GitHub Apps",
+      "Enterprise App Governance",
+      "MCP and Copilot Extensions",
+      "Webhook-Driven Apps",
+      "References"
+    ],
+    "minLines": 400,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": false,
+    "headingCount": 35
+  },
+  "21-user-administration": {
+    "expectedH1": "User Administration and Dormant Users",
+    "expectedH2s": [
+      "Overview",
+      "User Lifecycle",
+      "Enterprise and Organization Roles",
+      "Invitation and Onboarding",
+      "Outside Collaborator Management",
+      "Dormant User Identification",
+      "License Reclamation",
+      "Credential Governance",
+      "EMU User Management",
+      "References"
+    ],
+    "minLines": 450,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": false,
+    "headingCount": 40
+  },
+  "22-audit-log-deep-dive": {
+    "expectedH1": "Audit Log Deep Dive",
+    "expectedH2s": [
+      "Overview",
+      "Audit Log Scope and Retention",
+      "Searching and Filtering",
+      "Audit Log API",
+      "Audit Log Streaming",
+      "SIEM Integration Patterns",
+      "Event Categories",
+      "Compliance Use Cases",
+      "References"
+    ],
+    "minLines": 450,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": false,
+    "headingCount": 35
+  },
+  "23-deployment-strategies": {
+    "expectedH1": "Deployment Strategies",
+    "expectedH2s": [
+      "Overview",
+      "GitHub Environments",
+      "Deployment Protection Rules",
+      "OIDC for Cloud Deployments",
+      "Custom Deployment Gates",
+      "Deployment Tracking and Visibility",
+      "Enterprise Deployment Policies",
+      "Deployment Best Practices",
+      "References"
+    ],
+    "minLines": 400,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": true,
+    "headingCount": 35
+  },
+  "24-scripts-automation": {
+    "expectedH1": "Scripts and Automation",
+    "expectedH2s": [
+      "Overview",
+      "GitHub CLI for Administration",
+      "REST API Patterns",
+      "GraphQL API Patterns",
+      "Webhook-Driven Automation",
+      "GitHub Actions for Admin Tasks",
+      "Terraform GitHub Provider",
+      "Policy-as-Code",
+      "Automation Best Practices",
+      "References"
+    ],
+    "minLines": 500,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": true,
+    "headingCount": 40
+  },
+  "25-unhealthy-repos-git-history": {
+    "expectedH1": "Unhealthy Repositories and Git History",
+    "expectedH2s": [
+      "Overview",
+      "Identifying Repository Health Issues",
+      "Git LFS",
+      "Rewriting History with git-filter-repo",
+      "Removing Sensitive Data",
+      "Stale Branch Cleanup",
+      "Repository Archival Strategies",
+      "Monorepo Considerations",
+      "Prevention and Governance",
+      "References"
+    ],
+    "minLines": 400,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": false,
+    "headingCount": 35
+  },
+  "26-user-privacy-data-residency": {
+    "expectedH1": "User Privacy and Data Residency",
+    "expectedH2s": [
+      "Overview",
+      "Data Residency",
+      "GDPR and Data Processing",
+      "Data Subject Requests",
+      "IP Address Controls",
+      "Audit Trail for Compliance",
+      "Data Retention Policies",
+      "Enterprise Managed User Privacy",
+      "User-Level Privacy Settings",
+      "References"
+    ],
+    "minLines": 350,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": false,
+    "headingCount": 35
+  },
+  "27-integrations-status-api": {
+    "expectedH1": "Third-Party Integrations and Status API",
+    "expectedH2s": [
+      "Overview",
+      "Commit Status API",
+      "Check Runs and Check Suites",
+      "Required Status Checks",
+      "Integrating External CI/CD",
+      "SARIF Upload for Code Scanning",
+      "Deployment Status API",
+      "Webhooks for Integration",
+      "Best Practices",
+      "References"
+    ],
+    "minLines": 400,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": true,
+    "headingCount": 35
+  },
+  "AGENDA": {
+    "expectedH1": "Workshop Agenda",
+    "expectedH2s": [
+      "Workshop Overview",
+      "Day 1",
+      "Day 2",
+      "Self-Paced Extension Labs"
+    ],
+    "minLines": 120,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": 8
+  },
+  "INSTRUCTOR-GUIDE": {
+    "expectedH1": "Instructor Guide",
+    "expectedH2s": [
+      "Workshop Overview",
+      "Before the Workshop",
+      "Day 1 Module Guide",
+      "Day 2 Module Guide",
+      "Troubleshooting"
+    ],
+    "minLines": 350,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": 25
+  },
+  "PRE-WORKSHOP-CHECKLIST": {
+    "expectedH1": "Pre-Workshop Checklist",
+    "expectedH2s": [
+      "Participant Requirements",
+      "Instructor Requirements",
+      "Environment Verification"
+    ],
+    "minLines": 80,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": 6
+  },
+  "KNOWLEDGE-CHECKS": {
+    "expectedH1": "Knowledge Checks",
+    "expectedH2s": [
+      "Day 1",
+      "Day 2",
+      "Answer Key"
+    ],
+    "minLines": 200,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": 15
+  },
+  "POST-WORKSHOP-ASSESSMENT": {
+    "expectedH1": "Post-Workshop Assessment",
+    "expectedH2s": [
+      "Learning Outcomes Checklist",
+      "Participant Feedback",
+      "Action Planning"
+    ],
+    "minLines": 80,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": 6
+  },
+  "REFERENCE-CARD": {
+    "expectedH1": "Participant Reference Card",
+    "expectedH2s": [
+      "Key URLs",
+      "Permission Levels",
+      "Audit Log"
+    ],
+    "minLines": 100,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": 8
+  },
+  "SLIDE-DECK-OUTLINE": {
+    "expectedH1": "Slide Deck Outline",
+    "expectedH2s": [
+      "Day 1",
+      "Day 2"
+    ],
+    "minLines": 150,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "headingCount": 15
+  }
+}

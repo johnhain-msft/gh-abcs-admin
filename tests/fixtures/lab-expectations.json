@@ -1,0 +1,289 @@
+{
+  "_comment": "Phase 1 baseline expectations for all lab files. Used by validate-structure.js for regression testing.",
+  "lab01": {
+    "expectedH1": "1 - Introduction to Repository Webhooks and Events",
+    "expectedH2s": [
+      "1.1 Add repository webhook"
+    ],
+    "minLines": 25,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "expectedCodeBlockLangs": [],
+    "linkCount": 5,
+    "externalLinkCount": 5,
+    "hasDuration": true
+  },
+  "lab02": {
+    "expectedH1": "2 - Managing GitHub Actions settings for a repository",
+    "expectedH2s": [
+      "2.1 Update Actions and Workflow permissions"
+    ],
+    "minLines": 45,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": true,
+    "expectedCodeBlockLangs": [
+      "yaml"
+    ],
+    "linkCount": 2,
+    "externalLinkCount": 1,
+    "hasDuration": true
+  },
+  "lab03": {
+    "expectedH1": "3 - Repository Rulesets",
+    "expectedH2s": [
+      "3.1 Create a branch ruleset",
+      "3.2 Configure bypass actors",
+      "3.3 Set target branches",
+      "3.4 Configure branch protection rules",
+      "3.5 Create and verify the ruleset",
+      "3.6 Test the ruleset",
+      "3.7 _(Optional)_ View Rule Insights"
+    ],
+    "minLines": 55,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [],
+    "linkCount": 5,
+    "externalLinkCount": 5
+  },
+  "lab04": {
+    "expectedH1": "4 - GitHub Templates",
+    "expectedH2s": [
+      "4.1 Create issue templates",
+      "4.2 Create pull request templates",
+      "4.3 Create a template repository _(Optional)_",
+      "4.4 Create a Pull Request _(Optional)_"
+    ],
+    "minLines": 53,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "expectedCodeBlockLangs": [
+      "markdown"
+    ],
+    "hasDuration": true,
+    "linkCount": 6,
+    "externalLinkCount": 5
+  },
+  "lab05": {
+    "expectedH1": "5 - GitHub API - REST API & GraphQL API",
+    "expectedH2s": [
+      "5.1 Develop a GitHub Action workflow that calls REST APIs",
+      "5.2 Develop a GitHub Action workflow that calls GraphQL APIs"
+    ],
+    "minLines": 60,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": true,
+    "expectedCodeBlockLangs": [
+      "yaml",
+      "yaml"
+    ],
+    "hasDuration": true,
+    "linkCount": 8,
+    "externalLinkCount": 6
+  },
+  "setup": {
+    "expectedH1": "Hands-on Labs Setup",
+    "expectedH2s": [
+      "1.  Fork the current repository",
+      "2. _(Optional)_ Creating a repository from current template"
+    ],
+    "minLines": 18,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "expectedCodeBlockLangs": [],
+    "hasDuration": true,
+    "linkCount": 4,
+    "externalLinkCount": 4
+  },
+  "lab06": {
+    "expectedH1": "6 - Advanced Repository Rulesets",
+    "expectedH2s": [
+      "6.1 Create an organization-level ruleset",
+      "6.2 Create a tag ruleset",
+      "6.3 Test bypass permissions",
+      "6.4 Import and export rulesets",
+      "6.5 Compare rulesets with branch protection",
+      "6.6 Verify your work"
+    ],
+    "minLines": 150,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [
+      "json"
+    ],
+    "linkCount": 6,
+    "externalLinkCount": 5
+  },
+  "lab07": {
+    "expectedH1": "7 - Security Scanning and Push Protection",
+    "expectedH2s": [
+      "7.1 Enable secret scanning and push protection",
+      "7.2 Test push protection",
+      "7.3 Enable code scanning with CodeQL",
+      "7.4 Review Dependabot alerts",
+      "7.5 Configure security auto-triage rules",
+      "7.6 Verify your work"
+    ],
+    "minLines": 180,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [],
+    "linkCount": 8,
+    "externalLinkCount": 7
+  },
+  "lab08": {
+    "expectedH1": "8 - Audit Log Exploration",
+    "expectedH2s": [
+      "8.1 Navigate the audit log UI",
+      "8.2 Filter by event type and actor",
+      "8.3 Query the audit log API",
+      "8.4 Explore event payloads",
+      "8.5 Discuss streaming configuration",
+      "8.6 Verify your work"
+    ],
+    "minLines": 150,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [
+      "bash",
+      "json"
+    ],
+    "linkCount": 6,
+    "externalLinkCount": 5
+  },
+  "lab09": {
+    "expectedH1": "9 - User and Team Administration",
+    "expectedH2s": [
+      "9.1 Create nested teams",
+      "9.2 Assign repository permissions via teams",
+      "9.3 Create a custom repository role",
+      "9.4 Test permission inheritance",
+      "9.5 Configure team sync discussion",
+      "9.6 Verify your work"
+    ],
+    "minLines": 150,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [],
+    "linkCount": 6,
+    "externalLinkCount": 5
+  },
+  "lab10": {
+    "expectedH1": "10 - Dormant User Management",
+    "expectedH2s": [
+      "10.1 List organization members with activity",
+      "10.2 Identify dormant users",
+      "10.3 Generate a comprehensive dormant user report",
+      "10.4 Plan a reclamation workflow",
+      "10.5 Verify your work"
+    ],
+    "minLines": 120,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [
+      "bash"
+    ],
+    "linkCount": 5,
+    "externalLinkCount": 4
+  },
+  "lab11": {
+    "expectedH1": "11 - GitHub Apps and Marketplace",
+    "expectedH2s": [
+      "11.1 Browse the GitHub Marketplace",
+      "11.2 Install a GitHub App",
+      "11.3 Review app permissions",
+      "11.4 Evaluate OAuth App vs GitHub App",
+      "11.5 _(Optional)_ Register a test GitHub App",
+      "11.6 Verify your work"
+    ],
+    "minLines": 120,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [],
+    "linkCount": 7,
+    "externalLinkCount": 6
+  },
+  "lab12": {
+    "expectedH1": "12 - Deployments and Environments",
+    "expectedH2s": [
+      "12.1 Create deployment environments",
+      "12.2 Add environment protection rules",
+      "12.3 Create a deployment workflow",
+      "12.4 Test the approval flow",
+      "12.5 Verify your work"
+    ],
+    "minLines": 150,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": true,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [
+      "yaml"
+    ],
+    "linkCount": 6,
+    "externalLinkCount": 5
+  },
+  "lab13": {
+    "expectedH1": "13 - Scripts and gh CLI Automation",
+    "expectedH2s": [
+      "13.1 Explore gh CLI admin commands",
+      "13.2 Manage teams with gh CLI",
+      "13.3 Query the audit log via API",
+      "13.4 Write an automation script",
+      "13.5 Use gh api for GraphQL",
+      "13.6 Post commit statuses and check runs",
+      "13.7 Verify your work"
+    ],
+    "minLines": 150,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [
+      "bash"
+    ],
+    "linkCount": 6,
+    "externalLinkCount": 5
+  },
+  "lab14": {
+    "expectedH1": "14 - Unhealthy Repos and Git History",
+    "expectedH2s": [
+      "14.1 Detect large files in a repository",
+      "14.2 Remove sensitive data with git filter-repo",
+      "14.3 Clean up stale branches",
+      "14.4 Plan a repository archival strategy",
+      "14.5 Verify your work"
+    ],
+    "minLines": 150,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [
+      "bash"
+    ],
+    "linkCount": 6,
+    "externalLinkCount": 5
+  },
+  "lab15": {
+    "expectedH1": "15 - Copilot Governance Configuration",
+    "expectedH2s": [
+      "15.1 Review Copilot organization policies",
+      "15.2 Configure content exclusions",
+      "15.3 Manage seat assignments",
+      "15.4 Review Copilot audit events",
+      "15.5 Verify your work"
+    ],
+    "minLines": 120,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [],
+    "linkCount": 6,
+    "externalLinkCount": 5
+  }
+}

@@ -2,7 +2,7 @@
 
 This document provides comprehensive guidance for configuring GitHub Copilot policies, settings, and best practices for enterprise deployments. Following these recommendations will help establish secure and effective AI-assisted development practices following the principle of "security by default."
 
-> **Last Updated:** January 18, 2026
+> **Last Updated:** April 2, 2026
 
 ---
 
@@ -45,16 +45,20 @@ GitHub offers multiple Copilot subscription plans tailored for different organiz
 |---------|------------------|-------------------|
 | **Target Audience** | Organizations requiring centralized management | Large enterprises needing advanced features |
 | **Code Completions** | Unlimited | Unlimited |
-| **Chat Capabilities** | IDE and CLI | IDE, CLI, and GitHub.com |
-| **Model Selection** | Standard models | Premium and advanced models |
+| **Chat Capabilities** | IDE, CLI, and GitHub.com | IDE, CLI, and GitHub.com |
+| **Model Selection** | Standard + premium models | All models + bring your own LLM API keys |
 | **Copilot Code Review** | ✓ | ✓ |
-| **Copilot Coding Agent** | ✓ | ✓ |
-| **Knowledge Bases** | ✗ | ✓ |
+| **Copilot Cloud Agent** | ✓ | ✓ |
+| **Agent Mode (IDE)** | ✓ | ✓ |
+| **Copilot Spaces** | ✓ | ✓ |
 | **Custom Instructions** | Organization-level | Enterprise-wide |
+| **MCP Server Policy** | ✓ | ✓ |
 | **Admin Controls** | Organization policies | Enterprise policies + audit logs |
 | **Content Exclusions** | ✓ | ✓ |
 | **IP Indemnification** | ✓ | ✓ |
 | **Data Privacy** | No code retention | No code retention |
+
+> **Note:** Copilot also offers Free, Pro, and Pro+ tiers for individual developers. Business and Enterprise are the managed, policy-governed tiers covered in this governance guide. Copilot IDE features (code completions, chat, agent mode) are available for GHES users who are licensed through a github.com enterprise account. Cloud-native features such as Copilot code review, cloud agent, and web chat require GitHub Enterprise Cloud.
 
 ### Licensing Model
 
@@ -189,7 +193,7 @@ For enterprise deployments following security-by-default principles, the followi
 | Copilot code review | **Enabled** | Improves code quality and security | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
 | Copilot coding agent | **Disabled** or **No Policy** | Requires careful evaluation; allows autonomous code changes | [About coding agent](https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-coding-agent) |
 | Agent mode in IDE | **No Policy** | Let organizations decide based on security posture | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
-| MCP servers | **Disabled** | External integrations require security review | [MCP documentation](https://docs.github.com/en/copilot/concepts/mcp) |
+| MCP servers | **Disabled** | External integrations require security review | [MCP documentation](https://docs.github.com/en/copilot/concepts/context/mcp) |
 
 **Privacy Policies (Critical for Security)**:
 
@@ -763,39 +767,54 @@ Maintain security when using Copilot:
 - Review suggestions for license compatibility
 - Document Copilot-assisted code appropriately
 
-## Copilot Coding Agent Governance
+## Copilot Cloud Agent Governance
 
-### Understanding Copilot Coding Agent
+### Understanding Copilot Cloud Agent
 
-Copilot coding agent is an autonomous AI capability that can make code changes, create pull requests, and implement features with minimal human intervention. Due to its autonomous nature, it requires careful governance.
+Copilot cloud agent (formerly "Copilot coding agent") is an autonomous AI capability that runs in GitHub Actions-powered ephemeral environments. It can research a repository, create implementation plans, make code changes on a branch, run tests and linters, and create pull requests — all with minimal human intervention. Due to its autonomous nature, it requires careful governance.
 
-> **⚠️ Security Consideration**: Copilot coding agent operates with repository permissions and can create commits, branches, and pull requests. Organizations should carefully evaluate the security implications before enabling.
+Cloud agent can be triggered via GitHub Issues (assign to `@copilot`), the agents panel on GitHub.com, Copilot Chat, GitHub CLI, or integrated tools (Slack, Teams, Jira, Linear, Azure Boards). Organizations can also create **custom agents** — specialized Copilot instances tailored for specific task types (e.g., frontend, documentation, testing).
 
-### Coding Agent Security Controls
+> **⚠️ Security Consideration**: Copilot cloud agent operates with repository permissions and can create commits, branches, and pull requests. It uses GitHub Actions minutes and Copilot premium requests from monthly allowances. Organizations should carefully evaluate the security implications before enabling.
+
+### Cloud Agent Security Controls
 
 | Control | Recommendation | Rationale |
 |---------|----------------|----------|
 | **Enterprise Policy** | **Disabled** or **No Policy** | Allow organizations to evaluate readiness |
-| **Branch Protection** | **Required** | Ensure all agent-created PRs go through review |
+| **Rulesets** | **Required** | Ensure all agent-created PRs go through review via repository rulesets |
 | **Required Reviews** | **Minimum 2 reviewers** | Human oversight for autonomous changes |
 | **Status Checks** | **Required** | Ensure CI/CD validation of agent changes |
 | **CODEOWNERS** | **Configured** | Domain experts must review changes |
+| **Repository Opt-out** | **Available** | Repository owners can disable cloud agent per-repo |
 
-### When to Enable Coding Agent
+### When to Enable Cloud Agent
 
-Consider enabling Copilot coding agent when:
-- Strong branch protection and review processes are in place
+Consider enabling Copilot cloud agent when:
+- Strong rulesets and review processes are in place
 - Teams have experience with Copilot and understand its limitations
 - Repositories have comprehensive test coverage
 - Clear guidelines exist for acceptable agent use cases
 
-### When to Keep Coding Agent Disabled
+### When to Keep Cloud Agent Disabled
 
-Keep coding agent disabled when:
+Keep cloud agent disabled when:
 - Repositories contain highly sensitive or regulated code
 - Content exclusions are critical for compliance
 - Teams lack experience with Copilot
 - Review and testing processes are not mature
+
+### MCP (Model Context Protocol) Governance
+
+The **Model Context Protocol (MCP)** is the primary extensibility mechanism for Copilot, replacing the earlier "Copilot Extensions" concept. MCP defines how applications share context with LLMs and works across all Copilot surfaces (IDEs, CLI, GitHub.com, cloud agent).
+
+**Key MCP governance controls:**
+- **Enterprise policy:** "MCP servers in Copilot" toggle (AI Controls → MCP) — disabled by default for Business/Enterprise
+- **Visual Studio admin:** MCP server allowlist — only approved servers can connect
+- **GitHub MCP Server:** Official server that automates code-related tasks and connects third-party tools
+- **GitHub MCP Registry** (public preview): Curated list of partner and community MCP servers at github.com/mcp
+
+> **Note:** The MCP policy does NOT control access to the GitHub MCP server from third-party hosts (Cursor, Windsurf, Claude Desktop). Separate governance documentation exists in the `github/github-mcp-server` repository.
 
 ## Audit and Compliance
 
@@ -910,7 +929,7 @@ This document is part of the GitHub Enterprise Cloud Administration series:
 
 - [Enterprise Hierarchy](01-enterprise-hierarchy.md) - GHEC structure and multi-org management
 - [Policy Inheritance](06-policy-inheritance.md) - Enterprise → Org → Repo policy enforcement
-- [Security & Compliance](08-security-compliance.md) - GHAS, code scanning, audit logs
+- [Security & Compliance](08-security-compliance.md) - GitHub Secret Protection and Code Security (GHAS), code scanning, audit logs
 - [Security-by-Default Policies](11-security-by-default-policies.md) - Comprehensive security settings recommendations
 
 ## References

@@ -194,7 +194,7 @@ Team sync enables automatic team membership management through IdP groups, ensur
 
 ```mermaid
 sequenceDiagram
-    participant IdP as Identity Provider<br/>(Azure AD/Okta)
+    participant IdP as Identity Provider<br/>(Entra ID/Okta)
     participant SCIM as SCIM Bridge
     participant GH as GitHub Enterprise
     participant Team as GitHub Team
@@ -642,7 +642,7 @@ excludes:
 curl -X POST \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer <token>" \
-  https://api.github.com/orgs/ORG/custom_roles \
+  https://api.github.com/orgs/ORG/custom-repository-roles \
   -d '{
     "name": "security-reviewer",
     "description": "Security review role",
@@ -1562,7 +1562,7 @@ curl https://api.github.com/scim/v2/organizations/ORG/Users \
 
 ### Compliance and Security Frameworks
 
-- [SOC 2 Controls: Access Management](https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/aicpasoc2report.html)
+- [SOC 2 Controls: Access Management](https://www.aicpa-cima.com/topic/audit-assurance/audit-and-assurance-greater-than-soc-2)
 - [NIST 800-53: Access Control](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final)
 - [ISO 27001: Access Management](https://www.iso.org/isoiec-27001-information-security.html)
 - [CIS Controls: Account Management](https://www.cisecurity.org/controls)

@@ -33,7 +33,7 @@ An enterprise account on GitHub Enterprise Cloud delivers advanced administrativ
 - Dependency management and security advisories
 
 **Advanced Features**
-- GitHub Advanced Security (GHAS) licensing and deployment
+- GitHub Advanced Security (GHAS) — comprising GitHub Secret Protection and GitHub Code Security — licensing and deployment
 - Enterprise Managed Users (EMU) for complete identity control
 - GitHub Connect for hybrid cloud/server environments
 - Premium support with configurable SLA tiers
@@ -128,7 +128,7 @@ The Enterprise Owner role carries the highest level of administrative privileges
 - Set and enforce organization policies across the enterprise
 - Access enterprise audit logs and security reports
 - Configure IP allow lists and security policies
-- Manage GitHub Advanced Security licensing and deployment
+- Manage GitHub Secret Protection and Code Security licensing and deployment
 - Set up required workflows and organization standards
 
 **Use Cases:**
@@ -582,7 +582,7 @@ For long-term retention and advanced analytics, configure audit log streaming:
 3. **Defense in Depth**
    - Layer policies at enterprise and organization levels
    - Use IP allow lists for sensitive organizations
-   - Enable GitHub Advanced Security across repositories
+   - Enable GitHub Secret Protection and Code Security across repositories
    - Implement required workflows for compliance
 
 ### Operational Excellence
@@ -655,6 +655,50 @@ GitHub Connect enables hybrid deployments connecting GitHub Enterprise Server to
 - Hybrid workforce with distributed access needs
 - Air-gapped environments with periodic sync
 
+### Codespaces Administration
+
+GitHub Codespaces provides cloud-based development environments that enterprise admins can govern at the organization level:
+
+**Organization Policies:**
+- **Enable/disable Codespaces** per organization
+- **Machine type restrictions** — limit available machine types (2-core to 32-core) to control costs
+- **Idle timeout** — automatically stop inactive Codespaces (default 30 min, configurable 5 min to 4 hours)
+- **Retention period** — auto-delete stopped Codespaces after a configurable period (default 30 days)
+- **Maximum lifetime** — enforce a maximum time a Codespace can remain active
+
+**Cost Controls:**
+- Set **spending limits** per organization (default $0 — must be explicitly increased)
+- Monitor usage via the **billing dashboard** (compute hours and storage)
+- Use **prebuilds** to reduce Codespace creation time (billed at storage rates, not compute)
+
+**Dev Container Governance:** Standardize development environments using `devcontainer.json` files in repository templates. This ensures all Codespaces include required tools, extensions, and configurations.
+
+> **Note:** Codespaces are not available with Enterprise Managed Users (EMU) enterprises. EMU users must use local development environments or GitHub.dev for lightweight editing.
+
+**Codespaces Secrets Governance:**
+- **Organization secrets** — org owners can create Codespaces secrets shared across all or selected repos. Navigate to **Org Settings → Codespaces → Secrets**.
+- **Repository secrets** — repo admins can create secrets scoped to Codespaces in that repo. Navigate to **Repo Settings → Codespaces → Secrets**.
+- **User secrets** — individual developers manage personal Codespaces secrets in **GitHub Settings → Codespaces → Secrets**. These are _not_ visible to org admins.
+- **Governance recommendation:** Use org-level secrets for shared credentials (database URLs, API keys). Restrict repo-level secrets to repo-specific values. Educate developers that user-level secrets bypass org governance.
+
+**Codespaces Audit Log Events:**
+- Key audit events: `codespaces.create`, `codespaces.delete`, `codespaces.export`, `codespaces.update_settings`
+- Monitor `codespaces.create` events to track usage patterns and identify unauthorized Codespace creation
+- Enterprise audit log aggregates Codespaces events across all orgs
+
+**Prebuild Configuration:**
+- Prebuilds create ready-to-use Codespace images with dependencies pre-installed, reducing startup time from minutes to seconds
+- Configure prebuilds per-repo via `.devcontainer/devcontainer.json` and the repo's Codespaces settings
+- Prebuilds trigger on push to specified branches; can be region-specific
+- **Cost consideration:** Prebuilds consume Actions minutes for builds and storage for cached images
+
+**Port Forwarding Policies:**
+- Org owners can restrict port visibility: private (default), org-visible, or public
+- Enterprise policy can enforce private-only port forwarding for security-sensitive environments
+- Developers can share running services with teammates via org-visible ports
+
+> **Reference:** [Managing Codespaces for your organization](https://docs.github.com/en/codespaces/managing-codespaces-for-your-organization)
+
 ## Migration and Onboarding Strategies
 
 ### Enterprise Onboarding Checklist
@@ -677,7 +721,7 @@ GitHub Connect enables hybrid deployments connecting GitHub Enterprise Server to
 - [ ] Migrate existing organizations (if applicable)
 - [ ] Provision users via SCIM or bulk invite
 - [ ] Transfer repository ownership
-- [ ] Configure GitHub Advanced Security
+- [ ] Configure GitHub Secret Protection and Code Security
 - [ ] Test workflows and integrations
 
 **Phase 4: Enablement (Weeks 9-12)**
@@ -765,4 +809,4 @@ This document is based on official GitHub documentation and resources:
 
 ---
 
-*This document is maintained as part of the GitHub Enterprise Cloud Administration learning path. For questions or contributions, please refer to the repository guidelines.*
+_This document is maintained as part of the GitHub Enterprise Cloud Administration learning path. For questions or contributions, please refer to the repository guidelines._

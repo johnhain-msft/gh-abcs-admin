@@ -221,7 +221,7 @@ GitHub provides two mechanisms for enforcing repository policies: legacy **Branc
 
 3. **Advanced Targeting:**
    - Include/exclude patterns: `main`, `develop`, `release/**`, `~hotfix/*`
-   - Target by repository properties (visibility, template origin)
+   - Target by repository properties (visibility, template origin) — see [Properties-Based Ruleset Targeting](#properties-based-ruleset-targeting) below
    - Default branch vs all branches
    - Tag protection with version patterns (`v*`, `v[0-9].[0-9].[0-9]`)
 
@@ -625,6 +625,42 @@ prod-*          # Production deployments
 - Tag/branch naming conflicts
 - Manual tag creation without CI validation
 
+### Properties-Based Ruleset Targeting
+
+Custom repository properties enable fine-grained ruleset targeting based on metadata rather than naming patterns:
+
+**Define custom properties** at the organization level:
+- Navigate to Organization Settings. Custom properties. New property
+- Examples: `environment` (production, staging, development), `team` (platform, frontend, data), `compliance-level` (high, medium, low)
+
+**Target rulesets by property values:**
+- When creating an org-level ruleset, under "Target repositories," select "Target by property"
+- Configure conditions like: `environment = production AND compliance-level = high`
+- The ruleset automatically applies to all matching repositories — including newly created ones
+
+**Automation:** Properties can be set via the REST API (`PATCH /repos/{owner}/{repo}/properties/values`) or Terraform (`github_repository` resource), enabling automated classification at repository creation time.
+
+**Property types** — choose the right type for your classification needs:
+- **String:** Free-form text — useful for cost centers, Jira project keys, or service names
+- **Single select:** Pick one from a defined list — ideal for `environment` (production, staging, dev) or `compliance-level`
+- **Multi select:** Pick multiple values — useful for `languages`, `frameworks`, or `deployment-targets`
+- **True/false:** Boolean flag — good for `contains-pii`, `internet-facing`, or `soc2-in-scope`
+
+**Enterprise-level properties:** Enterprise owners can define custom properties that apply across all organizations in the enterprise. This ensures consistent classification (e.g., a unified `data-classification` property) without relying on each org admin to create matching properties independently.
+
+**Required vs optional:** Mark a property as required to enforce that every repository in the organization (or enterprise) has a value set. Optional properties are available for teams to fill in at their discretion. Required properties prevent repos from being "unclassified."
+
+**Default values:** Set a default value when defining a property so that newly created repositories automatically inherit a standard classification (e.g., `environment = development`). Teams can override the default as needed.
+
+**Bulk-setting via API:** Use the organization-level properties endpoint to set values across many repositories in a single call:
+```bash
+gh api /orgs/ORG/properties/values -X PATCH -f '{"repository_names":["repo-a","repo-b"],"properties":[{"property_name":"environment","value":"production"}]}'
+```
+
+> **Reference:** [Managing custom properties for repositories](https://docs.github.com/en/organizations/managing-organization-settings/managing-custom-properties-for-repositories-in-your-organization)
+
+This approach scales better than name-based patterns for large organizations where repositories may not follow consistent naming conventions.
+
 ## Push Rulesets and File Path Restrictions
 
 Push rulesets extend governance to file-level granularity, enabling controls based on file paths and content patterns.
@@ -752,7 +788,7 @@ Merge strategies determine how pull requests integrate into target branches, aff
 ### Merge Method Comparison
 
 | Method | History | Bisectable | Use Case |
-|--------|---------|------------|----------|
+| --- | --- | --- | --- |
 | **Merge Commit** | Full PR history preserved | Yes, each commit | Long-lived feature branches, detailed history needed |
 | **Squash and Merge** | Single commit per PR | Yes, by PR | Clean history, work-in-progress commits, GitHub Flow |
 | **Rebase and Merge** | Linear history, all commits | Yes, each commit | Linear history preference, polished commits required |
@@ -853,6 +889,22 @@ ci_status_timeout: 60
 - Emergency hotfixes (with appropriate approvals)
 - Documentation-only changes
 - Automated dependency updates (grouped separately)
+
+**Enabling via rulesets:** The recommended way to enable merge queues is by adding a **"Require merge queue"** rule inside a branch ruleset (repository or org level). This replaces the legacy per-repository merge queue toggle found in branch protection rules and provides the same ruleset benefits — layering, bypass actors, and org-wide application.
+
+**`merge_group` workflow event:** Workflows that validate merge-queue batches should use `on: merge_group` instead of `on: pull_request`. The `merge_group` event runs against the temporary merge group branch (which combines `main` + queued PRs), ensuring CI tests the actual integration result:
+
+```yaml
+on:
+  merge_group:
+    types: [checks_requested]
+```
+
+> **Tip:** If your workflow uses both `pull_request` and `merge_group` triggers, ensure environment and secret access is configured for both event contexts.
+
+**Failure modes and batch bisection:** When a batch of PRs fails CI, GitHub automatically bisects the batch — it removes the likely-failing PR and retries the remaining PRs in a new merge group. Individual PRs that repeatedly fail CI are ejected from the queue entirely, preventing a single broken PR from blocking all other merges.
+
+**Queue depth monitoring:** Monitor merge queue depth and average wait times as operational health signals. Long queues typically indicate that CI is too slow relative to merge velocity, or that too many PRs are landing simultaneously. Consider optimizing CI runtime, increasing batch sizes, or staggering merge windows to reduce queue pressure.
 
 ### Repository Merge Settings
 
@@ -1013,7 +1065,7 @@ Repository transfers change ownership between users or organizations, requiring 
 **Transfer Implications:**
 
 | Aspect | Impact | Mitigation |
-|--------|--------|------------|
+| --- | --- | --- |
 | **URLs** | Redirect created temporarily | Update CI/CD and docs |
 | **Access** | Reset to destination org teams | Pre-configure teams |
 | **Secrets** | Not transferred | Document and recreate |
@@ -1298,7 +1350,7 @@ gh repo list ORGANIZATION --json nameWithOwner --limit 1000 \
 **Compliance Reporting:**
 
 | Control | Requirement | Validation |
-|---------|-------------|------------|
+| --- | --- | --- |
 | **Access Control** | Minimum 2FA for org members | `gh api /orgs/ORG/members?filter=2fa_disabled` |
 | **Code Review** | All changes reviewed | Ruleset enforcement + audit log |
 | **Vulnerability Mgmt** | Dependabot enabled | `gh api /repos/ORG/REPO/vulnerability-alerts` |
@@ -1471,16 +1523,16 @@ gh api \
 ### Official Documentation
 
 - [Repository Settings and Features](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features) - Comprehensive guide to repository configuration options
-- [Managing Branch Protection Rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule) - Legacy branch protection configuration
+- [Managing Branch Protection Rules](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule) - Legacy branch protection configuration
 - [About Repository Rulesets](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) - Modern ruleset capabilities and advantages
 - [Creating Rulesets for Repositories](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository) - Step-by-step ruleset configuration
-- [Managing Code Review Settings](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/about-protected-branches#require-pull-request-reviews-before-merging) - Pull request review requirements
-- [About Code Owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) - CODEOWNERS file syntax and behavior
-- [Managing Merge Queue](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue) - Merge queue configuration and usage
-- [About Commit Signature Verification](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification) - GPG and SSH commit signing
-- [About Tag Protection Rules](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/configuring-tag-protection-rules) - Protecting release tags
-- [Archiving Repositories](https://docs.github.com/en/repositories/archiving-a-github-repository/archiving-repositories) - Repository archival procedures
-- [Transferring a Repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/transferring-a-repository) - Ownership transfer process
+- [Managing Code Review Settings](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/about-protected-branches#require-pull-request-reviews-before-merging) - Pull request review requirements
+- [About Code Owners](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) - CODEOWNERS file syntax and behavior
+- [Managing Merge Queue](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue) - Merge queue configuration and usage
+- [About Commit Signature Verification](https://docs.github.com/en/enterprise-cloud@latest/authentication/managing-commit-signature-verification/about-commit-signature-verification) - GPG and SSH commit signing
+- [About Tag Protection Rules](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/configuring-tag-protection-rules) - Protecting release tags
+- [Archiving Repositories](https://docs.github.com/en/enterprise-cloud@latest/repositories/archiving-a-github-repository/archiving-repositories) - Repository archival procedures
+- [Transferring a Repository](https://docs.github.com/en/enterprise-cloud@latest/repositories/creating-and-managing-repositories/transferring-a-repository) - Ownership transfer process
 
 ### Related Documentation
 
@@ -1490,7 +1542,7 @@ gh api \
 
 ### Additional Resources
 
-- [GitHub Blog: Repository Rulesets GA](https://github.blog/changelog/2023-07-24-github-repository-rules-now-generally-available/) - Announcement and feature overview
+- [GitHub Blog: Repository Rulesets GA](https://github.blog/news-insights/product-news/github-repository-rules-are-now-generally-available/) - Announcement and feature overview
 - [Innersource Commons](https://innersourcecommons.org/) - Patterns and best practices for innersource
 - [Git Flow vs GitHub Flow](https://docs.github.com/en/get-started/quickstart/github-flow) - Branching strategies and merge patterns
 - [Semantic Versioning](https://semver.org/) - Version numbering for tag protection strategies

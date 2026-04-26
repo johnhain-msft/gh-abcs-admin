@@ -1,0 +1,79 @@
+# markdownlint configuration for gh-abcs-admin workshop
+# Tuned for technical workshop content with Mermaid diagrams
+# Repo style: compact formatting without mandatory blank lines around blocks
+
+default: true
+
+# Allow long lines — technical docs and tables often exceed 80 chars
+MD013: false
+
+# Allow multiple H1 headings — migration/assessment docs have multiple top-level sections
+MD025: false
+
+# Allow inline HTML — used for collapsible sections, badges, etc.
+MD033: false
+
+# Allow duplicate headings — different sections reuse "Overview", "Prerequisites", etc.
+MD024:
+  siblings_only: true
+
+# Allow trailing punctuation in headings — question-mark headings in FAQ
+MD026:
+  punctuation: ".,;:!"
+
+# Allow emphasis as heading — some docs use **bold** as pseudo-headings
+MD036: false
+
+# Link fragments — don't enforce case matching for link fragments
+MD051: false
+
+# Allow bare URLs — common in reference sections
+MD034: false
+
+# Fenced code block style — use backticks (consistent with repo)
+MD048:
+  style: "backtick"
+
+# === Repo style: compact formatting ===
+# The existing 18+ docs use a compact style without blank lines around
+# lists, headings, and fences. Enforcing these would flag 1000+ lines
+# across the existing codebase as false positives.
+
+# Blanks around lists — repo style omits these
+MD032: false
+
+# Blanks around headings — repo style omits these
+MD022: false
+
+# Blanks around fences — repo style omits these
+MD031: false
+
+# Blanks around tables — repo style omits these
+MD058: false
+
+# Blanks inside blockquotes — used for multi-paragraph quotes
+MD028: false
+
+# Multiple consecutive blank lines — keep clean formatting
+MD012: true
+
+# Fenced code language — many existing code blocks lack language specifiers
+MD040: false
+
+# Trailing spaces — auto-fixable; kept enabled for clean diffs
+MD009: true
+
+# Ordered list prefix — labs use mixed numbering patterns (1. for sections, sub-items vary)
+MD029: false
+
+# Table column count — some tables use dynamic column structures
+MD056: false
+
+# Files should end with newline — POSIX standard
+MD047: true
+
+# First line should be top-level heading — files with front matter start with ---
+MD041: false
+
+# Spaces inside code spans — used intentionally in some inline code
+MD038: false
