@@ -34,6 +34,9 @@ References:
 11. Open the workflow file [ci.yml](/.github/workflows/ci.yml)
 12. Edit the file and copy the following YAML content at the end of the file:
 ```YAML
+name: CI
+on: workflow_dispatch
+jobs:
   hello_world_job:
     runs-on: ubuntu-latest
     name: A first job to say hello

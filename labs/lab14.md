@@ -169,7 +169,7 @@ Stale branches clutter the repository, confuse contributors, and can accumulate 
 6. Discuss with your group: how would you handle branch cleanup at scale across an organization with hundreds of repositories? Consider writing a script using the `gh` CLI to audit branch counts across all org repos:
 
    ```bash
-   gh repo list YOUR-ORG --limit 50 --json name --jq '.[].name' | while read repo; do
+   gh repo list YOUR-ORG --limit 50 --json name --jq '.[].name' | while read -r repo; do
      count=$(gh api "/repos/YOUR-ORG/$repo/branches" --paginate --jq '.[].name' 2>/dev/null | wc -l)
      echo "$repo: $count branches"
    done
