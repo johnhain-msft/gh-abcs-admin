@@ -319,7 +319,7 @@ As documented on 2026-10-02, enterprise teams don't support:
 
 - **Drive membership from the IdP where you can.** With EMU, an IdP-synced team turns joiner, mover and leaver events into access, licensing and cost center changes without manual steps.
 - **Keep privileged teams small.** Model access and managed settings combine to the least restrictive value across a user's teams, so one permissive team widens access for everyone in it.
-- **Name teams for their purpose.** The name becomes the `ent:` slug that users type in mentions and that `team-mappings.json` references.
+- **Name teams for their purpose.** The name becomes the `ent:` slug that users type in mentions. Managed-settings team overrides also reference teams by slug in `team-mappings.json`; the docs don't settle whether that file needs the `ent:` prefix (see [Enterprise Managed Settings](29-enterprise-managed-settings.md#troubleshooting)).
 - **Plan organization access with licensing in mind.** Organization access adds members without an invitation and can turn outside collaborators into licensed enterprise members.
 - **Retire duplicate organization teams gradually.** Move reviewer routing and bypass lists to the enterprise team first, then remove the duplicated organization teams that no longer hold CODEOWNERS or nested-team roles.
 

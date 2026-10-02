@@ -2,7 +2,7 @@
 In this lab you will create your enterprise's Copilot governance repository, add a `copilot/managed-settings.json` file that blocks bypass ("allow all") mode, check it with the in-product validator, give one enterprise team an exception, and confirm enforcement in Copilot CLI and VS Code.
 > Duration: 20-30 minutes
 
-> **Prerequisites:** Enterprise owner access to a **training** GitHub Enterprise Cloud enterprise that assigns Copilot Business or Copilot Enterprise licenses through the enterprise or its organizations, plus a test user who holds one of those licenses. Section 17.5 needs Copilot CLI or VS Code 1.122 or later, signed in as that test user. Section 17.6 needs an enterprise team named `ai-pioneers` that contains the test user (see [Lab 16](lab16.md)).
+> **Prerequisites:** Enterprise owner access to a **training** GitHub Enterprise Cloud enterprise that assigns Copilot Business or Copilot Enterprise licenses through the enterprise or its organizations, plus a test user who holds one of those licenses. Section 17.5 needs Copilot CLI or VS Code 1.122 or later, signed in as that test user. Section 17.6 needs an enterprise team named `ai-pioneers` that contains the test user: create it with the steps in [Lab 16](lab16.md), section 16.2, using that name, and keep it until you finish this lab.
 
 > **Environment note:** This is an optional extension lab; it isn't part of the timed agenda. The hands-on steps need **enterprise owner** access. Participants with organization admin access only can follow the collapsible **Organization admin path** in each section: they draft and review the same files in a scratch repository and can test file-based delivery on a workstation where they have administrator rights.
 
@@ -239,6 +239,7 @@ Let the `ai-pioneers` enterprise team manage bypass mode themselves while everyo
    - **Expected result:** the pull request shows three changed files.
 4. Merge the pull request, then reload **AI Controls** → **Agents**.
    - **Expected result:** no **Copilot settings validation** section. If one appears, it names the file and JSON path to fix; check the team slug first.
+   - **If the override doesn't apply:** the docs example uses the bare slug (`ai-pioneers`), but the enterprise teams REST API reports slugs with an `ent:` prefix (`ent:ai-pioneers`), and the docs don't say which form `team-mappings.json` needs. Try the other form and check the validation section again.
 5. As a member of `ai-pioneers`, restart Copilot CLI and type `/allow-all`.
    - **Expected result:** allow-all mode can be turned on, because the team value `unmanaged` removes the enterprise control for that team. If you have a second licensed test user outside the team, `/allow-all` stays blocked for them.
 6. Discuss with your table: a user who belongs to `ai-pioneers` and to a second mapped team whose file keeps `"disable"` gets the **least restrictive** value. What does that mean for how you design exception teams?

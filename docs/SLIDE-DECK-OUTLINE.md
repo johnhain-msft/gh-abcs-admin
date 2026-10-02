@@ -141,7 +141,7 @@ This outline provides the structure for creating a slide deck for the GitHub Adm
 
 **Slide 4: Budgets and Alerts**
 - Key Visual: Budget configuration flow (scope → type → threshold → notification)
-- Speaker Notes: Budgets can be scoped to the enterprise, an organization, a cost center or a repository, and for Copilot AI Credits also to users (universal, cost center user-level, individual; most specific wins). Threshold alerts are opt-in per budget and fire at 75%, 90% and 100%. Metered products (Actions, Packages, Copilot AI Credits) can stop usage at the limit; since 2026-05-28, GHAS budgets can be hard limits in license count; Copilot seat budgets only alert.
+- Speaker Notes: Budgets can be scoped to the enterprise, an organization, a cost center or a repository, and for Copilot's GitHub AI Credits also to users (universal, cost center user-level, individual; most specific wins). Threshold alerts are opt-in per budget and fire at 75%, 90% and 100%. Metered products (Actions, Packages, Copilot AI Credits) can stop usage at the limit; since 2026-05-28, GHAS budgets can be hard limits in license count; Copilot seat budgets only alert.
 
 **Slide 5: Tracking Copilot Costs via Cost Centers**
 - Key Visual: Copilot AI Credits usage breakdown by cost center

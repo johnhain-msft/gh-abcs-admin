@@ -45,7 +45,7 @@ Secret scanning is part of **GitHub Secret Protection** ($19/active committer/mo
 
 > **Note:** On public repositories, secret scanning (partner alerts) and push protection for users are free. The paid GitHub Secret Protection license adds push protection for the organization, AI-detected secrets, validity checks, and generic patterns. (On 2026-07-10 GitHub renamed the detector types: "non-provider patterns" became **Generic patterns** and "Copilot secret scanning" became **AI-detected secrets**; detection didn't change.)
 
-> **Merge protection (public preview since 2026-09-09):** Push protection stops a secret at the push. The ruleset rule **Require secret scanning alerts are resolved** adds a check at the pull request: it blocks merging until a secret scan has finished on the head commit and no alerts remain open for secrets the pull request introduced (provider, custom and generic patterns; not AI-detected secrets). Add it to a branch ruleset under **Settings** → **Rules** → **Rulesets** — useful for secret types you choose not to block at push time.
+> **Merge protection (public preview since 2026-09-09):** Push protection stops a secret at the push. The ruleset rule **Require secret scanning alerts are resolved** adds a check at the pull request: it blocks merging until a secret scan has finished on the head commit and no alerts remain open for secrets the pull request introduced (provider, custom and generic patterns; not AI-detected secrets). Add it to a branch ruleset under **Settings** → **Rulesets** → **Rulesets** — useful for secret types you choose not to block at push time.
 
 ## 7.2 Test push protection
 

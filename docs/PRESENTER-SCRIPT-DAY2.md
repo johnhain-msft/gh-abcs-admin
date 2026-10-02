@@ -66,7 +66,7 @@
 
 "Today we're shifting focus from the organizational level down to the **repository level**. We're going to cover repository governance — how you control what happens inside your repos. We'll do a deep dive into rulesets, which are the modern replacement for branch protection rules. We'll look at GitHub's security scanning features. And then we'll get into the API, automation, and how to manage GitHub at scale with scripts and tooling."
 
-"We have eleven labs to demo today — combined with yesterday's four, that covers all fifteen labs across the workshop. I'll be doing live demos of each one so we can discuss the steps together as a group. By the end of today, you should feel confident understanding how to configure repository settings, protecting branches with rulesets, enabling security scanning across your org, and automating admin tasks with the GitHub API and CLI."
+"We have eleven labs to demo today — combined with yesterday's four, that covers Labs 1 to 15. Labs 16 to 18 are self-paced extensions you can work through after the workshop. I'll be doing live demos of each one so we can discuss the steps together as a group. By the end of today, you should feel confident understanding how to configure repository settings, protecting branches with rulesets, enabling security scanning across your org, and automating admin tasks with the GitHub API and CLI."
 
 "Any questions before we dive in? Great — let's get started."
 
@@ -1215,7 +1215,7 @@
 
 > **🖥️ Main PowerPoint — Slide 70: Q&A**
 
-"Before I share next steps, let me pause for any questions. We covered a lot today — repository governance, rulesets, security scanning, push protection, GHAS cost optimization, the API and authentication methods, Actions, automation, and more. We went through eleven live demos together, bringing our total across both days to all fifteen labs."
+"Before I share next steps, let me pause for any questions. We covered a lot today — repository governance, rulesets, security scanning, push protection, GHAS cost optimization, the API and authentication methods, Actions, automation, and more. We went through eleven live demos together, bringing our total across both days to fifteen labs, and Labs 16 to 18 are there for you as self-paced extensions."
 
 "Any questions about anything we covered today or yesterday?"
 

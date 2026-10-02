@@ -1211,7 +1211,7 @@ Understanding policy inheritance requires familiarity with the broader GitHub En
 - [Managing Organization Settings](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings) - Organization-level policy configuration
 - [Managing Security Settings for Your Organization](https://docs.github.com/en/enterprise-cloud@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization) - Organization security policies
 - [Organization Base Permissions](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/setting-base-permissions-for-an-organization) - Default access controls
-- [Managing Issue Fields in Your Organization](https://docs.github.com/en/enterprise-cloud@latest/issues/tracking-your-work-with-issues/using-issues/managing-issue-fields-in-an-organization) - Organization-level issue metadata, visibility and limits
+- [Managing Issue Fields in Your Organization](https://docs.github.com/en/enterprise-cloud@latest/issues/tracking-your-work-with-issues/using-issues/managing-issue-fields-in-your-organization) - Organization-level issue metadata, visibility and limits
 
 **Audit and Compliance**
 - [Reviewing Audit Logs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/about-the-audit-log-for-your-enterprise) - Audit log structure and querying
