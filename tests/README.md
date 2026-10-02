@@ -136,14 +136,25 @@ npm test -- --skip-links --fail-fast
 
 1. Add the rule to `DEPRECATED_PATTERNS` in `tests/validate-freshness.js`: a unique `id`, a global (`/g`) `pattern`, a
    `message` and a `severity` (`error` fails the run, `warn` only reports). Optional `files` (path RegExp) limits the
-   rule to some files; optional `unless` (RegExp) ignores a match when its line matches.
+   rule to some files; optional `unless` (RegExp) ignores a match when its clause matches. A clause is the sentence,
+   table cell or semicolon-separated part around the match. A rule about a claim that went stale on a known date
+   also gets `since: 'YYYY-MM-DD'`. That turns on the shared corrective filter, which ignores a match when its clause
+   is a question, when the clause dates it ("until" or "before" any date, "since" or "from" a date on or after
+   `since`), or when a history word is attached to it ("was", "no longer", "previously 250", "replaced GPT-4.1 as").
 2. Add an entry with the same id to `FIXTURES` in `tests/unit/freshness-rules.test.js`: at least one positive fixture
    (the stale sentence) and negative fixtures for the corrected sentence and every known false-positive trap. The
-   unit tests fail if a rule has no fixtures. Guard the claim, not one sentence: add realistic rewordings as positives
-   (contractions such as "don't", synonyms, the number next to its noun), keep matches within one sentence, and keep
-   `unless` filters word-bounded (`\bended\b`, not `ended`) so they can't fire inside another word. `unless` and `files`
-   must not use the `g` flag; the unit tests check this.
+   unit tests fail if a rule has no fixtures. A regex rule catches likely phrasings of a claim, not every possible
+   one, so add realistic rewordings as positives (contractions such as "don't", synonyms, table rows, the number
+   next to its noun) and correct sentences on the same topic as negatives, especially corrective wording such as
+   "From 2026-10-22, X is no longer Y". Build windows from the `S` and `T` blocks so a match stays inside one clause,
+   and keep `unless` filters word-bounded (`\bended\b`, not `ended`) so they can't fire inside another word.
+   `unless` and `files` must not use the `g` flag; the unit tests check this.
 3. Run `npm run test:unit`, then `npm run test:freshness`.
+
+A rule sees one clause, so a qualifier in an earlier sentence doesn't count: after a sentence about annual Pro and
+Pro+ plans, "For example, a 1x model draws down 0.9 premium requests." is flagged, and "On annual Pro and Pro+ plans,
+a 1x model draws down 0.9 premium requests." is not. If a correct sentence is flagged, first check that its scope is
+in the same sentence.
 
 ### Adding words to the spelling dictionary
 

@@ -474,8 +474,9 @@ for (const [id, extra] of Object.entries(REWORDINGS)) {
   FIXTURES[id].negative.push(...(extra.negative || []));
 }
 
-// The judge's probe sentences (all 26 rewordings and the 6 exception-pattern bypasses, verbatim) plus the
-// false-positive traps it named. Each bypass shows an `unless` filter matching inside an unrelated word.
+// The judge's first-round probe sentences: all 26 rewordings and the 6 exception-pattern bypasses, plus the
+// false-positive traps it named. Each bypass was an `unless` filter that let a stale sentence through: two by matching
+// inside an unrelated word, the others by matching a keyword elsewhere on the line. #24 is reworded (see its note).
 const JUDGE_PROBES = {
   'copilot-unconfigured-means-disabled': {
     positive: [
@@ -596,16 +597,478 @@ const REAL_NEGATIVES = {
   ],
   'code-quality-in-ghas-policy': [
     '| **GitHub Code Quality** (separate product, not part of GHAS) | **Allow for selected organizations** | Billed separately since 2026-07-20; allow it where the cost is budgeted - See note | ☐ |',
-    "Code Quality isn't part of GHAS."
+    "Code Quality isn't part of GHAS.",
+    // docs/08: the negation comes before "GHAS"
+    "> **Not part of GHAS:** GitHub Code Quality (GA 2026-07-20) is a separate paid product: $10 per active committer per month, plus AI Credits for its AI-powered detection and autofix and Actions minutes for its CodeQL scans. It has its own license count and its own enterprise policy (enterprise **Policies → Code Quality**); the Advanced Security policies don't control it."
   ],
   'ghas-budgets-alert-only': [
     "GHAS budgets don't stop GHAS on repositories where it's already enabled."
+  ],
+  'copilot-premium-requests-billing': [
+    // docs/19: the legacy endpoints are still documented; the date that scopes them is in the next sentence
+    'The `premium_request/usage` endpoints at the same levels are still documented. They report premium-request usage, which for Copilot Business and Enterprise means usage before 2026-06-01.'
   ]
 };
 
 for (const [id, lines] of Object.entries(REAL_NEGATIVES)) {
   if (!FIXTURES[id]) throw new Error(`REAL_NEGATIVES names unknown rule ${id}`);
   FIXTURES[id].negative.push(...lines);
+}
+
+// The judge's delta re-review (2026-10-02), verbatim: 57 rewordings written to avoid each pattern's wording, 3 cases
+// where a dot inside a domain or version number must not end the sentence, and 45 correct sentences, many of them
+// corrective wording, that must not fail CI. Its 4 exception bypasses are among the rewordings. Left out: the 2
+// sentences it found ambiguous against the docs, and "Export your apps before the GitHub Spark shutdown." (moot since
+// 2026-08-31).
+const JUDGE_ROUND2 = {
+  'copilot-unconfigured-means-disabled': {
+    positive: [
+      'Copilot treats unconfigured policies as disabled.',
+      'If you leave a policy unconfigured, the feature stays off.',
+      'Leaving a policy unconfigured disables it.',
+      'Unconfigured policies behave like Disabled.',
+      "Policies you haven't configured are disabled.",
+      'An unconfigured policy keeps the feature turned off.',
+      'Unconfigured policies on GitHub.com are disabled.'
+    ],
+    negative: [
+      'Unconfigured preview features are off until you opt in.',
+      'With the Default policy for new features set to Disabled, unconfigured features are disabled.',
+      'Copilot Memory is in public preview, so an unconfigured Memory policy is off.',
+      'From 2026-10-22, unconfigured features are enabled by default.',
+      'Unconfigured is a third state, distinct from Enabled and Disabled.'
+    ]
+  },
+  'copilot-mcp-disabled-by-default': {
+    positive: [
+      "MCP servers aren't enabled by default.",
+      'MCP access is opt-in for Copilot Business and Enterprise.',
+      'The MCP servers in Copilot policy defaults to Disabled.',
+      'Admins must enable the MCP servers in Copilot policy before developers can use MCP.',
+      "By default, Copilot can't use MCP servers.",
+      '| MCP servers in Copilot | Disabled (default) |',
+      'MCP servers in VS Code 1.122 are disabled by default.'
+    ],
+    negative: [
+      'From 2026-10-22, MCP servers are no longer off by default.',
+      "MCP isn't disabled by default from 2026-10-22.",
+      'Is MCP disabled by default? Not from 2026-10-22: an Unconfigured policy follows the Default policy for new features.',
+      'Copilot Memory is off by default; MCP servers follow the Default policy for new features from 2026-10-22.',
+      'Until 2026-10-22, the MCP servers in Copilot policy is off by default.'
+    ]
+  },
+  'copilot-premium-requests-billing': {
+    positive: [
+      'Each Copilot Business user gets 300 premium model requests a month.',
+      'Claude Opus uses a 10x request multiplier.',
+      'Business users get a monthly allowance of 300 requests to premium models.',
+      'Usage beyond the allowance is billed at $0.04 per request.'
+    ],
+    negative: [
+      'Copilot Pro and Pro+ subscribers on an annual plan keep premium requests until renewal.',
+      'Since 2026-06-01, premium requests no longer apply to Copilot Business.',
+      'Premium requests were replaced by GitHub AI Credits on 2026-06-01.',
+      'Historical usage reports still list the premium request SKUs.',
+      'Copilot Business usage was billed in premium requests until June 2026.'
+    ]
+  },
+  'ghas-budgets-alert-only': {
+    positive: [
+      "GHAS spending can't be limited with a budget.",
+      'A budget on Advanced Security only triggers email notifications.',
+      'There is no hard limit for GHAS budgets.'
+    ],
+    negative: [
+      "GHAS budgets can't stop usage on repositories where GHAS is already enabled.",
+      "Without the limit option, GHAS budgets don't block usage.",
+      "Even with a hard limit, GHAS budgets don't cap spend exactly: new committers in enabled repositories are still billed."
+    ]
+  },
+  'cost-center-limit': {
+    positive: [
+      'Up to 500 cost centers per enterprise, up from 250.',
+      'Up to 250 cost centers per enterprise (previously 100).',
+      'Cost centers: up to 250 per enterprise.',
+      '| Cost centers | 250 per enterprise |'
+    ],
+    negative: [
+      'An enterprise with 500 cost centers should manage them through the REST API.',
+      'In this example, 100 cost centers map to 100 product teams.',
+      'The 2026-06-10 post raised the limit to 500 cost centers; the 2026-06-26 post raised it to 1,000.'
+    ]
+  },
+  'copilot-default-model-gpt-4o': {
+    positive: [
+      'Copilot Business uses GPT-4o by default.',
+      'The fallback model is GPT-4.1.',
+      'When no model is selected, Copilot uses GPT-4o.',
+      'GPT-4o is the default model, replacing GPT-3.5 Turbo.'
+    ],
+    negative: [
+      'GPT-4o is no longer the default model.',
+      "GPT-4.1 isn't the base model anymore; GPT-5.3-Codex is, since 2026-05-17."
+    ]
+  },
+  'ssh-rsa-2048-minimum': {
+    positive: [
+      'RSA keys need at least 2048 bits; 3072 bits or more is recommended.',
+      'Use ssh-keygen -t rsa -b 2048 to create the key.',
+      'RSA keys shorter than 2048 bits are rejected.'
+    ],
+    negative: [
+      'Existing 2048-bit RSA keys keep working after 2026-10-14.',
+      "GitHub doesn't revoke existing 2048-bit RSA keys.",
+      // Not about SSH: an RSA + 2048 sentence in another context
+      'Entra ID signs SAML responses with a 2048-bit RSA certificate.'
+    ]
+  },
+  'checks-retained-400-days': {
+    positive: [
+      'GitHub keeps CI results for 400 days.',
+      'Run history stays for 400 days regardless of your retention setting.',
+      'Statuses from third-party CI are kept for 400 days.'
+    ],
+    negative: [
+      'Checks, workflow runs and statuses follow the retention setting, which can be up to 400 days for private repositories.',
+      'Since 2026-10-01, checks are no longer kept for 400 days.'
+    ]
+  },
+  'content-exclusions-not-in-cli': {
+    positive: [
+      'Content exclusions have no effect in Copilot CLI.',
+      'Excluded files are still visible to Copilot CLI.',
+      'Content exclusions are not available for Copilot CLI.',
+      'Content exclusions only work in the IDE and on GitHub.com, not in the CLI.',
+      'Copilot CLI 1.0 ignores content exclusions.'
+    ],
+    negative: [
+      "Content exclusions aren't supported in Edit and Agent modes, but they do apply in Copilot CLI since 2026-09-02.",
+      'Content exclusions do not apply to agent mode; Copilot CLI has respected them since 2026-09-02.'
+    ]
+  },
+  'github-apps-no-enterprise-access': {
+    positive: [
+      'GitHub Apps are limited to organizations and repositories.',
+      'Only OAuth apps and PATs can call enterprise APIs.',
+      "Enterprise automation needs an OAuth App because GitHub Apps can't be installed at the enterprise level."
+    ],
+    negative: [
+      "Private GitHub Apps owned outside your enterprise can't be installed on the enterprise.",
+      "Third-party apps with the Enterprise organization installations permission can't be installed on an enterprise they don't belong to.",
+      "A GitHub App installed on an organization can't access the enterprise account."
+    ]
+  },
+  'oauth-tokens-until-revoked': {
+    positive: [
+      'OAuth tokens remain valid until someone revokes them.',
+      "An OAuth token works until it's revoked.",
+      'OAuth app tokens have no expiration.'
+    ],
+    negative: [
+      'OAuth tokens stay valid until revoked unless the app opts in to expiring tokens.'
+    ]
+  },
+  'security-tab-renamed': {
+    positive: [
+      'Navigate to **Security** → **Advisories**.',
+      'Navigate to Security → Campaigns.',
+      'Select Security in the repository navigation bar, then Code scanning.'
+    ],
+    negative: [
+      'On GHES, open the Security tab to review alerts.',
+      'On GitHub Enterprise Server, the Security tab keeps its name.',
+      'Since 2026-04-02, the Security tab is called **Security & quality** on GitHub.com.',
+      "Turn it on from the enterprise's Authentication security page."
+    ]
+  },
+  'copilot-no-retention-absolute': {
+    positive: [
+      "GitHub doesn't keep any of your prompts.",
+      "Prompts aren't stored by Copilot Business.",
+      'Your code is never retained.',
+      "Copilot doesn't save prompts."
+    ],
+    negative: [
+      'Prompts and suggestions from Copilot Chat on GitHub.com are deleted after 28 days.',
+      "Anthropic doesn't retain prompts for Claude models other than Fable 5 and 5.1.",
+      "Kimi K3 runs under a zero data retention agreement, so Fireworks AI doesn't store prompts."
+    ]
+  },
+  'code-quality-in-ghas-policy': {
+    positive: [
+      'GHAS comes with Code Quality.',
+      'Code Quality is part of the GHAS license.',
+      'Code Quality is a GHAS feature.',
+      'GitHub Advanced Security: Secret Protection, Code Security and Code Quality.'
+    ],
+    negative: [
+      'GHAS includes Secret Protection and Code Security; Code Quality is a separate product.',
+      'GitHub Advanced Security includes Secret Protection and Code Security, but not Code Quality.'
+    ]
+  },
+  'github-spark-retired': {
+    positive: [
+      'Spark is included in Copilot Pro+.',
+      'Copilot Pro+ comes with Spark.',
+      '| Spark | ✓ |'
+    ],
+    negative: [
+      'GitHub Spark was discontinued on github.com in August 2026.'
+    ]
+  },
+  'support-portal-url': {
+    negative: [
+      "Accounts that haven't moved yet still use support.github.com."
+    ]
+  }
+};
+
+for (const [id, extra] of Object.entries(JUDGE_ROUND2)) {
+  if (!FIXTURES[id]) throw new Error(`JUDGE_ROUND2 names unknown rule ${id}`);
+  FIXTURES[id].positive.push(...(extra.positive || []));
+  FIXTURES[id].negative.push(...(extra.negative || []));
+}
+
+// Held out from the probes above. Negatives: correct sentences from the changelog corpus and the requirements
+// document, written after each change. Positives: a history word elsewhere in the sentence must not rescue a stale
+// claim; it has to be attached to the claim.
+const HELD_OUT = {
+  'github-spark-retired': {
+    negative: ['- Existing apps you’ve already deployed will continue to work after GitHub Spark shuts down.']
+  },
+  'support-portal-url': {
+    negative: [
+      'If you don’t have access yet, support.github.com will continue to work as expected.',
+      'support.github.com keeps working until access arrives.'
+    ]
+  },
+  'checks-retained-400-days': {
+    negative: ['Starting October 1, 2026, checks, workflow runs, and statuses will be governed by the same Actions retention setting that already controls how long artifacts and logs are kept, with a default of 90 days. Until now, checks, workflow runs, and statuses were retained for 400+ days regardless of your retention configuration.']
+  },
+  'cost-center-limit': {
+    negative: ['  - The per-enterprise cost center limit doubled from 250 to 500 for GitHub Enterprise Cloud, applied automatically (raised again to 1,000 on 2026-06-26).']
+  },
+  'copilot-no-retention-absolute': {
+    // Data residency, not Copilot retention
+    negative: ['Data is not stored outside the region you choose.']
+  },
+  'copilot-premium-requests-billing': {
+    positive: [
+      'Copilot cloud agent (formerly coding agent) consumes premium requests.',
+      // Verbatim stale lines from docs/19 at 787ebb6: the old SKU ids presented as current
+      '| `copilot_premium_request` | Chat, CLI, Code Review, Extensions, Spaces |',
+      "  -f sku='copilot_premium_request' \\",
+      // tests/README.md example: a scope in an earlier sentence doesn't count
+      'For example, a 1x model draws down 0.9 premium requests.'
+    ],
+    negative: [
+      'GitHub AI Credits (formerly premium requests) are pooled across the enterprise.',
+      // 2026-07-01 post; "these subscribers" are the annual Pro/Pro+ plans named in the sentence before
+      'For these subscribers, auto is billed in premium requests and the 10% discount applies to the model multiplier.',
+      // tests/README.md example: the scope has to be in the same sentence
+      'On annual Pro and Pro+ plans, a 1x model draws down 0.9 premium requests.'
+    ]
+  },
+  'copilot-unconfigured-means-disabled': {
+    positive: ['If a policy was left unconfigured, it is treated as disabled.'],
+    negative: [
+      // 2026-09-24 post
+      '- Eligible generally available features and capabilities left **Unconfigured** will follow your selected global default of enabled, disabled, or let organizations decide.',
+      // Requirements document: describes the assumption, doesn't make it
+      "Enterprises that rely on 'Unconfigured' behaving as off must set the policy to Disabled or configure each feature explicitly before then."
+    ]
+  },
+  'copilot-mcp-disabled-by-default': {
+    // Bold markers between the negation and the state
+    positive: ['MCP servers are not **enabled** by default.'],
+    negative: ['MCP servers are not **disabled** by default from 2026-10-22.']
+  },
+  'copilot-default-model-gpt-4o': {
+    positive: ['GPT-4o is the default model, which was chosen for stability.'],
+    // Requirements document: "the base-model post" names a post, not the base model
+    negative: ['- Context from the May 17 base-model post: GPT-4.1 stays force-enabled at a 0x multiplier until it deprecates alongside the launch of usage-based billing on June 1, 2026.']
+  }
+};
+
+for (const [id, extra] of Object.entries(HELD_OUT)) {
+  if (!FIXTURES[id]) throw new Error(`HELD_OUT names unknown rule ${id}`);
+  FIXTURES[id].positive.push(...(extra.positive || []));
+  FIXTURES[id].negative.push(...(extra.negative || []));
+}
+
+// Out of sample: written after the clause-scoped rules passed every fixture above, then run once before any tuning.
+// Measured then: 25 of 32 stale sentences caught, 0 of 32 correct sentences flagged. The 7 misses were then fixed.
+// The two traps at the end were added with those fixes; they are true per the docs.
+const OUT_OF_SAMPLE = {
+  'copilot-unconfigured-means-disabled': {
+    positive: [
+      'Anything you leave unconfigured stays disabled for your organizations.',
+      '| Unconfigured | Off for everyone |'
+    ],
+    negative: [
+      "From 2026-10-22, leaving a feature unconfigured no longer means it's disabled.",
+      'Set the policy to Disabled if you want it off; Unconfigured follows the default policy.'
+    ]
+  },
+  'copilot-mcp-disabled-by-default': {
+    positive: [
+      'MCP server access is turned off by default for Copilot Business.',
+      'Out of the box, MCP is blocked until an enterprise owner allows it.'
+    ],
+    negative: [
+      'Starting 2026-10-22, an Unconfigured MCP policy follows the Default policy for new features, which is Enabled.',
+      'Before 2026-10-22, MCP servers were disabled by default.'
+    ]
+  },
+  'copilot-premium-requests-billing': {
+    positive: [
+      'Copilot Enterprise includes 1,000 premium requests per user per month.',
+      "Track each developer's PRU consumption in the usage dashboard."
+    ],
+    negative: [
+      'Premium requests were retired for Copilot Business on 2026-06-01.',
+      'Since 2026-06-01, overage is billed in GitHub AI Credits, not premium requests.'
+    ]
+  },
+  'ghas-budgets-alert-only': {
+    positive: [
+      'Budgets for GitHub Advanced Security can only warn you; they never stop spending.',
+      "Advanced Security budgets don't enforce a hard limit."
+    ],
+    negative: [
+      'A GHAS budget with Stop usage turned on blocks enabling GHAS on more repositories.',
+      'GHAS budgets were alert-only before 2026-05-28.',
+      "Without the limit option, Advanced Security budgets don't enforce a hard limit."
+    ]
+  },
+  'cost-center-limit': {
+    positive: [
+      'Plan for a maximum of 500 cost centers per enterprise.',
+      'Enterprises are limited to 250 cost centers.'
+    ],
+    negative: [
+      'Since 2026-06-26 an enterprise can have up to 1,000 cost centers.',
+      'We created 250 cost centers for our business units.'
+    ]
+  },
+  'copilot-default-model-gpt-4o': {
+    positive: [
+      'Copilot falls back to GPT-4.1 as its default model.',
+      'Out of the box, Copilot Chat uses GPT-4o as the default.'
+    ],
+    negative: [
+      'On 2026-05-17 GPT-5.3-Codex became the base model, replacing GPT-4.1.',
+      'GPT-4o is still available as a model choice.'
+    ]
+  },
+  'ssh-rsa-2048-minimum': {
+    positive: [
+      'Generate an RSA key of 2048 bits or more.',
+      'The smallest RSA key GitHub accepts is 2048 bits.'
+    ],
+    negative: [
+      'From 2026-10-14, new RSA keys must be at least 3072 bits.',
+      'Your existing 2048-bit RSA key still works.'
+    ]
+  },
+  'checks-retained-400-days': {
+    positive: [
+      'Check suites are kept for 400 days.',
+      'Workflow run history is retained for 400 days.'
+    ],
+    negative: [
+      'Before 2026-10-01, check runs were kept for 400 days.',
+      'You can set Actions retention to up to 400 days in private repositories.'
+    ]
+  },
+  'content-exclusions-not-in-cli': {
+    positive: [
+      "Copilot CLI doesn't honor content exclusions.",
+      'Content exclusions are not enforced when developers use the CLI.'
+    ],
+    negative: [
+      'Since 2026-09-02, Copilot CLI honors content exclusions.',
+      "Content exclusions don't apply in agent mode."
+    ]
+  },
+  'github-apps-no-enterprise-access': {
+    positive: [
+      "You can't install a GitHub App on the enterprise itself.",
+      "Enterprise-level APIs aren't available to GitHub Apps."
+    ],
+    negative: [
+      'Since 2026-08-07, GitHub Apps can be installed on the enterprise account.',
+      "An app installed on the enterprise doesn't get access to its organizations' repositories.",
+      // Enterprise-installed apps can't call every enterprise API yet
+      "Some enterprise APIs aren't available to GitHub Apps yet."
+    ]
+  },
+  'oauth-tokens-until-revoked': {
+    positive: [
+      "OAuth access tokens don't expire.",
+      'Tokens issued to OAuth apps never expire unless revoked.'
+    ],
+    negative: [
+      'OAuth apps can opt in to expiring user tokens.',
+      'Before 2026-08-14, OAuth tokens never expired.'
+    ]
+  },
+  'security-tab-renamed': {
+    positive: [
+      "Open the repository's Security tab and select Dependabot.",
+      'In the org, go to **Security** → **Overview**.'
+    ],
+    negative: [
+      'Open the **Security & quality** tab and select **Findings**.',
+      'On GHES 3.22 the tab is still called Security.'
+    ]
+  },
+  'copilot-no-retention-absolute': {
+    positive: [
+      'Copilot never stores your prompts.',
+      "Your prompts aren't retained by GitHub."
+    ],
+    negative: [
+      'Copilot Chat on GitHub.com keeps prompts for 28 days.',
+      'Data residency keeps your data in the region you choose.'
+    ]
+  },
+  'code-quality-in-ghas-policy': {
+    positive: [
+      'GitHub Code Quality is included in GitHub Advanced Security.',
+      'With GHAS you also get Code Quality.'
+    ],
+    negative: [
+      'Code Quality is licensed separately from GHAS.',
+      'GHAS is sold as Secret Protection and Code Security; Code Quality is not included.'
+    ]
+  },
+  'support-portal-url': {
+    positive: [
+      'Open a ticket at https://support.github.com/contact.',
+      'Use support.github.com for enterprise support.'
+    ],
+    negative: [
+      'Open a ticket at https://help.github.com.',
+      'Until your account moves, support.github.com still works.'
+    ]
+  },
+  'github-spark-retired': {
+    positive: [
+      'Use GitHub Spark to prototype internal tools.',
+      'Copilot Pro+ subscribers get Spark.'
+    ],
+    negative: [
+      'GitHub Spark was retired on 2026-08-31.',
+      'Run batch jobs on Apache Spark.'
+    ]
+  }
+};
+
+for (const [id, extra] of Object.entries(OUT_OF_SAMPLE)) {
+  if (!FIXTURES[id]) throw new Error(`OUT_OF_SAMPLE names unknown rule ${id}`);
+  FIXTURES[id].positive.push(...(extra.positive || []));
+  FIXTURES[id].negative.push(...(extra.negative || []));
 }
 
 function normalizeFixture(fixture) {
@@ -708,4 +1171,71 @@ test('htmlToText keeps speaker notes held in data-notes attributes, on the tag l
   assert.match(text.split('\n')[1], /Pin actions\/checkout@v3 here/);
   const found = scanContent('docs/slides-fixture.html', html).filter(f => f.id === 'checkout-version');
   assert.deepEqual(found.map(f => f.line), [2]);
+});
+
+// ── Clause scoping and the shared corrective filter (P0 rules) ──
+
+function clauseOf(text, needle) {
+  const i = text.indexOf(needle);
+  assert.ok(i >= 0, `fixture error: "${needle}" is not in "${text}"`);
+  const c = freshness.clauseAround(text, i, i + needle.length);
+  return { ...c, text: text.slice(c.start, c.end) };
+}
+
+function corrective(since, clause, match) {
+  const i = clause.indexOf(match);
+  assert.ok(i >= 0, `fixture error: "${match}" is not in "${clause}"`);
+  return freshness.isCorrective(since, clause, i, i + match.length);
+}
+
+test('every P0 rule names the date its claim went stale', () => {
+  for (const rule of DEPRECATED_PATTERNS.filter(r => r.severity === 'error')) {
+    assert.match(rule.since || '', /^\d{4}-\d{2}-\d{2}$/, `${rule.id}: since must be YYYY-MM-DD`);
+  }
+});
+
+test('clauseAround: a dot inside a domain, version or abbreviation does not end the clause', () => {
+  const text = 'Intro. Copilot CLI 1.0 on GitHub.com ignores exclusions, e.g. in agent mode. Next.';
+  assert.equal(clauseOf(text, 'Copilot').text.trim(), 'Copilot CLI 1.0 on GitHub.com ignores exclusions, e.g. in agent mode.');
+});
+
+test('clauseAround: a newline, semicolon or table pipe ends a clause; a match that spans cells keeps them', () => {
+  assert.equal(clauseOf('One clause; another clause\nnext line', 'another').text, ' another clause');
+  assert.equal(clauseOf('| Default model | GPT-4o | Notes |', 'Default model | GPT-4o').text, ' Default model | GPT-4o ');
+  assert.equal(clauseOf('**Done.** Next sentence', 'Next').text, ' Next sentence');
+});
+
+test('clauseAround: reports whether the clause is a question', () => {
+  const text = 'Is MCP disabled by default? Not from 2026-10-22.';
+  assert.equal(clauseOf(text, 'MCP disabled').question, true);
+  assert.equal(clauseOf(text, 'Not from').question, false);
+});
+
+test('isCorrective: a since/from date on or after the change date marks the new state; an earlier one does not', () => {
+  assert.equal(corrective('2026-06-01', 'From 2026-06-01, X applies', 'X applies'), true);
+  assert.equal(corrective('2026-06-01', 'Since 2025-04-01, X applies', 'X applies'), false);
+  assert.equal(corrective('2026-10-01', 'Starting October 1, 2026, X applies', 'X applies'), true);
+  assert.equal(corrective('2026-10-01', 'From 1 October 2026, X applies', 'X applies'), true);
+  // A month without a day counts from the 1st, so it can't cover a change later in that month
+  assert.equal(corrective('2026-06-26', 'Since June 2026, X applies', 'X applies'), false);
+});
+
+test('isCorrective: until, before or prior to a date marks history', () => {
+  assert.equal(corrective('2026-05-28', 'Before 2026-05-28, X applied', 'X applied'), true);
+  assert.equal(corrective('2026-06-01', 'X applied until June 2026', 'X applied'), true);
+  assert.equal(corrective('2026-10-22', 'Prior to **2026-10-22** X applies', 'X applies'), true);
+});
+
+test('isCorrective: a history word counts only when it is attached to the match', () => {
+  assert.equal(corrective('2026-06-26', 'Up to 1,000 (previously 250 cost centers)', '250 cost centers'), true);
+  assert.equal(corrective('2026-06-26', 'Up to 250 cost centers per enterprise (previously 100)', 'Up to 250 cost centers'), false);
+  assert.equal(corrective('2026-06-26', 'Up to 500 cost centers per enterprise, up from 250', 'Up to 500 cost centers'), false);
+  assert.equal(corrective('2026-05-17', 'GPT-5.3-Codex replaced GPT-4.1 as the base model', 'GPT-4.1 as the base model'), true);
+  assert.equal(corrective('2026-05-17', 'GPT-4o is the default model, replacing GPT-3.5 Turbo', 'GPT-4o is the default model'), false);
+  assert.equal(corrective('2026-08-04', 'GitHub Spark was created to help people', 'GitHub Spark'), true);
+  assert.equal(corrective('2026-05-17', 'GPT-4o is the default model, which was chosen', 'GPT-4o is the default model'), false);
+  assert.equal(corrective('2026-10-22', 'MCP servers are no longer off by default', 'MCP servers are no longer off by default'), true);
+  assert.equal(corrective('2026-05-17', "GPT-4.1 isn't the base model anymore", 'GPT-4.1'), true);
+  // Subjunctive, not past tense
+  assert.equal(corrective('2026-08-26', 'Unconfigured, Copilot behaves as if it were Disabled', 'Unconfigured, Copilot behaves as if it were Disabled'), false);
 });
