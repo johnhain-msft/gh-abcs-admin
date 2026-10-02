@@ -107,6 +107,9 @@ The following labs cover VBD topics that were addressed during presentations but
 | Lab 11 | GitHub Apps and Marketplace | 1.8, 2.1 | 15-20 min | Install and configure GitHub Apps |
 | Lab 12 | Deployments and Environments | 2.10 | 20-25 min | Set up deployment environments and protection rules |
 | Lab 14 | Unhealthy Repos | 2.13, 2.14 | 20-25 min | Diagnose and remediate repo health issues |
+| Lab 16 | Enterprise Teams | 2.5, 2.7 | 20-30 min | Create an enterprise team, assign it to an organization, and review the controls it drives |
+| Lab 17 | Enterprise Managed Settings for Copilot | 2.2 | 20-30 min | Block bypass mode with `copilot/managed-settings.json` and give an enterprise team an exception |
+| Lab 18 | Workflow Execution Protections | 2.4 | 20-30 min | Create an Actions policy in evaluate mode and review Policy insights |
 
 ---
 
@@ -134,12 +137,12 @@ The following matrix maps every VBD topic to its coverage across the workshop, i
 | VBD Topic | Description | Day | Slot | Presentation Docs | In-Session Lab | Extension Lab |
 |-----------|-------------|-----|------|--------------------|----------------|---------------|
 | 2.1 | Integrations and authentication | Day 1 | #8 | [IAM](03-identity-access-management.md), [EMU](04-enterprise-managed-users.md) | — | Lab 11 |
-| 2.2 | Enterprise site administration | Day 1 | #3, #5, #6 | [Enterprise Hierarchy](01-enterprise-hierarchy.md), [Policy Inheritance](06-policy-inheritance.md) | Lab 15 | — |
+| 2.2 | Enterprise site administration | Day 1 | #3, #5, #6 | [Enterprise Hierarchy](01-enterprise-hierarchy.md), [Policy Inheritance](06-policy-inheritance.md), [Enterprise Managed Settings](29-enterprise-managed-settings.md) | Lab 15 | Lab 17 |
 | 2.3 | Audit log | Day 1 | #11, #12 | [Audit Log](22-audit-log-deep-dive.md) | Lab 8 | — |
-| 2.4 | Org settings (Actions) | Day 1 | #8 | [Org Strategies](02-organization-strategies.md) | — | Lab 2 |
-| 2.5 | User admin | Day 1 | #9, #10 | [User Admin](21-user-administration.md), [Teams](05-teams-permissions.md) | Lab 9 | — |
+| 2.4 | Org settings (Actions) | Day 1 | #8 | [Org Strategies](02-organization-strategies.md), [Workflow Execution Protections](30-actions-workflow-execution-protections.md) | — | Lab 2, Lab 18 |
+| 2.5 | User admin | Day 1 | #9, #10 | [User Admin](21-user-administration.md), [Teams](05-teams-permissions.md), [Enterprise Teams](28-enterprise-teams.md) | Lab 9 | Lab 16 |
 | 2.6 | Dormant user management | Day 1 | #11 | [User Admin](21-user-administration.md) | — | Lab 10 |
-| 2.7 | Organizations and teams | Day 1 | #9, #10 | [Org Strategies](02-organization-strategies.md), [Teams](05-teams-permissions.md) | Lab 9 | — |
+| 2.7 | Organizations and teams | Day 1 | #9, #10 | [Org Strategies](02-organization-strategies.md), [Teams](05-teams-permissions.md), [Enterprise Teams](28-enterprise-teams.md) | Lab 9 | Lab 16 |
 | 2.8 | GitHub API | Day 2 | #10, #11 | [Scripts](24-scripts-automation.md) | Lab 5 | — |
 | 2.9 | 3rd party integrations | Day 2 | #12 | [Integrations](27-integrations-status-api.md) | — | — |
 | 2.10 | Deployment strategies | Day 2 | #12 | [Deployment](23-deployment-strategies.md) | — | Lab 12 |

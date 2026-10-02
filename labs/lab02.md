@@ -48,6 +48,9 @@ jobs:
       - run: echo random-number ${{ steps.hello-world.outputs.random-number }}
         shell: bash
 ```
+
+> **Note:** From 2026-10-19 to 2026-11-19, the `ubuntu-latest` label moves gradually from Ubuntu 24.04 to Ubuntu 26.04, and some preinstalled tools change. If this workflow behaves differently during that window, pin `runs-on: ubuntu-24.04` to compare.
+
 13. Commit the changes into the `main` branch
 14. Go to `Actions` and see the details of your running workflow
 15. The workflow has the error:
@@ -65,6 +68,8 @@ githubabcs/hello-world-composite-action@v1.0.1
 ```
 
 > **Note:** When allowlisting actions, always pin to a specific version (e.g., `@v1.0.1`) rather than a branch or tag that could change. This prevents supply-chain attacks where a compromised action is updated in place.
+
+> **Note:** `Settings > Actions > General` controls what a workflow may use. Who and which events may *start* a workflow is a separate control: since 2026-09-17, workflow execution protections live in their own `Settings > Actions > Policies` section at repository, organization and enterprise level. Try them in [Lab 18](lab18.md).
 
 ## ✅ Verification Checklist
 

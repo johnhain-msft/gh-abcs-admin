@@ -215,7 +215,9 @@ Required headers:
 |--------|-------|---------|
 | `Authorization` | `Bearer <token>` | Authentication |
 | `Accept` | `application/vnd.github+json` | Response format |
-| `X-GitHub-Api-Version` | `2022-11-28` | API version pinning |
+| `X-GitHub-Api-Version` | `2022-11-28` | API version pinning (see note below) |
+
+> **API versions:** REST API version `2026-03-10` was released on 2026-03-10 and includes breaking changes. Version `2022-11-28`, used in this guide's examples, stays supported until 2028-03-10, and requests that omit the header default to it. Before moving a script to `2026-03-10`, read that version's breaking changes and test the script; after a version's end-of-support date, requests that specify it get `410 Gone`. See [API Versions](https://docs.github.com/en/enterprise-cloud@latest/rest/about-the-rest-api/api-versions).
 
 ### CRUD Operations
 

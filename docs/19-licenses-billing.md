@@ -13,7 +13,7 @@ GitHub Enterprise Cloud (GHEC) billing has undergone a major transformation sinc
 
 Under usage-based billing, enterprises pay monthly for the actual number of licenses consumed, plus metered charges for products like GitHub Actions, Packages, Codespaces, and Copilot usage beyond the included **GitHub AI Credits**, Copilot's billing unit since 2026-06-01. All metered products follow a fixed billing period from the 1st to the last day of each calendar month.
 
-The billing platform supports **budgets and alerts** (including per-user budgets for Copilot), **cost centers** for departmental chargeback, and deep integration with **Azure subscriptions** for unified cloud billing. GitHub Copilot is a multi-tier product line with seven plans, and Advanced Security has been split into two separately licensable SKUs: **Secret Protection** and **Code Security**.
+The billing platform supports **budgets and alerts** (including per-user budgets for Copilot), **cost centers** for departmental chargeback, and deep integration with **Azure subscriptions** for unified cloud billing. GitHub Copilot is a multi-tier product line with seven plans, and Advanced Security has been split into two separately licensable SKUs: **Secret Protection** and **Code Security**. **GitHub Code Quality** is a third separately licensed product since 2026-07-20.
 
 This guide covers the licensing and billing landscape that enterprise administrators must understand to manage costs effectively across their GitHub estate.
 
@@ -134,7 +134,7 @@ GitHub charges for three distinct categories of products:
 | Category | Type | Examples |
 |----------|------|----------|
 | **Plans** | Fixed monthly per-user | GitHub Pro, GitHub Team, GitHub Enterprise Cloud ($21/user/month) |
-| **Subscriptions** | Fixed monthly per-user | GitHub Secret Protection, GitHub Code Security |
+| **Subscriptions** | Fixed monthly per-user | GitHub Secret Protection, GitHub Code Security, GitHub Code Quality (per active committer) |
 | **Metered usage** | Variable / consumption-based | GitHub Actions, Packages, Codespaces, Copilot AI Credits beyond included usage, Git LFS |
 
 ```mermaid
@@ -149,6 +149,7 @@ flowchart TD
     C --> C2[Code Security<br/>$30/committer/month]
     C --> C3[Copilot Business<br/>$19/user/month]
     C --> C4[Copilot Enterprise<br/>$39/user/month]
+    C --> C5[Code Quality<br/>$10/committer/month]
 
     D --> D1[Actions Minutes]
     D --> D2[Packages Storage]
@@ -206,6 +207,7 @@ Understanding billing cycles is important for financial planning:
 - **Adding users/licenses**: Prorated charges for the remaining billing period
 - **Removing users**: Charges continue through the end of the current cycle
 - **Removing organizations/repos**: Charges stop immediately
+- **Copilot Business and Enterprise seats paid by credit card or PayPal**: For new card and PayPal customers, from 2026-09-01 as sign-ups reopen, each new seat must be paid for before the user gets Copilot access, and assigned seats are charged upfront at the start of each billing cycle. Existing card and PayPal customers get these billing changes from 2026-10-01. Seats added mid-cycle are still prorated, and revoking a seat gives no prorated refund. The changelog posts describe card and PayPal payers only.
 
 ## GitHub Copilot Licensing
 
@@ -269,6 +271,7 @@ Key billing rules for Copilot in enterprise environments:
 | User has both Business and Enterprise seats | Only Enterprise seat is billed |
 | Cloud agent usage | Consumes both Actions minutes AND AI Credits |
 | Copilot code review (since 2026-06-01) | Consumes AI Credits AND, on private repositories, Actions minutes from the plan's included minutes (overage at standard Actions rates; public repositories stay free). Runs on a standard GitHub-hosted runner unless an organization admin sets a default runner |
+| Seats paid by credit card or PayPal | Pay before access, then an upfront seat charge at the start of each billing cycle (existing customers from 2026-10-01); see [Mid-Cycle Change Behavior](#mid-cycle-change-behavior) |
 
 ### Copilot Seat Management
 
@@ -348,6 +351,18 @@ To manage Advanced Security costs effectively:
 3. **Leverage free tiers** — use Secret Protection on public repos at no cost
 4. **Monitor the 90-day window** — committers who stop contributing drop off billing automatically
 5. **Use Secret Protection independently** — if code scanning is not needed, purchase only Secret Protection at the lower price point
+
+### GitHub Code Quality Licensing
+
+Since 2026-07-20, GitHub Code Quality is a standalone paid product on GitHub Enterprise Cloud and GitHub Team; it isn't available on GitHub Enterprise Server. It has its own license and doesn't consume Secret Protection or Code Security licenses. Billing started automatically at general availability, so repositories that had Code Quality enabled during the public preview became billable on 2026-07-20.
+
+| Cost component | How it is measured |
+|----------------|--------------------|
+| **License** | $10 per active committer per month. A committer is active if one of their commits was pushed to a Code Quality-enabled repository in the last 90 days, counted once across the organization or enterprise. GitHub App bots are ignored |
+| **AI-powered features** | AI-assisted detection and Copilot Autofix consume AI Credits from the shared pool; no Copilot subscription is needed |
+| **Analysis** | CodeQL scans run as GitHub Actions workflows and consume Actions minutes, unless you use self-hosted runners. In the detailed usage report, filter `workflow_path` for `dynamic/github-code-quality/codeql` |
+
+The **Billing and licensing** → **Licensing** page shows consumed Code Quality licenses (a license estimate card was in public preview from 2026-07-13). The estimate covers only the per-committer license at list price, not Actions minutes or AI usage. To stop future scans and charges, disable Code Quality for the repository or organization.
 
 ## Billing Management and Cost Optimization
 
@@ -486,13 +501,17 @@ gh api \
 
 The budgets REST API is generally available since 2026-06-04. `budget_amount` is in whole US dollars, or a license count for license-based products such as GHAS. Budgets that existed for premium requests before 2026-06-01 were converted to AI Credit budgets automatically.
 
+#### Member Budget Increase Requests
+
+Since 2026-09-16, a member who uses all the AI Credits in their budget can request more instead of waiting for the next billing cycle. The request goes to the account that pays for the budget: organization settings for an organization-owned budget, enterprise settings for an enterprise-owned budget. Organization owners, enterprise owners and billing managers review pending requests under **Requests from members**, set a new amount and select **Approve and increase**, which updates the member's budget and restores access immediately. Budget increase requests are available for Copilot Business and Copilot Enterprise under usage-based billing, but **not for enterprises with managed users**. Agree on approvers and a ceiling for approvals before you roll out user-level budgets.
+
 ### Cost Centers
 
 Cost centers enable departmental chargeback by grouping resources and allocating costs to business units:
 
 #### Cost Center Capabilities
 
-- Group organizations, repositories, users and (since 2026-06-25) enterprise teams into logical cost units
+- Group organizations, repositories, users and (since 2026-06-25) enterprise teams into logical cost units. Enterprise owners add enterprise teams, and attribution then follows team membership, including IdP-synced membership; see [28-enterprise-teams.md](28-enterprise-teams.md#cost-centers)
 - Allocate metered and license-based charges to specific departments
 - Route Azure subscription billing per cost center
 - Generate per-cost-center usage reports
@@ -524,22 +543,25 @@ gh api \
   -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2026-03-10" \
   /enterprises/{enterprise}/settings/billing/cost-centers \
-  -f name='Engineering' \
-  -f description='Engineering department resources'
+  -f name='Engineering'
 ```
+
+The only other create option is `ai_credit_pool_enabled` (boolean), which turns on the cost center's AI credit pool; the REST reference allows it only for cost centers that contain only users or enterprise teams.
 
 #### Assigning Resources to a Cost Center
 
 ```bash
-# Add an organization to a cost center
+# Add two organizations to a cost center
 gh api \
   --method POST \
   -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2026-03-10" \
-  /enterprises/{enterprise}/settings/billing/cost-centers/{cost_center_id}/resources \
-  -f resource_type='organization' \
-  -f resource_id='{org_id}'
+  /enterprises/{enterprise}/settings/billing/cost-centers/{cost_center_id}/resource \
+  -f 'organizations[]=octo-payments' \
+  -f 'organizations[]=octo-web'
 ```
+
+The request body takes arrays named `users`, `organizations`, `repositories` and `enterprise_teams`. A resource belongs to one cost center at a time, so adding it here moves it from any other cost center, and the response lists those moves in `reassigned_resources`. Use `DELETE` on the same path to remove resources.
 
 ### Design Patterns for Cost Center Hierarchies
 
@@ -608,7 +630,7 @@ Copilot seats are a **license-based product** and Copilot AI Credits are billed 
 
 Included AI Credits are pooled across the enterprise, so without a cap one cost center can spend credits that another cost center's licenses paid for. An **AI credit pool** (called an included usage control in GitHub Docs) limits a cost center's included usage to the AI Credits funded by its own licenses: 1,900 per Copilot Business and 3,900 per Copilot Enterprise license. GitHub calculates the cap for you; increases apply immediately and decreases from the next billing cycle.
 
-- **Where:** Toggle it when you create or edit a cost center that contains at least one user or enterprise team, under the enterprise's **Billing and licensing** → **Cost centers** (in the billing UI since 2026-07-20; REST API since 2026-07-02). Available for Copilot Business and Copilot Enterprise.
+- **Where:** Toggle it when you create or edit a cost center, under the enterprise's **Billing and licensing** → **Cost centers** (in the billing UI since 2026-07-20; REST API since 2026-07-02, as `ai_credit_pool_enabled`). The 2026-07-02 post requires at least one user or enterprise team in the cost center; the REST reference allows the setting only when the cost center contains only users or enterprise teams, so keep organizations and repositories in a separate cost center. Available for Copilot Business and Copilot Enterprise.
 - **At the cap:** Choose whether members are blocked or continue as paid additional usage, if the enterprise allows overages.
 - **Not a budget:** The pool governs the included phase; a cost center budget caps metered charges after the shared pool is exhausted. Use both on the same cost center.
 
@@ -683,12 +705,13 @@ Like Copilot, GHAS is a **license-based product** allocated by **user**:
 #### Active Committer Tracking per Cost Center
 
 ```bash
-# Get GHAS active committer counts filtered by cost center
-# (Uses the usage reporting endpoint — see Billing API and Reporting for full parameter reference)
+# Get GHAS license usage and cost for one cost center
+# (The usage summary endpoint accepts product and cost_center_id filters — see Billing API and Reporting)
 gh api \
   -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2026-03-10" \
-  "/enterprises/{enterprise}/settings/billing/usage?product=ghas&cost_center_id={cost_center_id}&year=2026&month=4"
+  "/enterprises/{enterprise}/settings/billing/usage/summary?product=ghas&cost_center_id={cost_center_id}&year=2026&month=9" \
+  --jq '.usageItems[] | {sku, unitType, grossQuantity, netAmount}'
 ```
 
 #### Budget Considerations for GHAS
@@ -886,7 +909,7 @@ flowchart TD
 
 | Mistake | Impact | Prevention |
 |---------|--------|-----------|
-| Not assigning all resources to cost centers | Costs land in **Unassigned** bucket; invisible to chargeback reports | Run a monthly audit of unassigned resources |
+| Not assigning all resources to cost centers | Usage with no cost center is grouped as **Enterprise Only** when you group usage by cost center, so it is missing from per-department chargeback reports | Run a monthly audit of unassigned resources |
 | Assuming a GHAS budget stops all GHAS spend | Since 2026-05-28 a GHAS SKU-level budget with **Limit usage when budget limit is reached** blocks enabling GHAS on more repositories, but committers on repos that already have GHAS are still billed; without that option the budget only alerts | Combine license-count budgets with committer reviews before large enablements |
 | Unexpected GHAS cost center allocation | GHAS license cost may be allocated to a cost center that the developer's manager doesn't expect due to the allocation precedence rules (user assignment → oldest org → enterprise fallback) | Review and explicitly assign users to cost centers before enabling GHAS |
 | Creating cost centers after enabling products | Historical costs cannot be retroactively re-allocated | Create cost centers and assign resources before enabling paid features |
@@ -919,12 +942,14 @@ Use a consistent, hierarchical naming scheme that encodes organizational structu
 
 #### Budget Threshold Recommendations
 
+Budget threshold alerts are opt-in: select **Receive budget threshold alerts** on each budget, and GitHub then emails account owners, billing managers and any recipients you add at 75%, 90% and 100% and shows a banner. User-level budgets don't reliably send alerts, so watch those through cost center or enterprise budgets.
+
 | Threshold | Action | Audience |
 |-----------|--------|----------|
 | **50%** | Manual governance checkpoint (not a platform alert — configure this as a calendar-based review) | Cost center owner |
-| **75%** | Platform alert fires by default; review and forecast remaining month spend | Cost center owner + engineering lead |
-| **90%** | Platform alert fires by default; escalation; evaluate whether budget increase or usage reduction is needed | Department head + finance |
-| **100%** | Platform alert fires by default. Alert-only: continue with overage tracking. Stop-usage (metered products): halt non-critical metered products; on GHAS SKU budgets, the limit blocks enabling GHAS on more repositories | Finance + enterprise admin |
+| **75%** | Platform alert, if threshold alerts are enabled on the budget; review and forecast remaining month spend | Cost center owner + engineering lead |
+| **90%** | Platform alert, if enabled; escalation; evaluate whether budget increase or usage reduction is needed | Department head + finance |
+| **100%** | Platform alert, if enabled. Alert-only: continue with overage tracking. Stop-usage (metered products): halt non-critical metered products; on GHAS SKU budgets, the limit blocks enabling GHAS on more repositories | Finance + enterprise admin |
 
 #### Review Cadence
 
@@ -960,9 +985,12 @@ The `premium_request/usage` endpoints at the same levels are still documented. T
 
 #### Authentication Requirements
 
-- **Personal access tokens (classic)** with billing permissions are required
+- **Personal access tokens (classic)** of an enterprise owner or billing manager work for the enterprise billing endpoints
+- **GitHub Apps (since 2026-08-26):** enterprise owners can give an app installed on the enterprise the **Enterprise billing** permission, read or read and write. Its installation access token can then read usage and manage budgets and cost centers without depending on one person's token, and with higher rate limits than a personal access token
 - **Fine-grained PATs are NOT supported** for billing usage endpoints
 - API version header: `X-GitHub-Api-Version: 2026-03-10`
+
+> **Tip:** Move scheduled billing exports and budget automation, such as the workflow in [Automating Usage Reports](#automating-usage-reports), from a person's PAT to an enterprise-installed GitHub App, and grant **read** unless the app must change budgets or cost centers.
 
 #### Common Query Parameters
 
@@ -980,8 +1008,10 @@ The `premium_request/usage` endpoints at the same levels are still documented. T
 #### Enterprise Usage Summary
 
 ```bash
-# Get enterprise-level billing usage summary for the current month
+# Get enterprise-level billing usage summary for one month
+# (--method GET sends the -f fields as query parameters; without it gh api sends a POST)
 gh api \
+  --method GET \
   -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2026-03-10" \
   /enterprises/{enterprise}/settings/billing/usage/summary \
@@ -1069,6 +1099,8 @@ For programmatic budget creation and usage queries, use these product and SKU id
 | `ghas_licenses` | GHAS bundled licenses (legacy) |
 | `ghas_code_security_licenses` | Code Security licenses |
 | `ghas_secret_protection_licenses` | Secret Protection licenses |
+| `code_quality_licenses` | Code Quality licenses |
+| `code_quality_ai_credit` | Code Quality AI Credits |
 
 To budget for every AI Credit SKU at once, use `budget_type: BundlePricing` with `budget_product_sku: ai_credits`. Before 2026-06-01, Copilot usage was recorded under the premium-request SKUs (`copilot_premium_request`, `copilot_agent_premium_request`, `spark_premium_request`), which still appear in historical reports.
 
@@ -1212,3 +1244,8 @@ Enterprise administrators should be aware of compliance requirements that may af
 25. [Setting up budgets to control spending on metered products](https://docs.github.com/en/enterprise-cloud@latest/billing/how-tos/set-up-budgets)
 26. [REST API endpoints for budgets](https://docs.github.com/en/enterprise-cloud@latest/rest/billing/budgets)
 27. [Request-based billing (legacy), for annual Copilot Pro and Pro+ plans](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/copilot-billing/request-based-billing-legacy/github-copilot-premium-requests)
+28. [GitHub Code Quality billing](https://docs.github.com/en/enterprise-cloud@latest/billing/concepts/product-billing/github-code-quality)
+29. [Managing requests for additional Copilot budget](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-budget-requests)
+30. [GitHub Copilot seats and billing cycles for organizations and enterprises](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/billing-and-usage/organizations-and-enterprises/seats-and-billing-cycles)
+31. [REST API endpoints for cost centers](https://docs.github.com/en/enterprise-cloud@latest/rest/billing/cost-centers)
+32. [Installing a GitHub App on your enterprise](https://docs.github.com/en/enterprise-cloud@latest/apps/using-github-apps/installing-a-github-app-on-your-enterprise)

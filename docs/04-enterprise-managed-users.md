@@ -75,7 +75,7 @@ EMU provides a **single source of truth** for user identity, eliminating the dis
 
 - **Automatic provisioning**: New employees receive GitHub access as part of standard onboarding
 - **Real-time synchronization**: Changes in IdP instantly reflect in GitHub
-- **Group-based access**: IdP groups automatically map to GitHub teams
+- **Group-based access**: IdP groups automatically map to GitHub teams: organization teams and, since 2026-06-04, enterprise teams that span organizations (see [28-enterprise-teams.md](28-enterprise-teams.md))
 - **Consistent identity**: Same credentials across all enterprise systems
 
 ### 2. Enhanced Security Posture
@@ -90,9 +90,10 @@ EMU dramatically reduces security risks through enterprise-grade controls:
 
 **Access Control:**
 - Conditional access policies from IdP
-- IP allowlist enforcement at enterprise level
+- IP allowlist enforcement at enterprise level, and since 2026-06-08 optionally for user-owned repositories and forks (user-level enforcement)
 - Session duration controls
 - Device compliance requirements
+- Proof of presence (public preview since 2026-09-24): IdP re-authentication or MFA before high-impact actions such as creating a token or editing webhooks. Managed user accounts don't get GitHub's own sudo prompt, so this adds a fresh-authentication check; the changelog post scopes the preview to EMU enterprises that use Microsoft Entra ID (see [03-identity-access-management.md](03-identity-access-management.md#proof-of-presence-for-high-impact-actions))
 
 **Attack Surface Reduction:**
 - No personal access tokens by default
@@ -201,6 +202,7 @@ Enforcement:
 - Support for GitHub Actions with IP ranges
 - Configuration at enterprise level
 - Automatic application to all managed users
+- User-owned resources (GA since 2026-06-08, off by default): **Settings** → **Authentication security** → **Enable IP allow list user-level enforcement** extends the allow list to repositories owned by managed user accounts, their forks and user profile pages, across the web UI, Git and the API, for every credential type. Add all IP addresses your users connect from before you turn it on
 
 ### 8. Reduced Attack Surface
 
@@ -209,7 +211,7 @@ EMU minimizes security exposure through architectural constraints:
 - Cannot create personal access tokens (unless specifically allowed)
 - Cannot configure OAuth apps without approval
 - Cannot participate in public GitHub community by default
-- Cannot fork enterprise repositories to personal accounts
+- Cannot fork repositories from outside the enterprise; forking private or internal enterprise repositories into their user namespace is controlled by enterprise policy. Since 2026-04-14, those user-owned forks inherit push protection from the nearest ancestor repository that has it enabled
 - Cannot invite external collaborators without enterprise settings
 - Cannot change profile information arbitrarily
 
@@ -351,7 +353,7 @@ While EMU provides significant advantages, it's crucial to understand its constr
 - ⚠️ Read-only access to public repositories maintained
 
 **2. External Collaboration Constraints**
-- ❌ Cannot have personal repositories under managed account
+- ⚠️ User-owned repositories only if the enterprise's repository creation policy allows them, and then private only, with collaborators limited to enterprise members
 - ❌ Cannot be added to non-enterprise organizations
 - ❌ Cannot collaborate outside enterprise boundary (by default)
 - ⚠️ Requires separate personal account for OSS contributions
@@ -373,7 +375,7 @@ While EMU provides significant advantages, it's crucial to understand its constr
 - ❌ Cannot create personalized profiles
 - ❌ Do not have access to the GitHub Certifications program
 - ❌ Cannot sign up for GitHub Copilot Pro or GitHub Copilot Free (requires enterprise Copilot Business/Enterprise license)
-- ⚠️ GitHub Copilot coding agent is not available in personal repositories (requires GitHub-hosted runners)
+- ⚠️ Copilot cloud agent is not available in personal repositories owned by managed user accounts (requires GitHub-hosted runners)
 
 **5. GitHub Actions Limitations**
 - ❌ Cannot create workflow templates for GitHub Actions

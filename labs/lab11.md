@@ -92,14 +92,15 @@ References:
    | **Enterprise API access** | Can be installed on the enterprise with enterprise permissions (public preview; not every enterprise API supports apps yet) | Still needed for enterprise APIs that don't support GitHub Apps (e.g., `admin:enterprise` scope) |
 
 3. Discuss the key decision question: **"When would you still need an OAuth App instead of a GitHub App?"**
-   - Since 2026-08-07, GitHub Apps (including third-party apps) can be installed on the enterprise account with enterprise permissions, so enterprise access is no longer an automatic reason to pick an OAuth App. The remaining use case is an enterprise API that doesn't support GitHub Apps yet (enterprise installations are in public preview). Check [Permissions required for GitHub Apps](https://docs.github.com/en/enterprise-cloud@latest/rest/authentication/permissions-required-for-github-apps) first; if the endpoint isn't covered, an OAuth App or a personal access token with the `admin:enterprise` scope is still required.
+   - Since 2026-08-07, GitHub Apps (including third-party apps) can be installed on the enterprise account with enterprise permissions, so enterprise access is no longer an automatic reason to pick an OAuth App. For example, since 2026-08-26 billing automation (usage, budgets, cost centers) can use a GitHub App with the enterprise billing permission instead of an enterprise owner's or billing manager's personal access token. The remaining use case is an enterprise API that doesn't support GitHub Apps yet (enterprise installations are in public preview). Check [Permissions required for GitHub Apps](https://docs.github.com/en/enterprise-cloud@latest/rest/authentication/permissions-required-for-github-apps) first; if the endpoint isn't covered, an OAuth App or a personal access token with the `admin:enterprise` scope is still required.
 4. Discuss the migration path from OAuth Apps to GitHub Apps:
    - Identify existing OAuth App integrations and their scope usage.
    - Map OAuth scopes to the equivalent fine-grained GitHub App permissions.
    - Plan a phased migration: install the GitHub App alongside the OAuth App, validate functionality, then revoke the OAuth App.
 5. Consider the security implications:
-   - OAuth Apps with long-lived tokens represent a larger blast radius if a token is compromised.
+   - OAuth Apps that don't use expiring tokens hold tokens that stay valid until revoked, a larger blast radius if one is compromised. OAuth apps created since 2026-08-14 get 8-hour access tokens with 6-month refresh tokens by default; check whether older apps you rely on have opted in.
    - GitHub Apps with 1-hour token expiry and fine-grained permissions provide a significantly smaller attack surface.
+   - Review the callback (redirect) URLs of apps your organization owns. OAuth apps can register up to 10 since 2026-08-14, and wildcard matching is a per-URL setting that sends authorization codes to any subdomain or subpath; it is on for apps that had a single callback URL before 2026-08-03, so turn it off unless the app needs it.
    - Enterprise admins should audit all OAuth App authorizations regularly via the **Third-party access** settings.
 
 ## 11.5 _(Optional)_ Register a test GitHub App
@@ -140,4 +141,4 @@ References:
    - [ ] A process exists for revoking or suspending apps that are no longer needed
 7. Discussion question: **"What governance policy would you set for GitHub App installations in your enterprise? How would you balance developer productivity with security controls?"**
 
-> **Note:** GitHub Apps are the recommended integration type for building on the GitHub platform. They offer fine-grained permissions, short-lived tokens, and do not consume enterprise seats — making them more secure and cost-effective than OAuth Apps. When evaluating new integrations, always prefer a GitHub App over an OAuth App unless enterprise-level API access is specifically required.
+> **Note:** GitHub Apps are the recommended integration type for building on the GitHub platform. They offer fine-grained permissions, short-lived tokens, and do not consume enterprise seats — making them more secure and cost-effective than OAuth Apps. When evaluating new integrations, always prefer a GitHub App over an OAuth App unless you need an enterprise API that doesn't support GitHub Apps yet.

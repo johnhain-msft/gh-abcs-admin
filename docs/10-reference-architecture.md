@@ -571,6 +571,8 @@ Runner groups control which repositories and workflows can execute on specific r
 
 **Default Group:** Every organization has a built-in "Default" group. All self-hosted runners are placed in the Default group unless explicitly moved to another group. The Default group allows access from all repositories in the organization by default. For tighter controls, move runners out of Default and into purpose-specific groups.
 
+**GitHub-Hosted Runners in Groups:** Since 2026-06-25 (GitHub Team and GitHub Enterprise plans), macOS GitHub-hosted runners can be added to runner groups, which restricts them to selected organizations, repositories or workflows, enforces concurrency limits and lets workflows route jobs by group name; network configurations aren't supported for macOS runners. Administrators can also disable the standard hosted runner labels, such as `ubuntu-latest`, so that every job must target a runner through a runner group: organization owners under **Settings** → **Actions** → **General** → "Standard hosted runners" → **Disable for all repositories**, enterprise owners under **Policies** → **Actions** → "Standard hosted runners" → **Disable for all organizations**. Check the concurrency limits of your runner groups before you disable them.
+
 **Workflow Targeting:** Workflows target a runner group using the `group` key in `runs-on`. You can combine group targeting with labels to further narrow runner selection:
 
 ```yaml
@@ -604,6 +606,7 @@ gh api --method POST /orgs/ORG/actions/runner-groups \
 - Use separate groups for CI (build/test) vs CD (deploy) workloads to limit blast radius
 - Audit group membership regularly using the API; unexpected repository access is a common misconfiguration
 - Combine runner groups with environment protection rules for defense-in-depth on deployment pipelines
+- Keep self-hosted runners current. GitHub Enterprise Cloud has fully enforced minimum runner versions since 2026-09-29 (GHE.com since 2026-07-31): runners below `2.329.0` can't register, and a runner that doesn't install a new runner release within 30 days stops receiving jobs. Leave auto-update on, or rebuild ephemeral runner images at least every 30 days; see [Runner Governance](30-actions-workflow-execution-protections.md#runner-governance)
 
 ---
 
@@ -1071,10 +1074,12 @@ This reference architecture document provides consolidated views of:
 - [Identity & Access Management](03-identity-access-management.md) - IAM configuration
 - [Enterprise Managed Users](04-enterprise-managed-users.md) - EMU deep dive
 - [Teams & Permissions](05-teams-permissions.md) - Team structures
+- [Enterprise Teams](28-enterprise-teams.md) - Teams defined once at the enterprise and assigned across organizations
 - [Policy Inheritance](06-policy-inheritance.md) - Policy enforcement
 - [Repository Governance](07-repository-governance.md) - Repo settings and rulesets
 - [Security & Compliance](08-security-compliance.md) - Secret Protection, Code Security, and compliance
 - [Best Practices & WAF](09-best-practices-waf.md) - Well-Architected Framework
+- [Actions Workflow Execution Protections](30-actions-workflow-execution-protections.md) - Who and what can start workflows, runner governance
 
 ---
 

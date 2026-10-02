@@ -123,7 +123,7 @@ const DEPRECATED_PATTERNS = [
   {
     id: 'copilot-default-model-gpt-4o',
     pattern: /default\s+model[^\n]{0,40}?\bGPT-4o\b|\bGPT-4o\b[^\n]{0,40}?default\s+model/gi,
-    message: 'GPT-5.3-Codex is the base model for Copilot Business and Enterprise since 2026-05-17 (long-term support until 2027-02-04)',
+    message: 'GPT-5.3-Codex is the base model for Copilot Business and Enterprise since 2026-05-17 (long-term support model, designated 2026-03-18)',
     severity: 'error'
   },
   {
@@ -182,6 +182,13 @@ const DEPRECATED_PATTERNS = [
     pattern: /support\.github\.com/gi,
     unless: /help\.github\.com/i,
     message: 'The support portal moved to help.github.com (rolling out from 2026-09-08; support.github.com works until an account moves)',
+    severity: 'error'
+  },
+  {
+    id: 'github-spark-retired',
+    pattern: /\bGitHub\s+Spark\b|\bSpark\s*\((?:public\s+)?preview\)/gi,
+    unless: /retir|deprecat|no\s+longer|stopped|ended|shut|2026-08-04|2026-08-31/i,
+    message: 'GitHub Spark on github.com stopped accepting new users on 2026-08-04 and access ended on 2026-08-31; don\'t present it as a current plan feature',
     severity: 'error'
   }
 ];

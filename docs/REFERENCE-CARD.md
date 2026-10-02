@@ -190,7 +190,10 @@ Enterprise (Copilot policies)
 | Suggestion Matching | Enterprise / Org | Block suggestions matching public code |
 | Content Exclusions | Enterprise / Org | Exclude specific files/repos from Copilot context |
 | Editor Availability | Enterprise / Org | Control which editors can use Copilot |
-| Copilot Chat in GitHub.com | Enterprise / Org | Enable/disable Copilot Chat on the web |
+| Copilot in GitHub.com | Enterprise / Org | Copilot Chat on the web. Announced 2026-08-28 to merge with Chat in GitHub Mobile and Copilot cloud agent into one default-on policy; not launched by 2026-10-01 |
+| Default policy for new features | Enterprise / Org | From 2026-10-22, GA features left Unconfigured follow it; ships Enabled |
+
+> Policies decide who gets a feature. How Copilot clients behave (bypass mode, MCP server allowlists) is set in enterprise managed settings: see [Enterprise Managed Settings](29-enterprise-managed-settings.md) and self-paced [Lab 17](../labs/lab17.md).
 
 ### Plan Comparison
 
@@ -201,14 +204,14 @@ Enterprise (Copilot policies)
 | Organization policy controls | ❌ | ❌ | ✅ | ✅ |
 | Content exclusions | ❌ | ❌ | ✅ | ✅ |
 | Audit log integration | ❌ | ❌ | ✅ | ✅ |
-| Knowledge bases | ❌ | ❌ | ❌ | ✅ |
-| Fine-grained policy control | ❌ | ❌ | ❌ | ✅ |
+| GitHub AI Credits per month (since 2026-06-01) | Allowance | 1,000 base | 1,900 per user, pooled | 3,900 per user, pooled |
 
 ### Copilot Metrics API
 
 ```bash
 # Get Copilot usage metrics for an organization (daily report)
 # Note: Returns a download link; pipe through curl to get JSON data
+# Since 2026-05-20 the link is on copilot-reports.github.com: allowlist it behind a proxy
 gh api "/orgs/ORG/copilot/metrics/reports/organization-1-day?day=YYYY-MM-DD"
 
 # Get Copilot usage metrics for an enterprise (daily report)
@@ -225,7 +228,7 @@ gh api /orgs/ORG/copilot/billing/seats --paginate
 | Protect branches across all repos | Organization Rulesets | Org → Settings → Rules → Rulesets |
 | Require 2FA for all members | Enterprise/Org Policy | Enterprise → Settings → Authentication |
 | Block public repos | Enterprise Policy | Enterprise → Settings → Policies → Repositories |
-| Enable secret scanning org-wide | Org Security Settings | Org → Settings → Code security |
+| Enable secret scanning org-wide | Security configurations | Org → Settings → Advanced Security → Configurations |
 | Stream audit log to SIEM | Audit Log Streaming | Enterprise → Settings → Audit log |
 | Automate user provisioning | SCIM | Enterprise → Settings → Authentication |
 

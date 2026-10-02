@@ -10,7 +10,7 @@ render_with_liquid: false
 >
 > **Source Document:** Azure DevOps DevSecOps Assessment — Recommendations and Optimizations
 >
-> **Date:** March 2026
+> **Date:** March 2026 (product names and model guidance updated 2026-10-02)
 
 ---
 
@@ -180,7 +180,7 @@ The following tables map each of the 71 recommendations from the ADO DevSecOps A
 | **Push Protection** | GHAzDO Push Protection (basic) | Secret Protection: Push Protection with delegated bypass and audit trail | **GitHub** — Delegated bypass workflow and richer audit capabilities. |
 | **Security Dashboard** | GHAzDO security hub (project-scoped) | Security Overview (enterprise/org-wide, trends, insights) | **GitHub** — Enterprise-wide visibility with trend analysis. ADO is project-scoped only. |
 | **AI Code Completion** | None | GitHub Copilot (IDE-integrated) | **GitHub exclusive** |
-| **AI Coding Agent** | None | Copilot coding agent, Claude, Codex (assign issues to AI) | **GitHub exclusive** |
+| **Autonomous AI Agents** | None | Copilot cloud agent, plus third-party agents such as Claude and Codex (assign issues to AI) | **GitHub exclusive** |
 | **AI Code Review** | None | Copilot code review in PRs | **GitHub exclusive** |
 | **AI Security Fix** | None | Copilot Autofix for code scanning alerts | **GitHub exclusive** |
 | **AI in CLI** | None | Copilot CLI (`gh copilot`) | **GitHub exclusive** |
@@ -202,13 +202,13 @@ The following features exist **only on GitHub** and have **no Azure DevOps equiv
 | Feature | Description | Impact |
 |---|---|---|
 | **Copilot Code Completion** | AI-powered code suggestions in IDE across all major editors | Productivity: 55%+ faster task completion (GitHub research) |
-| **Copilot Coding Agent** | Autonomous AI agent assigned to GitHub Issues — writes code, creates PRs, responds to reviews | Multiply team capacity — AI handles routine tasks |
+| **Copilot cloud agent** (formerly "Copilot coding agent") | Autonomous AI agent assigned to GitHub Issues — writes code, creates PRs, responds to reviews | Multiply team capacity — AI handles routine tasks |
 | **Copilot Code Review** | AI-powered PR review identifying bugs, security issues, style violations | Faster, more consistent code review |
 | **Copilot Autofix** | AI-generated fixes for code scanning security alerts — one-click apply | Drastically reduce MTTR for security vulnerabilities |
 | **Copilot CLI** | Natural language shell commands via `gh copilot` | Developer experience improvement |
 | **Copilot Spaces** | Shared team knowledge bases for consistent AI context (preview) | Organizational knowledge capture |
 | **Copilot Extensions / MCP** | Connect Copilot to organizational tools via Model Context Protocol | Custom AI-powered workflows |
-| **Third-Party Coding Agents** | Claude (Anthropic), Codex (OpenAI) assignable directly from Issues | Multi-model AI development |
+| **Third-Party Agents** | Claude (Anthropic), Codex (OpenAI) assignable directly from Issues | Multi-model AI development |
 | **Merge Queue** | Automated merge sequencing ensuring main branch is never broken | CI reliability at scale |
 | **Security Campaigns** | Coordinate org-wide security remediation across hundreds of repos | Security at scale |
 | **GitHub Codespaces** | Cloud dev environments — productive in minutes | Onboarding acceleration, consistency |
@@ -230,7 +230,7 @@ The following features exist **only on GitHub** and have **no Azure DevOps equiv
 | Signal | Azure DevOps | GitHub |
 |---|---|---|
 | **Feature release cadence** | Three-week sprint releases; feature scope narrower than GitHub | Weekly releases via GitHub Changelog; accelerating innovation |
-| **AI investment** | Limited AI integration: MCP Server for Azure DevOps (2025 Q4), GitHub Coding Agent for Azure Boards (2025 Q4). No Copilot platform integration for Repos or Pipelines. | Copilot is Microsoft's flagship AI product — billions invested; expanding monthly |
+| **AI investment** | Limited AI integration: MCP Server for Azure DevOps (2025 Q4), Copilot cloud agent for Azure Boards (2025 Q4). No Copilot platform integration for Repos or Pipelines. | Copilot is Microsoft's flagship AI product — billions invested; expanding monthly |
 | **Public roadmap** | [Features Timeline](https://learn.microsoft.com/en-us/azure/devops/release-notes/features-timeline) — public roadmap with quarterly feature planning | [github.com/github/roadmap](https://github.com/github/roadmap) — public roadmap, community-engaged |
 | **Microsoft internal usage** | Significant Microsoft teams continue to use ADO (e.g., Windows, Azure DevOps itself) | GitHub used internally by a large portion of Microsoft engineering |
 | **Security innovation** | GHAzDO receives delayed, subset features from GHAS | GHAS (Secret Protection & Code Security) receives all innovations first; GHAzDO is always behind |
@@ -251,8 +251,8 @@ The following features exist **only on GitHub** and have **no Azure DevOps equiv
 
 | Risk Category | Description | Severity |
 |---|---|---|
-| **Platform stagnation** | ADO receives incremental updates on a three-week sprint cadence, but the scope is narrower than GitHub. ADO has introduced some AI features (MCP Server, Coding Agent for Boards) and GHAzDO is expanding — however, the pace and breadth of new capabilities (Copilot integration, security innovations, developer experience) remain significantly behind GitHub. | **High** |
-| **Missing AI productivity** | No Copilot code review, Autofix, or coding agent integration at the ADO platform level. ADO has MCP Server and Coding Agent for Boards, but these do not address core development AI. Teams miss 55%+ productivity gains documented by GitHub research. | **High** |
+| **Platform stagnation** | ADO receives incremental updates on a three-week sprint cadence, but the scope is narrower than GitHub. ADO has introduced some AI features (MCP Server, Copilot cloud agent for Azure Boards) and GHAzDO is expanding — however, the pace and breadth of new capabilities (Copilot integration, security innovations, developer experience) remain significantly behind GitHub. | **High** |
+| **Missing AI productivity** | No Copilot code review, Autofix, or Copilot cloud agent integration at the ADO platform level. ADO has MCP Server and Copilot cloud agent for Azure Boards, but these do not address core development AI. Teams miss 55%+ productivity gains documented by GitHub research. | **High** |
 | **Weaker security posture** | GHAzDO is a subset of GHAS (Secret Protection & Code Security). Missing: Copilot Autofix, security campaigns, AI secret detection, Dependabot auto-fix PRs, SBOM, artifact attestations, push protection delegated bypass. | **High** |
 | **Talent challenges** | Developers prefer GitHub (150M+ users). ADO skills are niche. Recruiting and retention are harder with a less desirable toolchain. | **Medium** |
 | **JIRA integration gap** | JIRA + ADO integration is less comprehensive than JIRA + GitHub. The "GitHub for Atlassian" app (364K installs) provides deeper features, AI integration (Rovo Dev), and more active development. | **Medium** |
@@ -356,7 +356,7 @@ Since the organization uses **only Repos and Pipelines** (no Boards, no Artifact
 
 **Long-term (3+ months):**
 
-- Access to all GitHub AI tools (Copilot, coding agents, Autofix).
+- Access to all GitHub AI tools (Copilot, Copilot cloud agent and third-party agents, Autofix).
 - Comprehensive security posture via GHAS (Secret Protection & Code Security).
 - Faster CI/CD with GitHub Actions marketplace ecosystem.
 - Improved developer satisfaction and productivity.
@@ -420,7 +420,7 @@ Branches with JIRA issue keys (e.g., `feature/PROJ-123-login-fix`) automatically
 |---|---|---|---|
 | **Code Completion** | Copilot: Multi-line suggestions, context-aware, supports 30+ languages, works in VS Code, Visual Studio, JetBrains, Xcode, Neovim, Eclipse, Zed | Not available | GitHub exclusive |
 | **AI Chat (IDE)** | Copilot Chat: Explain code, generate tests, debug, refactor — in IDE and on github.com | Not available (Copilot works in IDE but not integrated with ADO) | GitHub exclusive (platform integration) |
-| **AI Coding Agent** | Copilot coding agent: Assign issues to Copilot — autonomous code writing, PR creation, review response. Runs in cloud VM. | Not available | GitHub exclusive |
+| **Autonomous AI Agent** | Copilot cloud agent: Assign issues to Copilot — autonomous code writing, PR creation, review response. Runs in cloud VM. | Not available | GitHub exclusive |
 | **Third-Party AI Agents** | Claude (Anthropic), Codex (OpenAI): Assign issues to third-party AI agents directly from GitHub | Not available | GitHub exclusive |
 | **AI Code Review** | Copilot code review: AI reviews PRs, identifies bugs, security issues, suggests improvements | Not available | GitHub exclusive |
 | **AI Security Fix** | Copilot Autofix: AI-generated fixes for CodeQL code scanning alerts — one-click apply | Not available (GHAzDO has no Autofix) | GitHub exclusive |
@@ -428,15 +428,15 @@ Branches with JIRA issue keys (e.g., `feature/PROJ-123-login-fix`) automatically
 | **AI PR Summaries** | Copilot generates PR descriptions and summaries | Not available | GitHub exclusive |
 | **Natural Language CLI** | `gh copilot suggest` / `gh copilot explain` — natural language to shell commands | Not available | GitHub exclusive |
 | **AI Workspace Knowledge** | Copilot Spaces: Team knowledge bases for consistent AI context (preview) | Not available | GitHub exclusive |
-| **Multi-Model Support** | Choose from GPT-4o, Claude Sonnet, Claude Haiku, Gemini — optimized for different tasks | N/A | GitHub exclusive |
+| **Multi-Model Support** | Choose among models from several providers for different tasks; enterprise and organization policies enable or disable each model | N/A | GitHub exclusive |
 | **MCP (Model Context Protocol)** | Connect Copilot to organizational tools (databases, APIs, internal systems) | N/A | GitHub exclusive |
 | **Copilot Extensions** | Third-party tools extend Copilot capabilities (Docker, Azure, Sentry, LaunchDarkly, etc.) | N/A | GitHub exclusive |
 
-> **Summary:** Azure DevOps has very limited AI capabilities at the platform level. ADO has introduced MCP Server for ADO (Done Q4 2025) and GitHub Coding Agent for Azure Boards (Done Q4 2025), but these are narrowly scoped. The vast majority of AI-powered development features — coding agent, code review, Autofix, AI secret detection, multi-model support — are GitHub-exclusive. While Copilot works in IDEs regardless of where code is hosted, the platform-level integrations require GitHub.
+> **Summary:** Azure DevOps has very limited AI capabilities at the platform level. ADO has introduced MCP Server for ADO (Done Q4 2025) and Copilot cloud agent for Azure Boards (Done Q4 2025), but these are narrowly scoped. The vast majority of AI-powered development features — Copilot cloud agent, code review, Autofix, AI secret detection, multi-model support — are GitHub-exclusive. While Copilot works in IDEs regardless of where code is hosted, the platform-level integrations require GitHub.
 
 ### 4.2 DevSecOps: GHAS (Secret Protection & Code Security) vs GHAzDO and Third-Party Tools
 
-GitHub Advanced Security (GHAS) — comprising GitHub Secret Protection and GitHub Code Security — on GitHub is the full product. GHAzDO (GitHub Advanced Security for Azure DevOps) is a **limited subset** ported to ADO. The following table shows the gap:
+GitHub Advanced Security (GHAS) — comprising GitHub Secret Protection and GitHub Code Security — on GitHub is the full product. GHAzDO (GitHub Advanced Security for Azure DevOps; new customers buy it as GitHub Secret Protection and GitHub Code Security for Azure DevOps) is a **limited subset** ported to ADO. The following table shows the gap:
 
 | DevSecOps Feature | GHAS — Secret Protection & Code Security (on GitHub) | GHAzDO (on ADO) | Third-Party Alternative (for ADO) |
 |---|---|---|---|
@@ -467,11 +467,11 @@ GitHub Advanced Security (GHAS) — comprising GitHub Secret Protection and GitH
 
 ### 5.1 AI-Native Platform
 
-- **Copilot everywhere:** Code completion, chat, coding agent, code review, CLI, spaces, extensions, autofix, PR summaries
-- **Multi-model choice:** GPT-4o, Claude, Gemini — choose the best model per task
+- **Copilot everywhere:** Code completion, chat, Copilot cloud agent, code review, CLI, spaces, extensions, autofix, PR summaries
+- **Multi-model choice:** models from several providers, each enabled or disabled by enterprise and organization policy — choose the best model per task
 - **Third-party agents:** Claude (Anthropic), Codex (OpenAI) assignable directly from Issues
 - **MCP protocol:** Connect AI to organizational tools and data sources
-- **Minimal AI capabilities on ADO** — ADO has MCP Server and Coding Agent for Boards, but lacks Copilot code review, Autofix, coding agent, CLI, multi-model support, and extensions. This remains the single largest strategic gap.
+- **Minimal AI capabilities on ADO** — ADO has MCP Server and Copilot cloud agent for Azure Boards (the agent works on code in GitHub repositories), but lacks Copilot code review, Autofix, an agent for Azure Repos, CLI, multi-model support, and extensions. This remains the single largest strategic gap.
 
 ### 5.2 Comprehensive Native Security (GHAS — Secret Protection & Code Security)
 
@@ -552,7 +552,7 @@ GitHub Advanced Security (GHAS) — comprising GitHub Secret Protection and GitH
 
 - **Microsoft's primary developer platform:** Strategic investment in AI and developer experience flows primarily to GitHub
 - **ADO's own roadmap** focuses on hybrid coexistence — improving GitHub Repos + ADO Boards/Pipelines integration ([Features Timeline](https://learn.microsoft.com/en-us/azure/devops/release-notes/features-timeline))
-- **AI features will continue to be GitHub-first** — Copilot is Microsoft's core AI product (ADO receives limited AI integrations like MCP Server and Coding Agent for Boards)
+- **AI features will continue to be GitHub-first** — Copilot is Microsoft's core AI product (ADO receives limited AI integrations like MCP Server and Copilot cloud agent for Azure Boards)
 - **Security innovations ship to GHAS (Secret Protection & Code Security) first,** with GHAzDO receiving delayed subsets (CodeQL default setup expected 2026 Q2, Dependabot security updates marked "Future")
 - **Migrating now** avoids accumulating technical debt and higher future migration costs
 

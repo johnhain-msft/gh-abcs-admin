@@ -155,7 +155,7 @@ const FIXTURES = {
       '| Default model | **GPT-4o** or latest stable | Use stable, well-tested models |'
     ],
     negative: [
-      '| Base model | **GPT-5.3-Codex** (long-term support, available until 2027-02-04) | Used when no other model is approved |',
+      '| Base model | **GPT-5.3-Codex** (long-term support model, designated 2026-03-18) | Used when no other model is approved |',
       // Trap: a model list is not a default-model recommendation
       '| **Multi-Model Support** | Choose from GPT-4o, Claude Sonnet, Claude Haiku, Gemini |'
     ]
@@ -279,6 +279,21 @@ const FIXTURES = {
     negative: [
       '| GitHub Support | `https://help.github.com/` (support.github.com works until your account moves) |',
       'Submit a request via the [GitHub support portal](https://help.github.com) with:'
+    ]
+  },
+
+  // ── Found during P1 integration: GitHub Spark presented as a current plan feature ──
+  'github-spark-retired': {
+    severity: 'error',
+    positive: [
+      '| **GitHub Spark (public preview)** | — | ✓ |',
+      '"Enterprise gets you the bigger pool and GitHub Spark, which is in preview; policy enforcement and audit logs come with both."',
+      { file: 'docs/slides-fixture.html', text: '<td>3,900 AI Credits/user, pooled; Spark (preview)</td>' }
+    ],
+    negative: [
+      'GitHub Spark on github.com stopped accepting new users on 2026-08-04, and access ended on 2026-08-31.',
+      // The billing SKU name is not a feature claim
+      '| `spark_ai_credits` | Spark AI Credits |'
     ]
   }
 };

@@ -220,6 +220,8 @@ A **check suite** is a collection of check runs created by a single GitHub App f
 
 GitHub Actions automatically creates check suites and check runs for every workflow execution. Each workflow **job** becomes a separate check run, named `Workflow Name / Job Name`.
 
+> **Re-run limit:** Since 2026-04-10, a GitHub Actions workflow run can be re-run at most **50 times**, counting both full re-runs and re-runs of a subset of jobs. A re-run attempt beyond the limit produces a failed check suite with an annotation saying the limit was reached. Retry bots that re-run flaky workflows until they pass hit this ceiling; fix the flaky workflow instead.
+
 ### Check Run Statuses and Conclusions
 
 Check runs use a two-level model: a **status** field tracks progress, and a **conclusion** field records the final result.
@@ -1185,3 +1187,4 @@ curl -sI -H "Authorization: token <TOKEN>" \
 14. [SARIF Support for Code Scanning](https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning)
 15. [Webhooks Documentation](https://docs.github.com/en/webhooks)
 16. [Securing Your Webhooks](https://docs.github.com/en/webhooks/using-webhooks/securing-your-webhooks)
+17. [Actions limits](https://docs.github.com/en/enterprise-cloud@latest/actions/reference/limits) - Includes the 50 re-run limit per workflow run

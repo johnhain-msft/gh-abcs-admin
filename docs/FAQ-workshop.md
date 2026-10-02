@@ -371,6 +371,7 @@ action:workflows
 > 📚 **References**:
 > - [Searching the Audit Log](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/searching-the-audit-log-for-your-enterprise)
 > - [Audit Log Events for Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/audit-log-events-for-your-enterprise)
+> - See [Workflow Execution Protections](30-actions-workflow-execution-protections.md) for the Actions policies (GA 2026-09-17) that control who and which events can start workflows
 
 ---
 
@@ -458,17 +459,18 @@ Repository rulesets are the modern replacement for branch protection rules, offe
 |------------|------------------|----------|
 | Scope | Single repo | Org-wide or repo-level |
 | Targeting | Branch patterns | Branch, tag, and push patterns |
-| Bypass actors | Not configurable | Teams, roles, apps, deploy keys |
+| Bypass actors | Not configurable | Roles, teams (including enterprise teams), apps, deploy keys; individual users on repository rulesets (since 2026-05-07) |
 | Evaluate mode | ❌ | ✅ Test before enforcing |
 | Layering | One rule set per branch | Multiple rulesets stack |
 | API management | Limited | Full CRUD + import/export |
 
-**Migration guidance:** Start by enabling rulesets in **evaluate mode** alongside existing branch protection. Monitor the rule insights dashboard for 1-2 weeks, then disable branch protection and switch rulesets to active enforcement.
+**Migration guidance:** For a single repository, since 2026-08-11 you can convert a rule in place: **Settings → Branches**, then **Convert to ruleset** next to the rule. GitHub maps required reviews, status checks and push restrictions into equivalent ruleset rules; "Require conversation resolution before merging" doesn't map one-to-one, because in rulesets it belongs to the pull request rule. Choose **Evaluate** for a first migration, then delete the original rule once you've tested. For policy across many repositories, start organization rulesets in **evaluate mode** alongside existing branch protection. Monitor the rule insights dashboard for 1-2 weeks, then disable branch protection and switch rulesets to active enforcement.
 
 > 📚 **References**:
 > - See [Repository Governance](07-repository-governance.md) for detailed configuration
 > - [Lab 06: Advanced Rulesets](../labs/lab06.md) for hands-on practice
 > - [GitHub Docs: Rulesets](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets)
+> - [GitHub Docs: Converting branch protections to rulesets](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/converting-branch-protections-to-rulesets)
 
 ---
 
@@ -514,16 +516,17 @@ What's the difference between CodeQL default setup and advanced setup?
 |--------|--------------|----------------|
 | Configuration | One-click enable | Custom workflow YAML |
 | Languages | Auto-detected | Explicitly specified |
-| Query suites | `security-extended` | Any suite including custom queries |
+| Query suites | Default or Extended; extra queries via a config file (since 2026-08-04) | Any suite including custom queries |
 | Schedule | GitHub-managed | Custom cron schedule |
 | Build steps | Auto-detected | Manual build commands |
 | Monorepo support | Limited | Full control |
 
-**Recommendation:** Use **default setup** for most repositories — it covers 95% of use cases with zero maintenance. Switch to **advanced setup** when you need custom queries, specific build steps, or monorepo support.
+**Recommendation:** Use **default setup** for most repositories — it covers 95% of use cases with zero maintenance. Since 2026-08-04 you can customize it without a workflow file: set the `github-codeql-config-file` repository property to a CodeQL configuration file, and default setup merges it with its own configuration to add queries, exclude paths or set threat models. Organization owners can set the property for every repository and decide whether repositories may override it; test a value on one repository first. Switch to **advanced setup** when you need specific build steps or monorepo support.
 
 > 📚 **References**:
 > - See [Security By Default Policies](11-security-by-default-policies.md) for org-wide enablement
 > - [GitHub Docs: CodeQL](https://docs.github.com/en/enterprise-cloud@latest/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning)
+> - [GitHub Docs: Repository properties for code scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/concepts/code-scanning/repository-properties)
 
 ---
 
@@ -570,7 +573,8 @@ Copilot governance operates at three levels with a cascading policy model:
 - Enable/disable Copilot entirely
 - Control: code completions, chat, CLI, pull request summaries, agent mode
 - Privacy: telemetry opt-out, prompt/suggestion retention
-- Models: allow/restrict premium models, bring-your-own API keys
+- Models: per-model availability, **Default availability for released models** (enforced 2026-08-26 to 2026-09-01) and bring-your-own-key policies
+- **Default policy for new features**: from 2026-10-22, generally available features left Unconfigured follow it; it ships Enabled, and previews stay opt-in
 
 **Organization level** → Can further restrict (never expand beyond enterprise):
 - Feature toggles inherit from enterprise defaults
@@ -578,7 +582,8 @@ Copilot governance operates at three levels with a cascading policy model:
 - Seat assignment and management
 
 **Key controls for admins:**
-- **Content exclusions** prevent Copilot from accessing sensitive files (doesn't apply to agent mode — note this limitation)
+- **Content exclusions** prevent Copilot from accessing sensitive files (since 2026-09-02 also in Copilot CLI and the Copilot app; not in Edit or Agent mode, and the docs disagree on Copilot cloud agent, so test it)
+- **Enterprise managed settings** (since 2026-07-01) control how Copilot clients behave, such as bypass mode and MCP server allowlists; see [Enterprise Managed Settings](29-enterprise-managed-settings.md)
 - **Seat management API** enables automated provisioning/deprovisioning
 - **Copilot metrics API** provides usage data for ROI tracking
 - **Audit log events** (`copilot.*`) track policy changes and usage
@@ -632,7 +637,7 @@ Should we use GitHub-hosted or self-hosted runners?
 
 | Factor | GitHub-Hosted | Self-Hosted |
 |--------|--------------|-------------|
-| Maintenance | Zero — managed by GitHub | You manage OS, updates, security |
+| Maintenance | Zero — managed by GitHub | You manage OS, updates, security and the runner version (see below) |
 | Clean environment | Fresh VM every job | Persistent — requires cleanup |
 | Network access | Public internet only (unless VNET) | Access to internal resources |
 | Cost | Per-minute billing | Your infrastructure costs |
@@ -641,8 +646,11 @@ Should we use GitHub-hosted or self-hosted runners?
 
 **Recommendation:** Start with **GitHub-hosted runners** for most workloads. Use **larger runners** (available in GHEC) for builds needing more CPU/RAM. Use **self-hosted** only when you need: private network access, specialized hardware, regulatory data residency, or cost optimization at very high scale. Consider **Azure VNET injection** for GitHub-hosted runners needing private network access.
 
+**Runner versions:** GitHub enforces self-hosted runner versions on github.com. A runner needs version `2.329.0` or later to register, and must install each new runner release within 30 days of its publication to keep receiving jobs. Full enforcement began on 2026-07-31 for GitHub Enterprise Cloud with data residency and on 2026-09-29 for GitHub Enterprise Cloud (moved from the 2026-09-25 date first announced). Keep auto-update on, or rebuild runner images at least every 30 days. GitHub Enterprise Server isn't affected.
+
 > 📚 **References**:
 > - See [Reference Architecture](10-reference-architecture.md) for runner architecture patterns
+> - See [Runner Governance](30-actions-workflow-execution-protections.md#runner-governance) for version enforcement and other runner controls
 
 ---
 
@@ -657,7 +665,7 @@ How do we set up OIDC federation for Azure deployments from GitHub Actions?
 OIDC eliminates long-lived secrets by exchanging short-lived GitHub tokens for Azure credentials:
 
 1. **In Azure:** Create an App Registration → Certificates & secrets → Federated credentials
-2. **Configure subject claims:** `repo:org/repo:ref:refs/heads/main` or `repo:org/repo:environment:production`
+2. **Configure subject claims:** `repo:org/repo:ref:refs/heads/main` or `repo:org/repo:environment:production`. Repositories created, renamed or transferred after 2026-07-15, and repositories that opt in, send immutable owner and repository IDs instead, for example `repo:org@OWNER-ID/repo@REPO-ID:environment:production`. Match the format each repository sends (github.com only; GHES isn't affected).
 3. **In GitHub:** Add `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` as secrets
 4. **In workflow YAML:**
 ```yaml
@@ -676,6 +684,7 @@ steps:
 
 > 📚 **References**:
 > - See [Deployment Strategies](23-deployment-strategies.md) for environment configuration
+> - [GitHub Docs: Immutable subject claims](https://docs.github.com/en/enterprise-cloud@latest/actions/reference/security/oidc#immutable-subject-claims)
 > - [Lab 12: Deployment Environments](../labs/lab12.md)
 
 ---
@@ -751,7 +760,8 @@ GHEC supports streaming enterprise audit logs to these destinations:
 | Datadog | HTTP | Low |
 | Google Cloud Storage | GCS API | Medium |
 | Splunk | HEC | Low |
-| Custom HTTPS endpoint | Webhook | Low |
+
+There's no generic HTTPS destination. Microsoft Purview is also a destination (public preview since 2026-07-02), but only for Copilot agent session events.
 
 **Setup:** Enterprise Settings → Audit log → Log streaming → Set up a stream → Select destination.
 
@@ -819,6 +829,7 @@ Team sync automatically manages GitHub team membership based on IdP group assign
 - Use nested teams in GitHub to mirror IdP group hierarchy
 - Monitor sync status via the audit log (`team.sync_completed` events)
 - For EMU: team sync is managed at the enterprise level via SCIM groups
+- Since 2026-06-04, enterprise teams, defined once and assigned to many organizations, can also take their membership from an IdP group, with Enterprise Managed Users only; see [Enterprise Teams](28-enterprise-teams.md#membership-and-identity-provider-sync)
 
 > 📚 **References**:
 > - See [Identity & Access Management](03-identity-access-management.md) for full IdP integration
@@ -898,5 +909,5 @@ If you have additional questions from workshop sessions, please add them followi
 
 ---
 
-*Last Updated: January 2026*
+*Last Updated: 2026-10-02*
 *Workshop: GitHub Admin - Enterprise*

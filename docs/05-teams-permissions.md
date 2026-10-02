@@ -56,6 +56,10 @@ Secret Team:
   - Child Teams: Must be secret
 ```
 
+### Enterprise Teams
+
+Everything above describes **organization teams**. Since 2026-06-04, enterprise owners can also create **enterprise teams**: defined once at the enterprise account (slug prefix `ent:`), assigned to many organizations, and usable for organization access, enterprise roles, Copilot Business licenses, cost centers, ruleset bypass and review requests. With Enterprise Managed Users, an IdP group can drive their membership through SCIM. Enterprise teams don't support nesting, secret visibility, team maintainers or CODEOWNERS, so keep organization teams for those. Since 2026-08-03, enterprise teams can also receive their own values for overridable Copilot enterprise managed settings. See [28-enterprise-teams.md](28-enterprise-teams.md) and [Lab 16](../labs/lab16.md).
+
 ## Nested Teams and Hierarchy
 
 Nested teams enable sophisticated organizational structures that mirror company hierarchies while providing powerful permission inheritance mechanisms.
@@ -189,6 +193,8 @@ Parent: Secret Team
 ## Team Synchronization with Identity Provider
 
 Team sync enables automatic team membership management through IdP groups, ensuring consistency between corporate identity systems and GitHub access.
+
+> **Note:** This section covers organization teams. Enterprise teams can also take their membership from an IdP group, but only with Enterprise Managed Users; see [Membership and Identity Provider Sync](28-enterprise-teams.md#membership-and-identity-provider-sync).
 
 ### Team Sync Architecture
 
@@ -1546,6 +1552,7 @@ curl https://api.github.com/scim/v2/organizations/ORG/Users \
 - [Enterprise Managed Users (EMU)](./04-enterprise-managed-users.md) - Centralized identity management and team provisioning
 - [Identity and Access Management](./03-identity-access-management.md) - SAML SSO, SCIM provisioning, and authentication
 - [Repository Governance](./07-repository-governance.md) - Branch protection, required reviews, and security policies
+- [Enterprise Teams](./28-enterprise-teams.md) - Teams defined at the enterprise and assigned across organizations
 
 ### API References
 
@@ -1570,6 +1577,6 @@ curl https://api.github.com/scim/v2/organizations/ORG/Users \
 ---
 
 **Document Version:** 1.0  
-**Last Updated:** 2024-01-15  
+**Last Updated:** 2026-10-02  
 **Target Audience:** Enterprise administrators, security teams, compliance officers  
 **Skill Level:** L400 (Expert)

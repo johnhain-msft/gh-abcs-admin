@@ -4,7 +4,7 @@
 >
 > **Source:** Official GitHub Documentation
 >
-> **Last Updated:** February 2026
+> **Last Updated:** October 2, 2026
 
 ---
 
@@ -37,6 +37,8 @@ Enterprises typically follow a **multi-phase migration approach**:
 | **Phase 3** | Migrate remaining assets (boards, artifacts, test plans) from Azure DevOps |
 
 This guide focuses on **Phase 1: Repository Migration**.
+
+> **Other sources:** GitHub Enterprise Importer isn't limited to Azure DevOps. Since 2026-08-03, migrations from GitLab.com and maintained GitLab Self-Managed versions to GitHub Enterprise Cloud (GitHub.com or GHE.com) are generally available and self-serve with the `gh gl2gh` GitHub CLI extension, for single repositories or scripted bulk runs. Migration archives are staged in GitHub-owned blob storage (`--use-github-storage`) or in your own AWS S3 or Azure Blob Storage account. Migrations from GitLab to GitHub Enterprise Server aren't supported. GEI also migrates from Bitbucket Server and Data Center, GitHub Enterprise Server and GitHub.com; see [Migrating from GitLab to GitHub](https://docs.github.com/en/enterprise-cloud@latest/migrations/using-github-enterprise-importer/migrate-from-gitlab).
 
 ---
 

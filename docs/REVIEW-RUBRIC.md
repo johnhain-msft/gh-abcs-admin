@@ -645,7 +645,7 @@
 - Error handling: what to do if a step doesn't work as expected
 - Numbered steps with clear action verbs (Navigate, Click, Enter, Verify)
 
-**Files to verify:** All 15 lab files + setup.md
+**Files to verify:** All 18 lab files + setup.md
 
 | Score | Criteria |
 |-------|----------|
@@ -770,7 +770,7 @@
 #### 3B.8 Self-Paced Extension Value (Weight: 0.25/8)
 
 **What to check:**
-- 6 self-paced labs provide genuine extension (not just leftovers)
+- 9 self-paced labs provide genuine extension (not just leftovers)
 - Self-paced labs are self-contained (don't require instructor presence)
 - Instructions are more detailed than in-session labs (since no instructor help)
 - Cover topics that deepen skills from in-session content
@@ -1053,7 +1053,7 @@
 #### 5B.3 Documentation as Reference Library (Weight: 1/5)
 
 **What to check:**
-- 27 docs serve as an ongoing reference library beyond the workshop
+- 30 docs serve as an ongoing reference library beyond the workshop
 - Content is organized for lookup (not just sequential reading)
 - Docs are self-contained enough to be useful standalone
 - Table of contents / navigation aids provided

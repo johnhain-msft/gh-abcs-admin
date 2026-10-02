@@ -410,8 +410,8 @@ When a token is suspected to be compromised:
 
 1. Compute the SHA-256 hash of the token
 2. Search the audit log for all events performed with that token
-3. Assess the scope of unauthorized access
-4. Revoke the token and rotate credentials
+3. Assess the scope of unauthorized access. The enterprise credential inventory export (since 2026-09-21; **Settings** → **Authentication security** → **Export CSV**) shows the credential's owner, scopes or permissions, authorizing organizations and last use, and its `hashed_token` column matches the audit log field
+4. Revoke the token and rotate credentials. If more than one credential of a type may be exposed, revoke SSO authorizations for that credential type, for one user or across the enterprise (since 2026-08-18), or with Enterprise Managed Users delete those credentials; see [Incident Response: Bulk Revocation and Deletion](21-user-administration.md#incident-response-bulk-revocation-and-deletion)
 
 ```bash
 # Compute the token hash
@@ -456,7 +456,7 @@ Audit log streaming enables real-time export of audit events to external SIEM an
 
 ### Supported Endpoints
 
-GitHub supports streaming to seven endpoint types:
+GitHub supports streaming audit and Git events to six endpoint types, plus Microsoft Purview for Copilot agent session events only:
 
 | Provider | Authentication | Regional Support | Notes |
 |---|---|---|---|
@@ -466,7 +466,7 @@ GitHub supports streaming to seven endpoint types:
 | **Splunk** | HEC token (HTTP Event Collector) | N/A (self-hosted or cloud) | Validates via `<domain>:port/services/collector` |
 | **Google Cloud Storage** | Service account JSON key | All GCS regions | Requires Storage Object Creator role |
 | **Datadog** | API key or client token | US, US3, US5, EU1, US1-FED, AP1 | Filter by `github.audit.streaming` in Datadog Logs |
-| **HTTPS Event Collector** | HEC token | N/A | Generic HEC-compatible endpoint for custom integrations |
+| **Microsoft Purview** | Authorized through Microsoft Entra | N/A | Public preview since 2026-07-02; Copilot agent session events only; EMU and GHE.com enterprises |
 
 ### Stream Data Format
 
@@ -761,6 +761,29 @@ gh api "/enterprises/ENTERPRISE/audit-log?include=all&per_page=100" \
   | jq '.[] | select(.action | startswith("git.")) | {action, actor, repo, created_at}'
 ```
 
+### Self-Hosted Runner Registration Events
+
+GitHub Actions enforces minimum versions for self-hosted runners on GitHub.com and GHE.com. Full enforcement began on 2026-07-31 for GHE.com and on 2026-09-29 for GitHub Enterprise Cloud, moved from the 2026-09-25 date first announced. Runners below `2.329.0` can't register or re-register, and a runner that hasn't installed a new runner release within 30 days stops receiving jobs. GitHub Enterprise Server isn't affected.
+
+To find which runners are registering, query the registration events at each scope:
+
+| Event | Scope |
+|---|---|
+| `enterprise.register_self_hosted_runner` | Runner registered at the enterprise level |
+| `org.register_self_hosted_runner` | Runner registered in an organization |
+| `repo.register_self_hosted_runner` | Runner registered in a repository |
+
+```bash
+# Runner registrations in the enterprise audit log, one event type at a time
+for action in enterprise.register_self_hosted_runner org.register_self_hosted_runner repo.register_self_hosted_runner; do
+  gh api --paginate \
+    "/enterprises/ENTERPRISE/audit-log?phrase=action:${action}&per_page=100" \
+    | jq '.[] | {action, actor, org, repo, created_at}'
+done
+```
+
+> **Note:** These events are written at registration time, so they show runners that are registering, not a full inventory of connected runners. The 2026-06-12 changelog post says each registration event includes the runner version; the audit log events reference doesn't list a version field, so confirm the field in your own events before you build reports on it.
+
 ### Copilot Audit Events
 
 The `copilot` event category tracks administrative and license management actions:
@@ -774,7 +797,7 @@ The `copilot` event category tracks administrative and license management action
 
 **Agentic Audit Events:**
 
-When Copilot agents perform actions (e.g., Copilot Coding Agent creating pull requests):
+When Copilot agents perform actions (e.g., Copilot cloud agent creating pull requests):
 
 - Filter with `actor:Copilot` to see agent activity
 - Key fields: `actor_is_agent: true`, `agent_session_id`, `user` (initiating human)
@@ -787,6 +810,15 @@ gh api "/enterprises/ENTERPRISE/audit-log?phrase=actor:Copilot&per_page=100" \
 ```
 
 > **What is NOT logged:** Individual prompts, code suggestions, accept/reject events, and local IDE interactions with Copilot are not included in the audit log.
+
+**Copilot Agent Session Streaming (public preview since 2026-07-02):**
+
+Enterprises with Enterprise Managed Users, on GitHub.com or GHE.com, can collect Copilot agent session data, including prompts, responses and tool calls, from cloud agents, Copilot CLI, VS Code, Visual Studio and partner IDEs used under enterprise-paid licenses. This data travels separately from the audit events above:
+
+- **Streaming:** in **AI controls** → **Copilot**, set **Copilot Usage Records Streaming** to **Enabled everywhere**, then stream to your existing audit log destination or to Microsoft Purview (preview).
+- **REST API:** set **Copilot Usage Records API** to **Enabled everywhere**; enterprise owners can then pull the last 48 hours of records with `GET /enterprises/{enterprise}/copilot/usage-records`.
+
+> **Important:** Session streaming exports prompt and response content. Agree on retention, access and privacy handling in your SIEM or Purview before you enable it.
 
 ### Operation Types
 
@@ -957,6 +989,9 @@ flowchart TB
 13. [Copilot Audit Log Events](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-github-copilot-in-your-organization/reviewing-audit-logs-for-copilot-business) — Copilot license and settings audit events
 14. [Agentic Audit Log Events](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/agentic-audit-log-events) — Copilot agent activity audit events
 15. [Data Residency for GitHub Enterprise Cloud](https://docs.github.com/en/enterprise-cloud@latest/admin/data-residency/about-github-enterprise-cloud-with-data-residency) — GHE.com data residency features
+16. [Reviewing Credentials in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/respond-to-incidents/reviewing-credentials-in-your-enterprise) — Credential inventory export and audit log correlation
+17. [Revoking Authorizations or Deleting Credentials in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/respond-to-incidents/revoke-authorizations-or-tokens) — Bulk and per-type credential revocation
+18. [REST API Endpoints for Copilot Usage Metrics](https://docs.github.com/en/enterprise-cloud@latest/rest/copilot/copilot-usage-metrics) — Includes the Copilot usage records (agent session) endpoint
 
 ### Related Workshop Modules
 
@@ -964,3 +999,4 @@ flowchart TB
 - [04-enterprise-managed-users.md](./04-enterprise-managed-users.md) — EMU architecture and enhanced audit log capabilities
 - [06-policy-inheritance.md](./06-policy-inheritance.md) — Enterprise and organization policy enforcement
 - [08-security-compliance.md](./08-security-compliance.md) — Security settings, secret scanning, and compliance overview
+- [21-user-administration.md](./21-user-administration.md) — Credential governance, inventory export and bulk revocation

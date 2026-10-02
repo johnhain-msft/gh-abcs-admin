@@ -205,7 +205,7 @@ td:first-child { color: #8b949e; white-space: nowrap; }
 </div>
 
 <!-- Slide 6 -->
-<div class="slide" data-notes="Bypass modes: 'always' means the actor can skip on direct push AND pull requests. 'Pull requests only' means bypass only works through PR merge — direct push still blocked. Every bypass event is logged in Rule Insights for audit.">
+<div class="slide" data-notes="Bypass modes: 'always' means the actor can skip on direct push AND pull requests. 'Pull requests only' means bypass only works through PR merge — direct push still blocked. Since 2026-05-07, repository rulesets can also list individual users (UI, REST, GraphQL), so a one-person team is no longer needed; enterprise teams are bypass actors since 2026-06-04 (see doc 28). Every bypass event is logged in Rule Insights for audit.">
   <h2>Bypass Actors &amp; Modes</h2>
   <table>
     <tr><th>Bypass Mode</th><th>Direct Push</th><th>PR Merge</th><th>Use Case</th></tr>
@@ -215,7 +215,7 @@ td:first-child { color: #8b949e; white-space: nowrap; }
   <h3 style="margin-top:1.5rem;">Who can be a bypass actor?</h3>
   <ul>
     <li>Repository admins · Organization admins</li>
-    <li>Specific <strong>teams</strong></li>
+    <li>Specific <strong>teams</strong> (incl. enterprise teams) · <strong>users</strong> on repo rulesets</li>
     <li><strong>GitHub Apps</strong> &amp; deploy keys</li>
   </ul>
   <p style="margin-top:.75rem;"><strong>Audit trail:</strong> Every bypass logged in <span class="badge badge-blue">Rule Insights</span> — who, when, which rule, which ref</p>
@@ -537,7 +537,7 @@ td:first-child { color: #8b949e; white-space: nowrap; }
 </div>
 
 <!-- Slide 22 -->
-<div class="slide" data-notes="Connect back to Day 1 cost centers content — GHAS is the #1 item enterprises want to track separately. Setting budgets before rollout prevents surprise bills. Alert-only budgets are great for monitoring without disrupting developers.">
+<div class="slide" data-notes="Connect back to Day 1 cost centers content — GHAS is the #1 item enterprises want to track separately. Setting budgets before rollout prevents surprise bills. Alert-only budgets are great for monitoring without disrupting developers. Since 2026-05-28 a GHAS SKU budget can also be a hard limit in license count: at the limit GHAS can't be enabled on more repositories until the budget rises or a new billing cycle starts, but it keeps working where it's already on and new committers there are still billed. Alerts fire at 75%, 90% and 100%.">
   <h2>Budget Controls &amp; Cost Centers</h2>
   <div class="cols">
     <div>

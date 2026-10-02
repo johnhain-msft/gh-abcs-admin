@@ -35,7 +35,7 @@ Secret scanning is part of **GitHub Secret Protection** ($19/active committer/mo
 5. Review the confirmation — push protection is now active for all pushes to this repository
 6. Optionally, expand the **AI detection** toggle if available — this enables AI-powered detection of unstructured secrets such as passwords and generic credentials (requires a GitHub Secret Protection license)
 
-> **Org-level alternative:** Organization owners can enable these features at scale from **Settings** → **Advanced Security → Configurations**. Security configurations let you define a policy (e.g., "GitHub recommended" or a custom configuration) and apply it to all or selected repositories at once. This is the preferred approach for Enterprise Cloud administrators managing hundreds of repositories.
+> **Org-level alternative:** Organization owners can enable these features at scale from **Settings** → **Advanced Security → Configurations**. Security configurations let you define a policy (e.g., "GitHub recommended" or a custom configuration) and apply it to all or selected repositories at once. This is the preferred approach for Enterprise Cloud administrators managing hundreds of repositories. Set a configuration as the default for new repositories instead of using the organization API's `*_enabled_for_new_repositories` fields, which were deprecated on 2026-04-21. Enterprise owners can also create enterprise-level configurations and, since 2026-09-15, set **Enforcement** to **Enforce for repository and organization owners**, so organization owners can't override the features the configuration sets.
 
 7. _(Optional)_ Configure **Delegated bypass for push protection**:
    - In the same **Advanced Security** settings page, under **Push protection**, click **Configure delegated bypass**
@@ -43,7 +43,7 @@ Secret scanning is part of **GitHub Secret Protection** ($19/active committer/mo
    - When a contributor's push is blocked, they can request a bypass; only members of the designated team can approve it
    - This gives your security team centralized control over push protection exceptions without disabling the feature
 
-> **Note:** On public repositories, secret scanning (partner alerts) and push protection for users are free. The paid GitHub Secret Protection license adds push protection for the organization, AI-powered detection, validity checks, and non-provider pattern detection.
+> **Note:** On public repositories, secret scanning (partner alerts) and push protection for users are free. The paid GitHub Secret Protection license adds push protection for the organization, AI-detected secrets, validity checks, and generic patterns. (On 2026-07-10 GitHub renamed the detector types: "non-provider patterns" became **Generic patterns** and "Copilot secret scanning" became **AI-detected secrets**; detection didn't change.)
 
 ## 7.2 Test push protection
 
@@ -110,13 +110,13 @@ Code scanning with CodeQL is part of **GitHub Code Security** ($30/active commit
 
 > **Timing note:** The initial CodeQL scan can take anywhere from 1 to 15+ minutes depending on repository size and languages. **Continue to the next section (7.4 Dependabot) while the scan runs** and return to review results afterward. This avoids idle waiting during the workshop.
 
-> **Default vs. Advanced setup:** Default setup is the recommended starting point — it requires zero configuration and automatically updates when GitHub improves its query suites. Advanced setup generates a CodeQL workflow YAML file in your repository, giving you full control over languages, query suites, build commands, and schedule triggers. Use advanced setup when you need to analyze compiled languages with custom build steps, add third-party query packs, or integrate with monorepo configurations.
+> **Default vs. Advanced setup:** Default setup is the recommended starting point — it requires zero configuration and automatically updates when GitHub improves its query suites. Advanced setup generates a CodeQL workflow YAML file in your repository, giving you full control over languages, query suites, build commands, and schedule triggers. Use advanced setup when you need to analyze compiled languages with custom build steps, add third-party query packs, or integrate with monorepo configurations. Since 2026-08-04 you can also customize default setup without a workflow: set the `github-codeql-config-file` repository property to a CodeQL configuration file, and default setup merges it with its defaults to add queries, exclude paths or set threat models. Organization owners can set the property for every repository and decide whether repositories may override it.
 
 7. Once the scan completes, go to the **Security & quality** tab → **Code scanning alerts**
 8. Review any alerts that were found:
    - Each alert shows the vulnerability type (CWE), severity, file location, and a description of the issue
    - Click into an alert to see the data-flow path from source to sink
-9. Look for the **Copilot Autofix** suggestion on applicable alerts — Copilot Autofix (included with GitHub Code Security) automatically generates a fix as a code suggestion that you can commit directly or open as a pull request
+9. Look for a fix on applicable alerts. Copilot Autofix (included with GitHub Code Security, no GitHub AI Credits used) generates a fix as a code suggestion that you can commit directly or open as a pull request. If Copilot cloud agent is available in the repository, you'll see **Assign to Copilot** instead: since 2026-07-10 (public preview), agentic autofix explores the codebase, re-runs CodeQL to validate its fix and opens a draft pull request, and each session uses AI Credits and Actions minutes
 10. _(Optional)_ Dismiss a false-positive alert with a reason to train the system for your repository
 
 ## 7.4 Review Dependabot alerts
@@ -162,7 +162,7 @@ Auto-triage rules let you automatically dismiss or act on Dependabot alerts base
      - **Open a pull request** — automatically creates a Dependabot security update PR for matching alerts
 6. Save the rule and verify it appears in the rules list
 
-> **Org-level rules:** Organization owners can create auto-triage rules at the organization level under **Settings** → **Advanced Security** → **Configurations** → **Dependabot rules**. Organization-level rules apply across all repositories in the organization and take precedence over repository-level rules. This is the recommended approach for enforcing consistent triage policies at scale.
+> **Org-level rules:** Organization owners can create auto-triage rules at the organization level under **Settings** → **Advanced Security** → **Global settings** → **Dependabot rules**. Organization-level rules apply across all repositories in the organization and take precedence over repository-level rules. This is the recommended approach for enforcing consistent triage policies at scale.
 
 7. Review any alerts that were automatically dismissed by your new rule — they will appear in the **Closed** tab of Dependabot alerts with a label indicating they were auto-dismissed
 
@@ -184,7 +184,7 @@ Use this checklist to confirm that all security features are properly configured
 3. **Code scanning is configured:**
    - Navigate to the **Security & quality** tab → **Code scanning alerts**
    - Confirm that at least one CodeQL analysis has completed (check the **Actions** tab for the CodeQL workflow run)
-   - If alerts were found, confirm you can view alert details and see Copilot Autofix suggestions where available
+   - If alerts were found, confirm you can view alert details and see a Copilot Autofix suggestion or, where Copilot cloud agent is available, the **Assign to Copilot** option
 
 4. **Dependabot alerts are accessible:**
    - Navigate to the **Security & quality** tab → **Dependabot alerts**
@@ -192,7 +192,7 @@ Use this checklist to confirm that all security features are properly configured
    - Review at least one alert detail (or confirm the alert list loads if no vulnerable dependencies exist)
 
 5. **Auto-triage rule is configured:**
-   - Navigate to **Settings** → **Security** → **Code security** → **Dependabot rules**
+   - Navigate to **Settings** → **Advanced Security** → **Dependabot rules**
    - Confirm at least one rule (built-in preset or custom) is enabled
    - Verify the rule criteria match your intended policy
 

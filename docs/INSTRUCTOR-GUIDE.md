@@ -11,8 +11,8 @@ This guide provides everything a facilitator needs to deliver the **GitHub Admin
 | **Level** | 300 — Advanced |
 | **Duration** | 2 consecutive days, 3 hours/day (6 hours total) |
 | **Audience** | Enterprise owners, Organization owners, Repository administrators |
-| **Labs** | 15 total (9 in-session, 6 self-paced extension) |
-| **Documentation** | 27 numbered reference documents |
+| **Labs** | 18 total (9 in-session, 9 self-paced extension) |
+| **Documentation** | 30 numbered reference documents |
 
 ### Target Audience
 
@@ -134,8 +134,8 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 ### Module 2.2: Enterprise Site Administration
 
 **Duration:** 10 min presentation + 15 min lab | **Type:** 📖 + 🔬
-**Doc References:** [Enterprise Hierarchy](01-enterprise-hierarchy.md), [Policy Inheritance](06-policy-inheritance.md)
-**Lab:** [Lab 15: Copilot Governance Configuration](../labs/lab15.md)
+**Doc References:** [Enterprise Hierarchy](01-enterprise-hierarchy.md), [Policy Inheritance](06-policy-inheritance.md), [Copilot Governance](12-github-copilot-governance.md), [Enterprise Managed Settings](29-enterprise-managed-settings.md)
+**Lab:** [Lab 15: Copilot Governance Configuration](../labs/lab15.md); self-paced extension: [Lab 17: Enterprise Managed Settings for Copilot](../labs/lab17.md)
 
 **Learning Objectives:**
 
@@ -148,13 +148,13 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 - **Enterprise hierarchy** — how enterprise, org, and repo settings relate; which policies cascade down
 - **Policy inheritance** — enterprise policies can enforce, allow, or delegate to orgs; orgs can further restrict but not relax
 - **Enterprise policies** — Actions permissions, Copilot access, repository visibility defaults, fork policies
-- **Copilot governance** — enabling/disabling Copilot at enterprise and org levels, managing seat assignment
+- **Copilot governance** — enabling/disabling Copilot at enterprise and org levels, managing seat assignment. AI Controls policies decide which features users get; enterprise managed settings (`copilot/managed-settings.json`, generally available since 2026-07-01) decide how Copilot clients behave. From 2026-10-22, features left **Unconfigured** follow the **Default policy for new features**, which ships **Enabled**. Copilot usage has been billed in GitHub AI Credits since 2026-06-01
 
 **Demo Script:**
 
 1. Navigate to **Enterprise → Policies** — walk through each policy category
 2. Show how an enterprise policy restricts what org admins can configure
-3. Navigate to **Enterprise → Policies → Copilot** — show seat assignment and policy options
+3. Navigate to **Enterprise → AI controls → Copilot** — show the policy options, including **Default policy for new features** and **Configure features & clients**; seat assignment is under **Billing and licensing → Licensing**
 4. Show the org-level Copilot settings and how they inherit from the enterprise
 
 **Discussion Prompts:**
@@ -177,8 +177,8 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 ### Module 2.4–2.5–2.7: Org Settings, User Admin, and Teams
 
 **Duration:** 15 min presentation + 20 min lab | **Type:** 📖 + 🔬
-**Doc References:** [Organization Strategies](02-organization-strategies.md), [Teams and Permissions](05-teams-permissions.md), [User Administration](21-user-administration.md)
-**Lab:** [Lab 9: User and Team Administration](../labs/lab09.md)
+**Doc References:** [Organization Strategies](02-organization-strategies.md), [Teams and Permissions](05-teams-permissions.md), [User Administration](21-user-administration.md), [Enterprise Teams](28-enterprise-teams.md), [Workflow Execution Protections](30-actions-workflow-execution-protections.md)
+**Lab:** [Lab 9: User and Team Administration](../labs/lab09.md); self-paced extensions: [Lab 16: Enterprise Teams](../labs/lab16.md), [Lab 18: Workflow Execution Protections](../labs/lab18.md)
 
 **Learning Objectives:**
 
@@ -188,8 +188,8 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 **Key Talking Points:**
 
-- **Org settings walkthrough** — member privileges, default permissions, repository creation policies, Actions permissions
-- **Team management** — creating teams, nested teams, team sync with IdP, team maintainers
+- **Org settings walkthrough** — member privileges, default permissions, repository creation policies, Actions permissions. Actions settings also have a separate **Policies** section: workflow execution protections (generally available since 2026-09-17) control who and which events can start workflows, and from 2026-11-02 a default policy blocks `pull_request_target` in public repositories that have no event policy of their own
+- **Team management** — creating teams, nested teams, team sync with IdP, team maintainers. Enterprise teams (generally available since 2026-06-04) are defined once at the enterprise and assigned to many organizations, with IdP-synced membership under EMU; keep organization teams for CODEOWNERS and nesting
 - **User administration** — inviting members, managing roles (member, admin, billing manager), removing users
 - **Outside collaborators** — when and how to grant access to external users, security implications
 
@@ -208,7 +208,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 **Common Questions:**
 
-- Q: "Can I sync teams with Microsoft Entra ID groups?" → A: Yes, team sync works with Microsoft Entra ID, Okta, and other supported IdPs.
+- Q: "Can I sync teams with Microsoft Entra ID groups?" → A: Yes, team sync works with Microsoft Entra ID, Okta, and other supported IdPs. With EMU, an IdP group can also drive the membership of an enterprise team that spans organizations.
 - Q: "What's the difference between org admin and enterprise owner?" → A: Org admins manage one org; enterprise owners manage all orgs and enterprise-level policies.
 - Q: "How do I bulk-invite users?" → A: Use the GitHub API or `gh` CLI to script bulk invitations.
 
@@ -300,7 +300,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 **Common Questions:**
 
 - Q: "What's the rate limit for API requests?" → A: 5,000 requests/hour for authenticated users; 15,000/hour for GitHub App installations.
-- Q: "Can I use the API to manage enterprise settings?" → A: Some enterprise settings are available via the GraphQL API. Check the Enterprise Admin API documentation.
+- Q: "Can I use the API to manage enterprise settings?" → A: Many enterprise settings have REST endpoints (for example billing, enterprise teams and Actions policies), and some are available via the GraphQL API. Check the Enterprise Admin API documentation. GitHub Apps with enterprise permissions can be installed on the enterprise account (public third-party apps too, since 2026-08-07), so automation such as billing reports (enterprise billing permission since 2026-08-26) doesn't have to depend on one person's token.
 - Q: "How do I test webhooks locally?" → A: Use tools like `smee.io` or `ngrok` to forward webhook payloads to your local machine.
 
 **Timing Notes:**
@@ -354,7 +354,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 - This is a combined 2.9 + 2.10 + 2.12 + 2.13 + 2.14 slot — keep the presentation high-level and focus on the most relevant topics for the audience
 - Lab 13 focuses on `gh` CLI automation scripts — it ties together many concepts from the workshop
-- Self-paced extensions: [Lab 12: Deployments](../labs/lab12.md) and [Lab 14: Unhealthy Repos](../labs/lab14.md)
+- Self-paced extensions: [Lab 12: Deployments](../labs/lab12.md), [Lab 14: Unhealthy Repos](../labs/lab14.md) and [Lab 18: Workflow Execution Protections](../labs/lab18.md) (who and what can start a deployment workflow)
 
 ---
 
@@ -558,7 +558,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 1. Navigate to **org settings → Advanced Security → Configurations** — show the enable-all toggles
 2. Open a repository → **Settings → Advanced Security** — show repo-level overrides
-3. Navigate to **Security → Security overview** to show the dashboard
+3. Navigate to the organization's **Security & quality** tab (renamed from **Security** on 2026-04-02) to show the security overview dashboard
 4. Demonstrate push protection by attempting to push a test secret (use a revoked/test token)
 5. Show how to review and dismiss secret scanning alerts
 
@@ -570,7 +570,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 **Common Questions:**
 
-- Q: "Is CodeQL free for all repositories?" → A: CodeQL is free for public repositories and included with GHEC for private repositories.
+- Q: "Is CodeQL free for all repositories?" → A: CodeQL code scanning is free for public repositories. Private and internal repositories need GitHub Code Security ($30 per active committer per month). GitHub Code Quality, which also runs CodeQL, is a separate paid product since 2026-07-20 ($10 per active committer per month).
 - Q: "Can I customize which secrets are detected?" → A: Yes, you can define custom patterns for secret scanning at the org level.
 - Q: "What happens when push protection blocks a push?" → A: The developer sees an error with the detected secret. They can bypass with a reason (if allowed) or remove the secret and push again.
 
@@ -596,13 +596,13 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 **Key Talking Points:**
 
 - **User privacy** — profile visibility settings, contribution graph privacy, data residency with GitHub Enterprise Cloud with data residency (GHEC DR)
-- **Licenses and billing** — seat-based licensing, viewing consumption, managing unused licenses
+- **Licenses and billing** — seat-based licensing, viewing consumption, managing unused licenses. Copilot Business and Enterprise usage is billed in AI Credits since 2026-06-01 (1,900 or 3,900 included per user per month, pooled across the enterprise), and GitHub Code Quality is a separate per-committer license since 2026-07-20
 - **Marketplace overview** — GitHub Apps vs. OAuth Apps, evaluating third-party apps, app permissions model
 - **Enterprise policy** — how to restrict which Marketplace apps org members can install
 
 **Demo Script:**
 
-1. Navigate to **enterprise settings → Billing** — show license consumption
+1. Navigate to the enterprise's **Billing and licensing → Licensing** page — show license consumption
 2. Open **org settings → Third-party access** — show app installation policies
 3. Browse the GitHub Marketplace briefly and show how to evaluate an app's permissions
 
@@ -701,7 +701,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 **For advanced groups (L400):**
 
 - Compress Day 1 presentation time to ~10 min per module; focus on labs and discussion
-- Promote extension labs (10, 11, 14) to in-session activities
+- Promote extension labs (10, 11, 14, 16, 17, 18) to in-session activities
 - Deep-dive on API automation (Lab 13), custom roles, and security campaigns
 - Add a discussion block: "What governance challenges does your org face?" with group problem-solving
 - Reference the Scripts & Automation doc (24) for production-grade patterns participants can take home
@@ -711,7 +711,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 - **Core modules:** 2.2 (Enterprise Hierarchy & Copilot), 1.2 (Rulesets), 1.5 (Security), 2.1 (IAM), 2.3 (Audit), 1.1 (Repository Permissions)
 - **Core labs:** Lab 03, Lab 06, Lab 07, Lab 08, Lab 15
 - **Skip:** Templates, webhooks, marketplace, dormant users, deployment environments
-- **Assign as self-paced:** All skipped labs + extension labs
+- **Assign as self-paced:** All skipped labs, plus the extension labs (Labs 1, 2, 10, 11, 12, 14, 16, 17 and 18)
 - **Adjust timing:** 15 min presentation + 15 min lab per module, 10 min break, 10 min wrap-up
 
 ### Remote Delivery Best Practices
@@ -726,7 +726,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 ### Post-Workshop Follow-Up
 
 - Share the [POST-WORKSHOP-ASSESSMENT.md](POST-WORKSHOP-ASSESSMENT.md) with participants within 24 hours
-- Send links to all self-paced extension labs (Lab 1, Lab 2, Lab 10, Lab 11, Lab 12, Lab 14) for continued learning
+- Send links to all self-paced extension labs (Lab 1, Lab 2, Lab 10, Lab 11, Lab 12, Lab 14, Lab 16, Lab 17, Lab 18) for continued learning
 - Provide the [REFERENCE-CARD.md](REFERENCE-CARD.md) as a quick-reference bookmark
 - Follow up on any unanswered questions from the workshop within 1 week
 - Collect delivery feedback to improve future workshop iterations
@@ -744,11 +744,11 @@ The PPT deck follows a **top-down flow**: Enterprise → Organization → Reposi
 | 3–4 | Agenda | — | [AGENDA.md](AGENDA.md) | — |
 | 5–9 | GitHub Enterprise Overview (Platforms, GHEC, GHES, Billing) | VBD: Enterprise Overview | [01-enterprise-hierarchy](01-enterprise-hierarchy.md), [19-licenses-billing](19-licenses-billing.md) | — |
 | 10–15 | Permission Flow (hierarchy, visibility, base permissions, roles) | VBD 1.1 | [05-teams-permissions](05-teams-permissions.md), [07-repository-governance](07-repository-governance.md) | Lab 4 (Templates) |
-| 16–17 | Enterprise Administration (demo) | VBD 2.2 | [01-enterprise-hierarchy](01-enterprise-hierarchy.md), [06-policy-inheritance](06-policy-inheritance.md) | Lab 15 (Copilot Governance) |
-| 18–31 | Organization Overview (namespaces, users, SSO, teams) | VBD 2.1, 2.4, 2.5, 2.7 | [02-organization-strategies](02-organization-strategies.md), [03-identity-access-management](03-identity-access-management.md), [04-enterprise-managed-users](04-enterprise-managed-users.md), [05-teams-permissions](05-teams-permissions.md) | Lab 9 (Teams) |
+| 16–17 | Enterprise Administration (demo) | VBD 2.2 | [01-enterprise-hierarchy](01-enterprise-hierarchy.md), [06-policy-inheritance](06-policy-inheritance.md), [12-github-copilot-governance](12-github-copilot-governance.md), [29-enterprise-managed-settings](29-enterprise-managed-settings.md) | Lab 15 (Copilot Governance), Lab 17 (Managed Settings, self-paced) |
+| 18–31 | Organization Overview (namespaces, users, SSO, teams) | VBD 2.1, 2.4, 2.5, 2.7 | [02-organization-strategies](02-organization-strategies.md), [03-identity-access-management](03-identity-access-management.md), [04-enterprise-managed-users](04-enterprise-managed-users.md), [05-teams-permissions](05-teams-permissions.md), [28-enterprise-teams](28-enterprise-teams.md) | Lab 9 (Teams), Lab 16 (Enterprise Teams, self-paced) |
 | 32–45 | Organization Administration (settings, nested teams, team sync, insights, security) | VBD 2.3, 2.5, 2.6 | [21-user-administration](21-user-administration.md), [08-security-compliance](08-security-compliance.md), [22-audit-log-deep-dive](22-audit-log-deep-dive.md) | Lab 8 (Audit), Lab 9 (Teams) |
 | 46–49 | Repository (overview, settings, rulesets, CODEOWNERS) | VBD 1.1–1.4 | [07-repository-governance](07-repository-governance.md) | Lab 3 (Rulesets), Lab 6 (Advanced Rulesets) |
 | 50–61 | API & Authentication Methods (REST, GraphQL, GitHub Apps, OAuth, PATs) | VBD 2.8, 2.11 | [24-scripts-automation](24-scripts-automation.md), [27-integrations-status-api](27-integrations-status-api.md) | Lab 5 (API) |
-| 62–67 | Actions Overview (policies, sharing, best practices) | VBD 2.4, 2.12 | [24-scripts-automation](24-scripts-automation.md) | Lab 2 (Actions Settings), Lab 13 (Automation) |
+| 62–67 | Actions Overview (policies, sharing, best practices) | VBD 2.4, 2.12 | [24-scripts-automation](24-scripts-automation.md), [30-actions-workflow-execution-protections](30-actions-workflow-execution-protections.md) | Lab 2 (Actions Settings), Lab 13 (Automation), Lab 18 (Workflow Execution Protections, self-paced) |
 | 68–69 | Marketplace Overview | VBD 1.8 | [20-github-marketplace-apps](20-github-marketplace-apps.md) | Lab 11 (Apps/Marketplace) |
 | 70–71 | Q&A / Thank You | — | — | — |

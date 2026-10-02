@@ -205,14 +205,14 @@ aside.notes { display: none; }
   <h2>Copilot Plans Overview</h2>
   <table>
     <tr><th>Plan</th><th>Price</th><th>Target</th><th>Key Differentiator</th></tr>
-    <tr><td>Free</td><td>$0</td><td>Individual</td><td>Limited completions &amp; chat</td></tr>
-    <tr><td>Pro</td><td>$10/mo</td><td>Individual</td><td>Unlimited completions &amp; chat</td></tr>
-    <tr><td>Pro+</td><td>$39/mo</td><td>Power users</td><td>Premium models, more agent usage</td></tr>
-    <tr><td><strong>Business</strong></td><td><strong>$19/user/mo</strong></td><td>Organizations</td><td>Org policies, content exclusions, IP indemnification</td></tr>
-    <tr><td><strong>Enterprise</strong></td><td><strong>$39/user/mo</strong></td><td>Large enterprises</td><td>Enterprise policies, audit logs, BYOLLM keys</td></tr>
+    <tr><td>Free · Student</td><td>$0</td><td>Individual</td><td>AI Credits allowance, auto model only</td></tr>
+    <tr><td>Pro</td><td>$10/mo</td><td>Individual</td><td>Monthly AI Credits, selected models</td></tr>
+    <tr><td>Pro+ · Max</td><td>$39 · $100/mo</td><td>Power users</td><td>More AI Credits, premium models</td></tr>
+    <tr><td><strong>Business</strong></td><td><strong>$19/user/mo</strong></td><td>Organizations</td><td>1,900 AI Credits/user, pooled; policies</td></tr>
+    <tr><td><strong>Enterprise</strong></td><td><strong>$39/user/mo</strong></td><td>Large enterprises</td><td>3,900 AI Credits/user, pooled</td></tr>
   </table>
-  <div class="callout info">Both Business &amp; Enterprise include: IP indemnification, code review, cloud agent, agent mode, Copilot Spaces, and MCP server policy.</div>
-  <aside class="notes">Business vs Enterprise: Enterprise adds enterprise-wide policy enforcement, enterprise-level audit logs, bring-your-own LLM API keys, and enterprise-wide custom instructions. Both offer unlimited completions, chat, code review, cloud agent, agent mode, and MCP servers. Copilot IDE features work for GHES users licensed via github.com; cloud-native features (code review, cloud agent) require GHEC.</aside>
+  <div class="callout info">Both Business &amp; Enterprise include: IP indemnification, audit logs, exclusions, code review, cloud agent, agent mode, BYOK, Spaces, MCP policy.</div>
+  <aside class="notes">Since 2026-06-01 every plan bills in GitHub AI Credits ($0.01 each). Each Business license adds 1,900 and each Enterprise license 3,900 AI Credits a month to an enterprise-wide pool; usage beyond it is billed unless the "AI credits paid usage" policy is turned off. Completions stay unlimited on paid plans. Enterprise adds the bigger pool; policies, audit logs, content exclusions and bring your own key (BYOK, on by default since 2026-04-22) come with both. Max ($100/mo) launched 2026-06-01 for existing Student, Pro and Pro+ subscribers. Retention isn't zero: Claude Fable 5 and 5.1 need Anthropic to retain prompts and outputs (their policies are off by default), and since 2026-07-01 vision attachments are kept about 24 hours. IDE features work for GHES users licensed via github.com; code review and cloud agent need GHEC.</aside>
 </section>
 
 <!-- Slide 4: Organization Policies -->
@@ -240,7 +240,7 @@ aside.notes { display: none; }
     </div>
   </div>
   <div class="callout warning">⚠️ Security-by-default: Block public code matching, disable cloud agent &amp; MCP servers until reviewed. Delegate agent mode to org owners.</div>
-  <aside class="notes">Each policy has 3 states at org level: Enabled, Disabled, Unconfigured. Unconfigured is not "off": from 2026-10-22, unconfigured GA features follow the enterprise "Default policy for new features", which ships Enabled, and unconfigured models already follow the default model policy. Best practice: explicitly configure ALL policies rather than leaving them unconfigured. Privacy policies: block prompt/suggestion collection to maintain data privacy (retention is limited, not zero; see docs/12). Preview features should be disabled in production.</aside>
+  <aside class="notes">Each policy has 3 states at org level: Enabled, Disabled, Unconfigured. Unconfigured is not "off": from 2026-10-22, unconfigured GA features, including code review and MCP servers, follow the "Default policy for new features", which ships Enabled (previews stay opt-in), and since the 2026-08-26 to 2026-09-01 rollout unconfigured models follow "Default availability for released models" (shown as "Delegate to Default Policy"). Best practice: explicitly configure ALL policies rather than leaving them unconfigured, and set MCP servers before 2026-10-22. Privacy policies: block prompt/suggestion collection to maintain data privacy (retention is limited, not zero; see docs/12). Preview features should be disabled in production. Policies decide who gets a feature; since 2026-07-01 enterprise managed settings control how the clients behave (see doc 29, self-paced Lab 17).</aside>
 </section>
 
 <!-- Slide 5: Content Exclusions -->
@@ -271,10 +271,10 @@ aside.notes { display: none; }
         <li>Enterprise exclusions apply to <em>all</em> users regardless of licensing org</li>
         <li>Org exclusions apply only to users licensed through that org</li>
       </ul>
-      <div class="callout warning">⚠️ Since 2026-09-02 exclusions cover Copilot CLI and the Copilot app, but <strong>NOT</strong> agent or Edit mode (cloud agent isn't listed). Disable those if exclusion is critical.</div>
+      <div class="callout warning">⚠️ Since 2026-09-02 exclusions cover Copilot CLI and the Copilot app, but <strong>NOT</strong> agent or Edit mode. Docs disagree on cloud agent: test it. Disable those if critical.</div>
     </div>
   </div>
-  <aside class="notes">After configuring exclusions, wait ~30 min or reload the IDE. To test: open an excluded file — no inline suggestions should appear, and Copilot Chat should not be able to use the file content. Enterprise-level exclusions are the strongest: they apply to ALL Copilot users in the enterprise. The gap with agent mode, Edit mode and the cloud agent is a critical security consideration — call it out explicitly. Copilot CLI and the Copilot app have respected exclusions since 2026-09-02 (GA).</aside>
+  <aside class="notes">After configuring exclusions, wait ~30 min or reload the IDE. To test: open an excluded file — no inline suggestions should appear, and Copilot Chat should not be able to use the file content. Enterprise-level exclusions are the strongest: they apply to ALL Copilot users in the enterprise. The gap with agent mode, Edit mode and third-party agents is a critical security consideration — call it out explicitly. The docs disagree on Copilot cloud agent: the content exclusion availability table doesn't list it, but the supported-surfaces reference says exclusions apply to it, so test before you rely on it. Copilot CLI and the Copilot app have respected exclusions since 2026-09-02 (GA), and Copilot code review doesn't review excluded files.</aside>
 </section>
 
 <!-- Slide 6: Seat Management -->
@@ -311,7 +311,7 @@ aside.notes { display: none; }
       </ul>
     </div>
   </div>
-  <aside class="notes">Key cost tip: identify users who haven't used Copilot recently, send reminders, then reclaim. The billing API provides 28-day rolling reports. Team-based assignment is the most scalable approach — team membership changes automatically adjust Copilot access. Self-service via GitHub App or issue templates reduces admin overhead and accelerates adoption.</aside>
+  <aside class="notes">Key cost tip: identify users who haven't used Copilot recently, send reminders, then reclaim. The billing API provides 28-day rolling reports. Team-based assignment is the most scalable approach — team membership changes automatically adjust Copilot access. Since 2026-06-04 the enterprise can also assign Copilot Business licenses to enterprise teams (see doc 28, self-paced Lab 16). Self-service via GitHub App or issue templates reduces admin overhead and accelerates adoption.</aside>
 </section>
 
 <!-- Slide 7: Transition to Lab 15 -->
@@ -417,7 +417,6 @@ aside.notes { display: none; }
         <tr><td>Splunk</td><td>HEC token</td></tr>
         <tr><td>Google Cloud Storage</td><td>Service account JSON</td></tr>
         <tr><td>Datadog</td><td>API key</td></tr>
-        <tr><td>HTTPS Endpoint</td><td>HEC token</td></tr>
       </table>
     </div>
     <div>
@@ -437,7 +436,7 @@ aside.notes { display: none; }
       </ul>
     </div>
   </div>
-  <aside class="notes">Stream format: compressed JSON (.json.gz), at-least-once delivery, deduplicate via `_document_id`. Health checks run every 24 hours — you get 6 days to fix a misconfigured stream before events are dropped. Multi-endpoint (preview): stream to S3 for storage AND Splunk for alerting simultaneously. Azure Event Hubs is ideal for Microsoft Sentinel integration. Not supported in Azure Government (Blob + Event Hubs).</aside>
+  <aside class="notes">Stream format: compressed JSON (.json.gz), at-least-once delivery, deduplicate via `_document_id`. Health checks run every 24 hours — you get 6 days to fix a misconfigured stream before events are dropped. Multi-endpoint (preview): stream to S3 for storage AND Splunk for alerting simultaneously. Azure Event Hubs is ideal for Microsoft Sentinel integration. Not supported in Azure Government (Blob + Event Hubs). There's no generic HTTPS destination; Microsoft Purview (public preview since 2026-07-02) receives Copilot agent session events only.</aside>
 </section>
 
 <!-- Slide 12: Dormant Users -->
@@ -505,14 +504,14 @@ aside.notes { display: none; }
   <p class="subtitle">Logical groupings for billing allocation and chargeback</p>
   <ul>
     <li><strong>Purpose</strong> — allocate GitHub costs to departments, teams, or projects for internal chargeback</li>
-    <li><strong>Grouping</strong> — assign organizations, repositories, and users to cost centers</li>
+    <li><strong>Grouping</strong> — assign organizations, repositories, users and enterprise teams to cost centers</li>
     <li><strong>Visibility</strong> — enterprise owners see per-cost-center spending breakdowns</li>
-    <li><strong>Default bucket</strong> — unassigned resources accumulate in the enterprise default cost center</li>
+    <li><strong>Unassigned usage</strong> — shows as "Enterprise Only" when usage is grouped by cost center</li>
   </ul>
   <div class="callout info">
     <strong>Key limits:</strong> Up to <strong>1,000 cost centers</strong> per enterprise (since 2026-06-26), each supporting up to <strong>25,000 resources</strong>.
   </div>
-  <aside class="notes">Cost centers solve a fundamental enterprise problem: who pays for what? Without them, all GitHub spending lands on a single invoice with no departmental attribution. Finance teams need this for internal chargeback, budget accountability, and spend forecasting. The 1,000/25K limits are generous — most enterprises use 10–50 cost centers. Any resource not explicitly assigned goes to the default cost center, so always assign resources proactively.</aside>
+  <aside class="notes">Cost centers solve a fundamental enterprise problem: who pays for what? Without them, all GitHub spending lands on a single invoice with no departmental attribution. Finance teams need this for internal chargeback, budget accountability, and spend forecasting. The 1,000/25K limits are generous — most enterprises use 10–50 cost centers. Usage from resources that aren't in a cost center shows as "Enterprise Only" when you group usage by cost center, so always assign resources proactively. Since 2026-06-25 you can add enterprise teams, so attribution follows team membership, including IdP sync (see doc 28).</aside>
 </section>
 
 <!-- Slide 16: Cost Center Design Patterns -->
@@ -557,7 +556,7 @@ aside.notes { display: none; }
   </table>
   <p style="font-size:0.85rem; color:#8b949e; margin-top:0.5rem;">* Since 2026-06-01 Copilot bills in GitHub AI Credits, charged to the user's cost center (or the org that granted the license), unlike usage-based products, which follow the repo/org where the work runs.</p>
   <div class="callout warning">⚠️ Understanding allocation rules is critical — misattribution is the #1 source of chargeback disputes.</div>
-  <aside class="notes">This is the key slide. License-based costs follow the user — whoever the seat is assigned to, their cost center gets charged. This includes GHAS (Secret Protection and Code Security), which are license-based products allocated per user, the same way Copilot and GHEC seats work — each active committer is billed to one cost center based on their user assignment. Usage-based costs follow the resource — the org or repo where the compute happens determines the cost center. The exception is Copilot AI Credits (the billing unit since 2026-06-01), which are usage-based but tied to the individual user's cost center since they represent per-user consumption. Walk through a concrete example: "Dev in Engineering cost center runs Actions in a Marketing repo — Actions cost goes to Marketing, Copilot seat and GHAS license costs stay with Engineering."</aside>
+  <aside class="notes">This is the key slide. License-based costs follow the user — whoever the seat is assigned to, their cost center gets charged. This includes GHAS (Secret Protection and Code Security), which are license-based products allocated per user, the same way Copilot and GHEC seats work — each active committer is billed to one cost center: direct user assignment first, then enterprise team membership (since 2026-06-25), otherwise the cost center of their oldest organization. Usage-based costs follow the resource — the org or repo where the compute happens determines the cost center. The exception is Copilot AI Credits (the billing unit since 2026-06-01), which are usage-based but tied to the individual user's cost center since they represent per-user consumption. Included AI Credits are pooled across the enterprise; since 2026-07-02 an AI credit pool (included usage control) can cap a cost center at the credits its own licenses fund. Walk through a concrete example: "Dev in Engineering cost center runs Actions in a Marketing repo — Actions cost goes to Marketing, Copilot seat and GHAS license costs stay with Engineering."</aside>
 </section>
 
 <!-- Slide 18: Tracking Copilot & GHAS Costs -->
@@ -597,7 +596,7 @@ aside.notes { display: none; }
       </ul>
     </div>
   </div>
-  <aside class="notes">Emphasize the setup order — budgets should be configured BEFORE enabling Copilot or GHAS, not after. Alert-only budgets are good for visibility. Stop-usage budgets enforce hard caps on metered products (Actions, Packages, Codespaces) and on Copilot AI Credits. Since 2026-05-28 GHAS budgets can also be hard limits in license count: at the limit GHAS can't be enabled on more repositories, but it stays on (and keeps billing new committers) where it's already enabled. Start with alert-only at 80% of expected spend. Budget alerts apply at enterprise or cost center scope.</aside>
+  <aside class="notes">Emphasize the setup order — budgets should be configured BEFORE enabling Copilot or GHAS, not after. Alert-only budgets are good for visibility. Stop-usage budgets enforce hard caps on metered products (Actions, Packages, Codespaces) and on Copilot AI Credits. Since 2026-05-28 GHAS budgets can also be hard limits in license count: at the limit GHAS can't be enabled on more repositories until the budget rises or a new billing cycle starts, but it stays on (and keeps billing new committers) where it's already enabled. Start with alert-only budgets set at 80% of expected spend. Threshold alerts (75%, 90%, 100%) are opt-in per budget, for enterprise, organization, cost center and repository budgets. Copilot AI Credits also have user-level budgets, most specific first: individual, cost center user-level (since 2026-06-30), universal. They count included and paid usage, always hard-stop, and their alerts aren't reliable.</aside>
 </section>
 
 <!-- Slide 19: Azure Billing Integration -->
@@ -631,7 +630,7 @@ aside.notes { display: none; }
       <div class="callout info">Requires an Azure subscription with Owner or Contributor role to link.</div>
     </div>
   </div>
-  <aside class="notes">This is critical for enterprises already on Azure — they get a single invoice and unified reporting across all cloud spend. The linkage happens at Enterprise Settings → Billing → Payment information. Once linked, GitHub metered usage (Actions, Packages, Codespaces, Copilot premium) flows through the Azure subscription. License costs (GHEC seats, Copilot seats) also appear in Azure Cost Management. Per-cost-center routing lets departments manage their own Azure subscriptions while the enterprise maintains centralized governance.</aside>
+  <aside class="notes">This is critical for enterprises already on Azure — they get a single invoice and unified reporting across all cloud spend. The linkage happens at Enterprise Settings → Billing → Payment information. Once linked, GitHub metered usage (Actions, Packages, Codespaces, Copilot AI Credits beyond the included pool) flows through the Azure subscription. License costs (GHEC seats, Copilot seats) also appear in Azure Cost Management. Per-cost-center routing lets departments manage their own Azure subscriptions while the enterprise maintains centralized governance.</aside>
 </section>
 
 <!-- Slide 20: API & Automation -->
@@ -645,7 +644,7 @@ aside.notes { display: none; }
         <tr><th>Operation</th><th>Endpoint</th></tr>
         <tr><td>List cost centers</td><td><code>GET /enterprises/{ent}/settings/billing/cost-centers</code></td></tr>
         <tr><td>Create cost center</td><td><code>POST /enterprises/{ent}/settings/billing/cost-centers</code></td></tr>
-        <tr><td>Add resources</td><td><code>POST .../{cost_center_id}/resources</code></td></tr>
+        <tr><td>Add resources</td><td><code>POST .../{cost_center_id}/resource</code></td></tr>
         <tr><td>Get usage report</td><td><code>GET /enterprises/{ent}/settings/billing/usage</code></td></tr>
       </table>
     </div>
@@ -676,7 +675,7 @@ aside.notes { display: none; }
       </ul>
       <h3>Setup Checklist</h3>
       <ul>
-        <li>✅ Assign <strong>ALL</strong> resources — unassigned goes to default</li>
+        <li>✅ Assign <strong>ALL</strong> resources — unassigned = "Enterprise Only"</li>
         <li>✅ Set budgets immediately after creation</li>
         <li>✅ Review quarterly and adjust with org changes</li>
         <li>✅ Document ownership: who approves spend per cost center?</li>
@@ -686,7 +685,7 @@ aside.notes { display: none; }
       <h3>Common Mistakes</h3>
       <ul>
         <li>❌ Creating cost centers after features are enabled (retroactive = messy)</li>
-        <li>❌ Leaving resources unassigned (inflates default cost center)</li>
+        <li>❌ Leaving resources unassigned (inflates "Enterprise Only")</li>
         <li>❌ Too many cost centers (administrative overhead exceeds value)</li>
         <li>❌ No budget alerts (surprise invoices at month end)</li>
         <li>❌ Not reviewing when teams reorg (stale attribution)</li>
@@ -694,7 +693,7 @@ aside.notes { display: none; }
       <div class="callout warning">⚠️ Start with fewer cost centers and split later — merging cost centers is harder than splitting.</div>
     </div>
   </div>
-  <aside class="notes">Wrap up with actionable takeaways. The #1 mistake is creating cost centers after features are already in use — historical usage won't retroactively reassign. Start simple: one cost center per major department, budget alerts at 80%, and quarterly reviews. Naming should match whatever your finance team already uses for internal cost tracking. Document an owner for each cost center who can approve spend and adjust budgets. Start with fewer cost centers — you can always add more, but consolidating existing ones requires moving all resources manually. Transition to Day 1 wrap-up discussion and Q&amp;A. Encourage participants to explore cost center settings in their own enterprise environments.</aside>
+  <aside class="notes">Wrap up with actionable takeaways. The #1 mistake is creating cost centers after features are already in use — historical usage won't retroactively reassign. Start simple: one cost center per major department, budgets with threshold alerts on (they fire at 75%, 90% and 100%), and quarterly reviews. Naming should match whatever your finance team already uses for internal cost tracking. Document an owner for each cost center who can approve spend and adjust budgets. Start with fewer cost centers — you can always add more, but consolidating existing ones requires moving all resources manually. Transition to Day 1 wrap-up discussion and Q&amp;A. Encourage participants to explore cost center settings in their own enterprise environments.</aside>
 </section>
 
 </div><!-- /deck -->

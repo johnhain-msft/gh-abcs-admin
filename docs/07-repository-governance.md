@@ -214,7 +214,7 @@ GitHub provides two mechanisms for enforcing repository policies: legacy **Branc
    - Consistent policy across enterprise
 
 2. **Bypass Actors with Conditions:**
-   - Grant exceptions to specific users, teams, or apps
+   - Grant exceptions to roles, teams (including enterprise teams), or apps; since 2026-05-07, repository-level rulesets also accept individual users as bypass actors (UI, REST API and GraphQL), so one person or service account no longer needs a dedicated team
    - Require manual approval for bypass
    - Audit all bypass events
    - Time-based exceptions (via custom apps)
@@ -235,6 +235,13 @@ GitHub provides two mechanisms for enforcing repository policies: legacy **Branc
    - Test policies without enforcement
    - Gather compliance metrics before blocking
    - Gradual rollout with real data
+
+**Branch renames under organization and enterprise rulesets:** Since 2026-05-07, a repository administrator can rename a branch that organization or enterprise rulesets target, provided every ruleset that applied to the old name also applies to the new one (or the administrator can bypass the rulesets that would no longer apply). Otherwise an administrator at that level must do the rename. Two settings control this:
+
+- **Organization:** **Settings** → **Member privileges** → "Branch renames" → **Allow repository administrators to rename branches protected by organization rules**. Disabled by default for existing organizations; enabled by default for newly created organizations.
+- **Enterprise:** **Policies** → **Member privileges** → "Repository branch renames". By default, repository administrators can rename branches that enterprise rules target; enterprise owners can restrict renames to enterprise owners.
+
+Workflow execution protections, which control who and what can start GitHub Actions workflows, are built on the same rulesets framework (custom-property targeting, evaluate mode, insights); see [GitHub Actions Workflow Execution Protections and Runner Governance](30-actions-workflow-execution-protections.md).
 
 ```mermaid
 graph LR
@@ -260,6 +267,8 @@ graph LR
 
 ### Migration Path: Branch Protection to Rulesets
 
+**Built-in conversion (since 2026-08-11):** For an individual repository you don't have to recreate rules by hand. In **Settings → Branches**, find the rule under "Branch protection rules" and click **Convert to ruleset**. GitHub generates one or more rulesets that preserve the rule's behavior, including required reviews, status checks and push restrictions, and shows the "New behavior" before you choose an enforcement status. **Active** is the default; choose **Evaluate** for a first migration. "Require conversation resolution before merging" doesn't map one-to-one, because in rulesets it belongs to the pull request rule. Once the rulesets fully cover the old rule, the **Branches** page says it can be safely deleted and offers a **Delete** button. Use conversion for repository-level rules, and the phased organization-ruleset approach below for policy that must apply across repositories.
+
 **Phase 1: Assessment**
 ```bash
 # Audit existing branch protection rules
@@ -276,7 +285,7 @@ gh api --paginate '/orgs/ORGANIZATION/repos' \
 
 **Phase 2: Pilot Ruleset**
 1. Create organization ruleset in **Evaluate** mode
-2. Monitor compliance via ruleset insights
+2. Monitor compliance in Rule Insights (organization **Settings** → **Repository** → **Rule insights**, or the rule insights **Dashboard** under the same menu)
 3. Identify repositories that would fail
 4. Address policy violations or adjust ruleset
 
@@ -1333,9 +1342,9 @@ gh api /orgs/ORGANIZATION/audit-log \
   -f phrase='action:repo.*' \
   -f per_page=100
 
-# Ruleset compliance violations
-gh api /orgs/ORGANIZATION/rulesets/insights \
-  --jq '.violations[] | {repo: .repository.name, rule: .rule_type, user: .actor.login}'
+# Ruleset compliance violations (the data behind Rule Insights)
+gh api '/orgs/ORGANIZATION/rulesets/rule-suites?rule_suite_result=fail&time_period=week' \
+  --jq '.[] | {repo: .repository_name, ref: .ref, actor: .actor_name, result: .result}'
 
 # Access reviews
 gh api /orgs/ORGANIZATION/outside_collaborators --paginate \
@@ -1526,6 +1535,9 @@ gh api \
 - [Managing Branch Protection Rules](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/managing-a-branch-protection-rule) - Legacy branch protection configuration
 - [About Repository Rulesets](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets) - Modern ruleset capabilities and advantages
 - [Creating Rulesets for Repositories](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository) - Step-by-step ruleset configuration
+- [Converting Branch Protections to Rulesets](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/converting-branch-protections-to-rulesets) - The **Convert to ruleset** flow
+- [Allowing Repository Admins to Rename Branches with Organization Rulesets](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/allowing-repository-admins-to-rename-branches-with-organization-rulesets) - Organization branch-rename setting
+- [Managing Rulesets for Repositories in Your Organization](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/managing-rulesets-for-repositories-in-your-organization) - Organization rulesets, Rule Insights and the rule insights dashboard
 - [Managing Code Review Settings](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/about-protected-branches#require-pull-request-reviews-before-merging) - Pull request review requirements
 - [About Code Owners](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) - CODEOWNERS file syntax and behavior
 - [Managing Merge Queue](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue) - Merge queue configuration and usage
@@ -1539,6 +1551,7 @@ gh api \
 - [06-policy-inheritance.md](./06-policy-inheritance.md) - Organization and enterprise-level policy inheritance affecting repository settings
 - [05-teams-permissions.md](./05-teams-permissions.md) - Team-based access control and permission levels for repositories
 - [08-security-compliance.md](./08-security-compliance.md) - Security settings, secret scanning, and compliance requirements
+- [30-actions-workflow-execution-protections.md](./30-actions-workflow-execution-protections.md) - Actions policies built on the rulesets framework: who and what can start workflows
 
 ### Additional Resources
 

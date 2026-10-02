@@ -296,7 +296,7 @@ The JWT issued by GitHub's OIDC provider contains claims that identify the workf
 
 | Claim | Description | Example |
 |-------|-------------|---------|
-| `sub` | Subject — encodes repo, branch/tag/environment | `repo:octo-org/octo-repo:environment:prod` |
+| `sub` | Subject — encodes repo, branch/tag/environment; for repositories using immutable subject claims, the repo segment also carries owner and repository IDs | `repo:octo-org/octo-repo:environment:prod` or `repo:octo-org@123456/octo-repo@456789:environment:prod` |
 | `aud` | Audience — defaults to repo owner URL; customizable | `api://AzureADTokenExchange` |
 | `iss` | Issuer — GitHub's OIDC provider | `https://token.actions.githubusercontent.com` |
 | `repository` | Full repository name | `octo-org/octo-repo` |
@@ -313,12 +313,14 @@ The JWT issued by GitHub's OIDC provider contains claims that identify the workf
 
 The `sub` claim format varies by trigger context and can be customized at the organization level:
 
-| Context | Default Subject Claim Format |
-|---------|------------------------------|
-| **Environment** | `repo:ORG/REPO:environment:ENV-NAME` |
-| **Branch** | `repo:ORG/REPO:ref:refs/heads/BRANCH` |
-| **Tag** | `repo:ORG/REPO:ref:refs/tags/TAG` |
-| **Pull request** | `repo:ORG/REPO:pull_request` |
+| Context | Default Subject Claim Format | Immutable Subject Claim Format |
+|---------|------------------------------|--------------------------------|
+| **Environment** | `repo:ORG/REPO:environment:ENV-NAME` | `repo:ORG@OWNER-ID/REPO@REPO-ID:environment:ENV-NAME` |
+| **Branch** | `repo:ORG/REPO:ref:refs/heads/BRANCH` | `repo:ORG@OWNER-ID/REPO@REPO-ID:ref:refs/heads/BRANCH` |
+| **Tag** | `repo:ORG/REPO:ref:refs/tags/TAG` | `repo:ORG@OWNER-ID/REPO@REPO-ID:ref:refs/tags/TAG` |
+| **Pull request** | `repo:ORG/REPO:pull_request` | `repo:ORG@OWNER-ID/REPO@REPO-ID:pull_request` |
+
+**Immutable subject claims (github.com only):** Repositories created after 2026-07-15, and repositories renamed or transferred after that date, get the immutable format, which adds the owner ID and repository ID to the `repo` segment so that a recycled organization or repository name can't mint tokens that match an old trust policy. Older repositories keep the name-only format until an organization or repository opts in through the OIDC settings UI or REST API. The IDs stay in the subject even when you customize it with `include_claim_keys`. Cloud trust policies that match `repo:ORG/REPO:...` don't match tokens in the immutable format, so update federated credentials and IAM conditions in your repository creation, rename and transfer runbooks. GitHub Enterprise Server isn't affected.
 
 Organizations can customize the `sub` claim via the REST API to include additional claim fields such as `repository_id` or `repository_visibility`. This enables **attribute-based access control (ABAC)** patterns where cloud trust policies gate access based on repository metadata.
 
@@ -395,6 +397,8 @@ AWS uses an **IAM OIDC identity provider** with a role trust policy:
 }
 ```
 
+> **Note:** This condition matches the name-only subject. If `octo-repo` was created, renamed or transferred after 2026-07-15, or has opted in to immutable subject claims, the condition must match `repo:octo-org@123456/octo-repo@456789:environment:prod` instead, using the real owner and repository IDs.
+
 ```yaml
 jobs:
   deploy:
@@ -451,6 +455,7 @@ Follow these practices to harden OIDC-based deployments:
 | Practice | Rationale |
 |----------|-----------|
 | Use environment-scoped subject claims | Prevents non-production branches from assuming production roles |
+| Match the subject format each repository uses | Repositories created, renamed or transferred after 2026-07-15 send immutable owner and repository IDs; a trust policy written for `repo:ORG/REPO` won't match them |
 | Restrict `repository_visibility` in trust policies | Ensures only private repos can access internal resources |
 | Enable `runner_environment` claim validation | Prevents self-hosted runner compromise from escalating to cloud access |
 | Customize `aud` claim per cloud provider | Reduces token reuse risk across providers |
@@ -642,6 +647,7 @@ Enterprise owners control which Actions are available across the organization:
 | **Commit SHA pinning** | Require actions referenced by full commit SHA | Prevents supply-chain attacks via compromised action tags |
 | **Fork PR workflows** | Require approval for outside collaborators | Prevents unauthorized deployments triggered by fork PRs |
 | **Runner scope** | Enable/disable repository-level self-hosted runners | Controls where deployment jobs can execute |
+| **Workflow execution protections** | Actor and event allowlists in the separate Actions **Policies** section (GA 2026-09-17), with **Evaluate** mode and Policy insights | Restricts who can start a deployment workflow such as `deploy.yml` and which events can trigger it; see [GitHub Actions Workflow Execution Protections and Runner Governance](30-actions-workflow-execution-protections.md) |
 
 ```yaml
 # Pinning actions to commit SHAs (enterprise best practice)
@@ -664,12 +670,14 @@ The `GITHUB_TOKEN` is an automatically generated token available to every workfl
 
 ### Artifact and Log Retention
 
-Enterprise policies control how long deployment artifacts and workflow logs are retained:
+Enterprise policies control how long deployment artifacts and workflow logs are retained. Since 2026-10-01 the setting is labeled **Check, workflow run, status, artifact and log retention**, and it also governs checks, workflow runs and commit statuses, including those created by third-party apps. Deployment evidence in run history and check results expires with it (see [Permissions and Retention](27-integrations-status-api.md#permissions-and-retention)):
 
 | Repository Type | Retention Range | Default |
 |----------------|-----------------|---------|
-| **Private** | 1 – 400 days | 90 days |
+| **Private and internal** | 1 – 400 days | 90 days |
 | **Public** | 1 – 90 days | 90 days |
+
+A repository can't exceed its organization and enterprise caps, and changes apply only to new data; raising the period doesn't restore data that was already removed.
 
 Additional enterprise-controlled storage settings:
 
@@ -815,3 +823,7 @@ jobs:
 12. [REST API endpoints for deployments](https://docs.github.com/en/rest/deployments/deployments)
 13. [Required Workflows moving to Repository Rules](https://github.blog/changelog/2023-05-04-github-actions-required-workflows-will-move-to-repository-rules/)
 14. [Deploy to Azure infrastructure with GitHub Actions](https://learn.microsoft.com/en-us/azure/developer/github/deploy-to-azure)
+15. [OpenID Connect reference: Immutable subject claims](https://docs.github.com/en/enterprise-cloud@latest/actions/reference/security/oidc#immutable-subject-claims)
+16. [About Actions policies](https://docs.github.com/en/enterprise-cloud@latest/actions/concepts/about-actions-policies)
+17. [Immutable subject claims for GitHub Actions OIDC tokens (changelog, 2026-04-23)](https://github.blog/changelog/2026-04-23-immutable-subject-claims-for-github-actions-oidc-tokens)
+18. [Actions retention now covers checks, runs, and statuses (changelog, 2026-10-01)](https://github.blog/changelog/2026-10-01-actions-retention-now-covers-checks-runs-and-statuses)

@@ -8,6 +8,8 @@ References:
 - [Available rules for rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)
 - [About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners)
 - [Ruleset recipes](https://github.com/github/ruleset-recipes)
+- [Managing rulesets for a repository (Rule Insights)](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository)
+- [Converting branch protections to rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/converting-branch-protections-to-rulesets)
 
 ## What You'll Learn
 
@@ -102,12 +104,12 @@ In the **"Branch protections"** section, enable the following rules:
 
 ## 3.7 _(Optional)_ View Rule Insights
 
-1. Go to **Settings → Rules → Rulesets**, then click the name of the ruleset you want to inspect
-2. On the ruleset's detail page, click the **Insights** tab (redesigned April 2026) to open the dashboard — you can filter by actor, time period, and result (pass / fail / bypass)
-3. Review the timeline of rule evaluations — you should see your recent PR activity with pass/fail/bypass events
+1. Go to **Settings**, then in the left sidebar under **"Code and automation"**, click **Rules**, then click **Insights**
+2. At the top of the **Rule Insights** page, review the dashboard charts (generally available since 2026-08-25 on GitHub Team and GitHub Enterprise Cloud): successes, failures and bypasses over time, and the most active bypassers. Each chart links to the filtered list below it
+3. Use the dropdown menus at the top of the page to filter by ruleset, branch, actor and time period, then review the timeline of rule evaluations — you should see your recent PR activity with pass/fail/bypass events. To see which rules failed or were bypassed, click the **···** menu next to an event and expand the ruleset name
 4. _(Note)_ On GitHub Enterprise Cloud, you can set rulesets to **Evaluate** mode to dry-run rules against real traffic before activating them
 
-> **Note: Legacy branch protection** — Prior to rulesets (GA July 2023), branch protection rules were the only way to protect branches. They are found at **Settings > Branches** and still function today. Rulesets are the recommended modern approach because they support layering multiple rules, provide an Active/Disabled/Evaluate status, give visibility to all contributors (not just admins), and can be applied at the organization level across multiple repositories. Legacy branch protection rules and rulesets coexist — the most restrictive combination of both applies.
+> **Note: Legacy branch protection** — Prior to rulesets (GA July 2023), branch protection rules were the only way to protect branches. They are found at **Settings > Branches** and still function. Rulesets are the recommended modern approach because they support layering multiple rules, provide an Active/Disabled/Evaluate status, give visibility to all contributors (not just admins), and can be applied at the organization level across multiple repositories. Legacy branch protection rules and rulesets coexist — the most restrictive combination of both applies. Since 2026-08-11 you can migrate a legacy rule in place: in **Settings > Branches**, click **Convert to ruleset** next to the rule, choose **Active** or **Evaluate**, and delete the old rule once the page reports that rulesets fully cover it.
 
 ## ✅ Verification Checklist
 

@@ -1,7 +1,7 @@
 # 🎙️ Presenter Script — Day 2: Repository, Security, API & Advanced Topics
 
 > **Total Duration:** 180 minutes (3 hours)
-> **Labs Demoed:** 11 (Labs 1–7, 11–14) — combined with Day 1's 4 demos, all 15 labs are covered across both days
+> **Labs Demoed:** 11 (Labs 1–7, 11–14) — combined with Day 1's 4 demos, Labs 1–15 are covered across both days; Labs 16–18 are self-paced extensions
 > **Slide Sources:**
 >
 > - **Main PowerPoint** — Slides 46–71 (open on projector/shared screen)
@@ -92,7 +92,7 @@
 
 "This is what a repository landing page looks like. Let me walk you through what's here."
 
-"At the top you have the navigation tabs — Code, Issues, Pull requests, Actions, Projects, Wiki, Security, Settings. An important thing to know as an admin: **the tabs a user sees depend on their permissions**. Only repository admins see the Settings tab. If someone tells you they can't find Settings, check their access level."
+"At the top you have the navigation tabs — Code, Issues, Pull requests, Actions, Projects, Wiki, Security & quality, Settings. An important thing to know as an admin: **the tabs a user sees depend on their permissions**. Only repository admins see the Settings tab. If someone tells you they can't find Settings, check their access level."
 
 "The main area shows the file listing, and below that, the README renders automatically. That README is your repo's front door — it's the first thing people see."
 
@@ -206,7 +206,7 @@
 
 "**Targets:** Branch protection only covers branches. Rulesets can protect **branches, tags, and push targets**."
 
-"**Bypass:** With branch protection, admins automatically override. With rulesets, you define **granular bypass actors** — specific teams, apps, or roles — and even then, there are two bypass modes."
+"**Bypass:** With branch protection, admins automatically override. With rulesets, you define **granular bypass actors** — specific roles, teams, apps, or, on repository rulesets since 2026-05-07, individual users — and even then, there are two bypass modes."
 
 > **🖥️ ADVANCE to Day 2 Supplement — Slide 3: Ruleset Anatomy**
 
@@ -254,7 +254,9 @@
 
 "There are two bypass modes. **Always** means the actor bypasses both direct push restrictions and PR merge rules. **Pull-requests only** means the actor is still blocked from direct pushing but can bypass PR review requirements when merging."
 
-"Who can you set as bypass actors? Repo admins, org admins, specific teams, GitHub Apps, and deploy keys."
+"Who can you set as bypass actors? Repo admins, org admins, specific teams — including enterprise teams since 2026-06-04 — GitHub Apps, and deploy keys. And since 2026-05-07, a repository ruleset can also list individual users, so you no longer need a one-person team just to let one service account bypass."
+
+"A related change from the same date: a repository admin can rename a branch that org or enterprise rulesets protect, as long as the new name stays inside every ruleset that applied to the old one. Org and enterprise owners control that with a branch-rename setting."
 
 "And here's what makes this auditable: **every single bypass is logged in Rule Insights**. So you can always go back and see who bypassed what rule and when."
 
@@ -276,7 +278,7 @@
 
 > **💡 DISCUSSION PROMPT**
 > Ask: "Quick show of hands — how many of you are currently using branch protection rules? And how many have already migrated to rulesets?"
-> Note: If most are on legacy, emphasize that migration is manual but worthwhile. If some are on rulesets, ask what they like about them.
+> Note: If most are on legacy, point out that since 2026-08-11 a repository's rule can be migrated in place: **Settings → Branches → Convert to ruleset**, starting in **Evaluate** for a first migration. Org-wide policy still means building organization rulesets. If some are on rulesets, ask what they like about them.
 
 ---
 
@@ -393,7 +395,7 @@
 
 "We've covered a lot of ground in the first hour — repository governance, templates, and a deep dive into rulesets with two live demos. Let's take a **10-minute break**. Stretch, grab a coffee, check your messages."
 
-"When we come back, we're going to shift to **security** — secret scanning, code scanning, push protection, and how to manage the cost of GitHub Advanced Security. See you back here at **[state the clock time]**."
+"When we come back, we're going to shift to **security** — secret scanning, code scanning, push protection, and how to manage the cost of GitHub Secret Protection and GitHub Code Security. See you back here at **[state the clock time]**."
 
 ---
 
@@ -519,12 +521,14 @@
 "Next, let's enable code scanning. I'll turn on CodeQL with the default setup — this is the zero-configuration option. GitHub automatically detects the languages in the repo and sets up the analysis. Let me switch to the Actions tab — you can see the CodeQL workflow is now running. The first analysis takes a few minutes."
 
 > **🖥️ DEMO STEP 5: Review code scanning alerts**
-> Navigate to: **Security → Code scanning alerts**, review alerts and show Copilot Autofix
+> Navigate to: **Security & quality → Code scanning alerts**, review alerts and show Copilot Autofix (or **Assign to Copilot**)
 
-"While that's running, let me show you what code scanning alerts look like once they're generated. Here under Security, Code scanning alerts. Each alert shows the vulnerability type, severity, file location, and — this is powerful — **Copilot Autofix** can generate a suggested fix. You can review the fix and merge it directly from the alert."
+"While that's running, let me show you what code scanning alerts look like once they're generated. Here under Security & quality, Code scanning alerts. Each alert shows the vulnerability type, severity, file location, and — this is powerful — **Copilot Autofix** can generate a suggested fix. You can review the fix and merge it directly from the alert. Copilot Autofix comes with Code Security and doesn't use GitHub AI Credits, Copilot's billing unit."
+
+"If Copilot cloud agent is available in the repository, you'll see **Assign to Copilot** instead. That's agentic autofix, in public preview since 2026-07-10: Copilot explores the codebase, re-runs CodeQL to check its fix, and opens a draft pull request. Each run is a cloud agent session, so it uses AI Credits and Actions minutes — budget for it. The enterprise Copilot Autofix policy turns off both kinds."
 
 > **🖥️ DEMO STEP 6: Review Dependabot alerts**
-> Navigate to: **Security → Dependabot alerts**, show advisory detail
+> Navigate to: **Security & quality → Dependabot alerts**, show advisory detail
 
 "Let's also look at Dependabot alerts. These are free on all repos. Each alert links to the CVE advisory, shows which dependency is affected, and in many cases Dependabot has already opened a pull request with the fix."
 
@@ -667,9 +671,11 @@
 
 "**GitHub Apps** — generate tokens prefixed with `ghs_` for server-to-server or `ghu_` for user-to-server. These are the **recommended** method for automation and integrations. They have fine-grained permissions, don't consume a license seat, and act as their own identity."
 
+"One change to know about on Enterprise Cloud: since 2026-04-27, GitHub has been rolling out a stateless format for installation tokens. They still start with `ghs_`, but each one is a JWT of about 520 characters, and the length varies. So treat tokens as opaque strings: no length checks, no regexes like `ghs_` plus 36 characters, and make sure any column that stores tokens holds at least 520 characters. While you test, a temporary `X-GitHub-Stateless-S2S-Token` header on the create-installation-token call forces the stateless or the classic format. Enterprise Server isn't affected."
+
 "**OAuth Apps** — tokens prefixed with `gho_`. These impersonate the authenticating user. Used when you need to act on behalf of a user."
 
-"**GITHUB_TOKEN** — prefixed with `ghs_`. Automatically available inside GitHub Actions workflows. Scoped to the repository where the workflow runs."
+"**GITHUB_TOKEN** — prefixed with `ghs_`. Automatically available inside GitHub Actions workflows. Scoped to the repository where the workflow runs. It's an installation token too, so it was among the first to get the stateless format."
 
 "As of **March 2025**, fine-grained PATs are generally available and recommended over classic PATs."
 
@@ -853,7 +859,7 @@
 
 > **🖥️ ADVANCE to PPT Slide 64: Actions Policies**
 
-"As an admin, you control **which Actions are allowed** at the enterprise, org, and repo level. You can allow all actions, restrict to local actions only, or select specific actions from verified creators."
+"As an admin, you control **which Actions are allowed** at the enterprise, org, and repo level. You can allow all actions, restrict to local actions only, or select specific actions from verified creators. Who and which events can *start* a workflow is a separate control: since 2026-09-17, workflow execution protections have their own **Policies** section in the Actions settings. Doc 30 and self-paced Lab 18 cover them."
 
 "You also control artifact retention periods, whether fork pull requests can run workflows, and the default **GITHUB_TOKEN permissions**. Since February 2023, the default for new repos and orgs is **read-only**. That's a security improvement — workflows need to explicitly request write permissions."
 

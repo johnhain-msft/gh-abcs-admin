@@ -145,7 +145,7 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "Server has almost feature parity with Cloud — Actions, Packages, Secret Protection, Code Security — they're all available. The key difference is that Server requires you to manage upgrades. GitHub releases new versions roughly quarterly, and you need to plan upgrade windows."
 
-"Two important notes about Copilot with Server: First, Copilot IDE features — code completions, chat, agent mode — work for GHES users as long as they're licensed via github.com. The Copilot service runs in the cloud regardless. Second, the Copilot coding agent — the cloud-based agent that works on issues and PRs directly on github.com — that requires Enterprise Cloud. It doesn't work with Server."
+"Two important notes about Copilot with Server: First, Copilot IDE features — code completions, chat, agent mode — work for GHES users as long as they're licensed via github.com. The Copilot service runs in the cloud regardless. Second, Copilot cloud agent — the agent that works on issues and PRs directly on github.com — requires Enterprise Cloud. It doesn't work with Server."
 
 "If you need features from both worlds, GitHub Connect lets you bridge them — you can enable unified search across Cloud and Server, synchronize vulnerability alerts, and allow Server users to use GitHub Actions hosted runners."
 
@@ -159,7 +159,7 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "A big change in early 2025: GitHub Advanced Security has been **unbundled** into two separate products. **Secret Protection** is $19 per committer per month — that gives you secret scanning and push protection. **Code Security** is $30 per committer per month — that gives you CodeQL code scanning, Dependabot security updates, and the security overview dashboard. Previously these were bundled together, so you can now adopt them independently based on your priorities."
 
-"For Copilot, there are five tiers: **Free** at $0 with limited features, **Pro** at $10 per month for individual developers, **Pro+** at $39 per month for power users with expanded context and model selection, **Business** at $19 per user per month for organizations, and **Enterprise** at $39 per user per month which adds enterprise-wide policy enforcement, audit logs, and custom model support."
+"For Copilot, there are seven plans. **Free** and **Student** cost nothing; Student is for verified students. **Pro** is $10 per month, **Pro+** $39 per month, and **Max**, at $100 per month, launched on 2026-06-01 as an upgrade for existing individual subscribers. Those are individual plans. For organizations there's **Business** at $19 per user per month and **Enterprise** at $39 per user per month. Since 2026-06-01, every plan bills in GitHub AI Credits: each Business license includes 1,900 and each Enterprise license 3,900 AI Credits a month, pooled across the enterprise. Enterprise gets you the bigger pool; policy enforcement and audit logs come with both."
 
 "The licensing model is per-user, per-month. A user consumes one license per enterprise, regardless of how many organizations they belong to. And many products now support pay-per-use metered billing — especially Actions, Packages, and Codespaces."
 
@@ -290,11 +290,11 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "Let's look at the Copilot plans in detail, because this directly affects how you govern AI usage in your enterprise."
 
-"There are five tiers. **Free** at zero cost — this gives individual developers basic access with limited completions. **Pro** at $10 per month — expanded individual access. **Pro+** at $39 per month — power-user individual features. These first three are individual plans — they're not managed by the enterprise."
+"There are seven plans. **Free** and **Student** cost nothing — Student is for verified students. **Pro** at $10 per month and **Pro+** at $39 per month are for individual developers, and **Max**, at $100 per month, has been available since 2026-06-01 as an upgrade for existing individual subscribers. These first five are individual plans — they're not managed by the enterprise."
 
-"The two that matter for enterprise governance are **Business** at $19 per user per month and **Enterprise** at $39 per user per month. Both include IP indemnification — which means GitHub indemnifies you against IP claims related to Copilot suggestions. Both include code review, the cloud coding agent, and agent mode in the IDE."
+"The two that matter for enterprise governance are **Business** at $19 per user per month and **Enterprise** at $39 per user per month. Since 2026-06-01, both bill in AI Credits: each Business license adds 1,900 and each Enterprise license 3,900 AI Credits a month to a pool shared across the enterprise, and usage beyond the pool is billed at a cent per credit unless you turn off the **AI credits paid usage** policy. Code completions stay unlimited. Both include IP indemnification — which means GitHub indemnifies you against IP claims related to Copilot suggestions. Both include code review, Copilot cloud agent, and agent mode in the IDE."
 
-"The key difference: Enterprise adds **enterprise-wide policy enforcement**, audit logs for Copilot events, and the ability to bring your own LLM keys. If governance and compliance are priorities — and for most organizations they should be — Enterprise is the tier you want."
+"The key difference: Enterprise gives you the bigger AI Credits pool. Policy enforcement, audit logs for Copilot events, content exclusions, and bring your own key — users adding their own model provider keys in the IDE, on by default since 2026-04-22 — come with both plans. So choose Enterprise for the larger pool and its extra features; the governance controls are the same on both."
 
 > **🖥️ ADVANCE to Supplement Slide 4 — "Copilot Organization Policies"**
 
@@ -302,9 +302,11 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "First, **Feature Policies** — these control access to Copilot capabilities. You can enable or disable Copilot access overall, code completions, Copilot Chat, and code review. Each of these has three states: Enabled, Disabled, or Unconfigured."
 
-"Second, **Security-Sensitive Policies** — these are the ones that need careful consideration. **Public code matching** — when enabled, Copilot can suggest code that matches publicly available code on GitHub. My recommendation: **block this** unless you have explicit legal guidance that it's acceptable. **Cloud agent** — this is the coding agent that runs on GitHub.com and can make changes to your repositories. **Disable this until your security team has reviewed it.** **Agent mode** — this is the agentic coding capability in the IDE. Similar guidance: disable until reviewed. **MCP servers** — Model Context Protocol servers allow Copilot to connect to external tools and data sources. Again, disable until reviewed."
+"Second, **Security-Sensitive Policies** — these are the ones that need careful consideration. **Public code matching** — when enabled, Copilot can suggest code that matches publicly available code on GitHub. My recommendation: **block this** unless you have explicit legal guidance that it's acceptable. **Copilot cloud agent** — this is the agent that runs on GitHub.com and can make changes to your repositories. **Disable this until your security team has reviewed it.** **Agent mode** — this is the agentic coding capability in the IDE. Similar guidance: disable until reviewed. **MCP servers** — Model Context Protocol servers allow Copilot to connect to external tools and data sources. Again, disable until reviewed."
 
-"The best practice here is clear: **configure ALL policies explicitly**. Don't leave anything as Unconfigured. An unconfigured policy might default to a state you didn't intend, and it makes your governance posture ambiguous."
+"The best practice here is clear: **configure ALL policies explicitly**. Don't leave anything as Unconfigured, because Unconfigured doesn't mean off. Models nobody configured have followed the **Default availability for released models** policy since it was enforced between 2026-08-26 and 2026-09-01. And from 2026-10-22, generally available features left Unconfigured — including code review and MCP servers — follow the **Default policy for new features**, which ships Enabled. Preview features stay opt-in. So decide both defaults, and set the policies you care about, before 2026-10-22."
+
+"One more distinction: these policies decide who gets which feature. Since 2026-07-01, enterprise managed settings decide how the Copilot clients behave — things like blocking bypass mode or limiting MCP servers. Doc 29 and self-paced Lab 17 cover them."
 
 > **🖥️ ADVANCE to Supplement Slide 5 — "Content Exclusions"**
 
@@ -312,19 +314,19 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "Common patterns to exclude: `.env` files — these often contain secrets and connection strings. `secrets/**` — any directory called secrets. `*.pem` and `*.key` — certificate and key files. `terraform.tfvars` — Terraform variable files that often contain sensitive infrastructure configuration."
 
-"Two important operational details. First, exclusions take **up to 30 minutes to propagate** to IDE clients. If you add an exclusion, developers won't see the effect immediately. Second — and this is critical — coverage is uneven. Since 2026-09-02, exclusions are enforced in **Copilot CLI and the Copilot app**, and they also apply to Copilot code review. But they are **not supported in agent mode or Edit mode** in the IDE, and the docs don't list the cloud agent at all. Make sure your security team understands this limitation — if exclusion compliance is critical, disable those features separately."
+"Two important operational details. First, exclusions take **up to 30 minutes to propagate** to IDE clients. If you add an exclusion, developers won't see the effect immediately. Second — and this is critical — coverage is uneven. Since 2026-09-02, exclusions are enforced in **Copilot CLI and the Copilot app**, and they also apply to Copilot code review. But they are **not supported in agent mode or Edit mode** in the IDE, and third-party agents aren't covered. The docs also disagree about Copilot cloud agent: the content exclusion availability table doesn't list it, while the supported-surfaces reference says exclusions apply to it. So test it before you rely on it. Make sure your security team understands this limitation — if exclusion compliance is critical, disable those features separately."
 
 "Enterprise-level exclusions apply to ALL users across all organizations. They cannot be overridden at the org level. This is your strongest governance tool for keeping sensitive files out of AI context."
 
 > **🖥️ ADVANCE to Supplement Slide 6 — "Seat Management"**
 
-"Finally, let's talk about managing Copilot seats — because at $19 to $39 per user per month, costs add up quickly."
+"Finally, let's talk about managing Copilot seats — because at $19 to $39 per user per month, plus any AI Credits used beyond the pool, costs add up quickly."
 
-"You have several assignment methods. **All members** — every org member automatically gets a seat. Simple, but expensive. **Selected members** — you manually assign seats to specific people or teams. This is the right approach for a phased rollout. **Direct enterprise assignment** — assign seats at the enterprise level. And **self-service** — let users request their own seats."
+"You have several assignment methods. **All members** — every org member automatically gets a seat. Simple, but expensive. **Selected members** — you manually assign seats to specific people or teams. This is the right approach for a phased rollout. **Direct enterprise assignment** — assign Copilot Business seats at the enterprise level, to users or, since 2026-06-04, to enterprise teams; doc 28 and self-paced Lab 16 cover enterprise teams. And **self-service** — let users request their own seats."
 
 "For cost optimization, the most important lever is **seat reclamation**. GitHub can automatically reclaim seats from users who haven't used Copilot in 30 or more days. Enable this. It prevents you from paying for unused seats."
 
-"My recommendation for a Copilot rollout: start with selected members. Pick two or three pilot teams. Enable automatic seat reclamation. Set up content exclusion rules before you turn Copilot on. Monitor adoption using the Copilot usage metrics API. Then expand based on data."
+"My recommendation for a Copilot rollout: start with selected members. Pick two or three pilot teams. Enable automatic seat reclamation. Set up content exclusion rules and AI Credits budgets before you turn Copilot on. Monitor adoption using the Copilot usage metrics API. Then expand based on data."
 
 "You can monitor seat usage programmatically through the API — I'll show you that in the demo."
 
@@ -353,13 +355,13 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 "Instead of having you all work through this lab individually, I'm going to walk through it live so we can discuss each step together."
 
 > **🖥️ DEMO STEP 1: Copilot Organization Policies**
-> Navigate to: **Organization > Settings > Copilot**
+> Navigate to: **Organization > Settings > Copilot > Policies**
 
 "Let me pull up the Copilot settings for our organization. Here under Settings, you'll see the Copilot section. These are the policy toggles we just discussed."
 
-"Here's **Access** — who can use Copilot. **Public code matching** — whether Copilot can suggest code matching public repositories. Notice it's currently set to Blocked — that's the recommendation. **Cloud agent** — the coding agent that runs on GitHub.com. **Code review** — whether Copilot can review pull requests. **Agent mode** — the agentic coding capability in the IDE. And **MCP servers** — Model Context Protocol connections to external tools."
+"Here's **Access** — who can use Copilot. **Public code matching** — whether Copilot can suggest code matching public repositories. Notice it's currently set to Blocked — that's the recommendation. **Copilot cloud agent** — the agent that runs on GitHub.com. **Code review** — whether Copilot can review pull requests. **Agent mode** — the agentic coding capability in the IDE. And **MCP servers** — Model Context Protocol connections to external tools."
 
-"The key takeaway: configure ALL of these explicitly. Don't leave anything as Unconfigured."
+"The key takeaway: configure ALL of these explicitly. Don't leave anything as Unconfigured — from 2026-10-22, Unconfigured features follow the **Default policy for new features**, which ships Enabled."
 
 > **🖥️ DEMO STEP 2: Content Exclusions**
 > Navigate to: **Copilot > Content exclusion** → Click **Add exclusion**
@@ -368,7 +370,7 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "You define glob patterns to prevent Copilot from accessing specific files. Let me add a few common patterns: `**/*.env` — this blocks all `.env` files in any directory. `**/secrets/**` — this blocks anything in a secrets directory. `**/config/production/**` — this blocks production configuration files."
 
-"Remember what I said earlier: these exclusions take up to 30 minutes to propagate to IDE clients. Since 2026-09-02 they cover Copilot CLI and the Copilot app, but not agent mode or Edit mode in the IDE, and the docs don't list the cloud agent. That's a critical limitation."
+"Remember what I said earlier: these exclusions take up to 30 minutes to propagate to IDE clients. Since 2026-09-02 they cover Copilot CLI and the Copilot app, but not agent mode or Edit mode in the IDE, and the docs disagree about Copilot cloud agent, so test it before you rely on it. That's a critical limitation."
 
 > **🖥️ DEMO STEP 3: Seat Assignment**
 > Navigate to: **Copilot > Access**
@@ -392,8 +394,10 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 > `curl -s "$(gh api "/orgs/YOUR-ORG/copilot/metrics/reports/organization-1-day?day=$(date -d yesterday +%Y-%m-%d)" --jq '.download_links[0]')" | jq '{day, daily_active_users, code_generation_activity_count, code_acceptance_activity_count}'`
 >
 > **⚠️ Note:** The legacy `/copilot/metrics` endpoint was removed April 2026. The new API returns a download link; the command above fetches it in one step. On macOS, replace `date -d yesterday` with `date -v-1d`.
+>
+> **⚠️ Network:** Since 2026-05-20 the download link points to `copilot-reports.github.com` (GHE.com: `copilot-reports.SUBDOMAIN.ghe.com`). Behind a firewall or proxy, allowlist it before the demo; the fallback hosts are in the [Copilot allowlist reference](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/copilot-allowlist-reference).
 
-"This second command pulls usage metrics from the new Copilot metrics reports API. It grabs yesterday's daily report — active users, code generation count, and acceptance count. You can download the full report for detailed per-IDE and per-feature breakdowns. This is what you'd use in an executive dashboard."
+"This second command pulls usage metrics from the Copilot usage metrics reports API. It grabs yesterday's daily report — active users, code generation count, and acceptance count. Since 2026-04-10, those two counts include Copilot CLI activity as well as the IDE, so if you built a dashboard on IDE-only numbers, rebase it. You can download the full report for detailed per-IDE and per-feature breakdowns; CLI shows up in the feature breakdowns as `copilot_cli`, not in the per-IDE ones. This is what you'd use in an executive dashboard."
 
 > **🖥️ DEMO STEP 6: Audit Log for Copilot Events**
 > Navigate to: **Settings > Audit log** → filter by `action:copilot`
@@ -490,7 +494,7 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "When SAML SSO is configured, organization content is protected by double authentication. A user must authenticate to GitHub first, and then authenticate through your identity provider. This applies to web access, API access — everything."
 
-"Here's the key security implication: when SSO is enforced, **personal access tokens and SSH keys must be explicitly authorized** for the organization. A developer can't just create a PAT and access your org's repos — they have to go through an authorization step that links the PAT to their SSO session."
+"Here's the key security implication: when SSO is enforced, **personal access tokens and SSH keys must be explicitly authorized** for the organization. A developer can't just create a PAT and access your org's repos — they have to go through an authorization step that links the PAT to their SSO session. If you run many SSO-protected organizations, since 2026-09-16 an enterprise that uses enterprise-level SSO can let an enterprise-installed GitHub App authorize an existing classic PAT or SSH key for up to 50 organizations per request, instead of each developer doing it one organization at a time. It's opt-in, and that app becomes a privileged identity."
 
 "My recommendation: **enforce SSO and require 2FA**. This gives you two layers of authentication and ensures that your identity provider is the gatekeeper for all access to your organization's code."
 
@@ -702,7 +706,7 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "For long-term retention and real-time security monitoring, you need **audit log streaming**. This is an enterprise-level feature that forwards events to external systems."
 
-"Supported targets include Amazon S3, Azure Blob Storage, Azure Event Hubs, Splunk, Google Cloud Storage, Datadog, and generic HTTPS endpoints. If you're using Microsoft Sentinel for SIEM, Azure Event Hubs is the ideal streaming target."
+"Supported targets are Amazon S3, Azure Blob Storage, Azure Event Hubs, Splunk, Google Cloud Storage, and Datadog. There's no generic HTTPS target. If you're using Microsoft Sentinel for SIEM, Azure Event Hubs is the ideal streaming target."
 
 "Key operational details: events are delivered in compressed JSON format, with **at-least-once delivery** — meaning your consumer needs to handle potential duplicate events. If streaming is paused, events are buffered for up to 7 days. After 7 days, unbuffered events are dropped. GitHub performs health checks every 24 hours, and you have a 6-day window to fix a misconfigured stream before it's automatically disabled."
 
@@ -773,7 +777,7 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "Two critical points about audit log operations. First, **retention**: web events are kept for 180 days, but Git events — clones, pushes, fetches — only 7 days. If you're not streaming to an external system, you're losing visibility into Git operations after just one week."
 
-"Second, **streaming targets**: you can stream to Amazon S3, Azure Blob Storage, Azure Event Hubs, Splunk, Google Cloud Storage, Datadog, or generic HTTPS endpoints. If you're using Microsoft Sentinel, Azure Event Hubs is the ideal target. Make audit log streaming a priority for your enterprise."
+"Second, **streaming targets**: you can stream to Amazon S3, Azure Blob Storage, Azure Event Hubs, Splunk, Google Cloud Storage, or Datadog. If you're using Microsoft Sentinel, Azure Event Hubs is the ideal target. Make audit log streaming a priority for your enterprise."
 
 "That's Lab 8. Let me continue with a related topic — dormant user management."
 
@@ -960,7 +964,7 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 | "What's the difference between EMU and standard SAML?" | EMU = enterprise owns accounts, full lifecycle control. Standard SAML = users own accounts, SSO adds authentication layer. Detailed coverage in Day 2 identity section. |
 | "Can we migrate from branch protection to rulesets?" | Yes. Rulesets are the modern replacement. They can coexist during migration. Deep dive on Day 2. |
 | "How do we handle outside collaborators with SSO?" | Outside collaborators must also authenticate via SSO when it's enforced. They need to authorize their PATs/SSH keys. |
-| "What's the cost difference between Copilot Business and Enterprise?" | Business = $19/user/mo. Enterprise = $39/user/mo. Enterprise adds policy enforcement, audit logs, Copilot Spaces, BYOLLM. |
+| "What's the cost difference between Copilot Business and Enterprise?" | Business = $19/user/mo with 1,900 AI Credits per user per month; Enterprise = $39/user/mo with 3,900. Since 2026-06-01 the credits are pooled across the enterprise. Policies, audit logs, content exclusions and BYOK come with both. |
 | "How often should we review dormant users?" | Monthly is recommended. Quarterly at minimum. Combine with license renewal cycles. |
 
 ### VBD Topic Coverage — Day 1

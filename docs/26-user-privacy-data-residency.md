@@ -102,11 +102,19 @@ Some data categories may be stored or processed outside the chosen region:
 | **Pseudonymized telemetry** | User IDs, GUIDs, unsalted hashes | Service improvement; cannot identify a person alone |
 | **Billing/plan data** | Contact info, billing addresses, payment details | Global billing infrastructure |
 | **Support data** | Support requests, case notes, chat sessions | Global support operations |
-| **GitHub Copilot data** | Prompts, suggestions, telemetry | Copilot processing infrastructure |
+| **GitHub Copilot data** | Prompts, responses, logs, telemetry | Stored outside the region by default. With the **Restrict Copilot to data residency compliant models** policy (US and EU regions, since 2026-04-13), inference, prompts, responses, logs and telemetry stay in-region |
 | **Secret scanning metadata** | Validity checks, extended metadata (if enabled) | Partner notification and validation |
 | **TLS certificates** | Certificate transparency logs for GHE.com subdomain | Sent to CAs and CT ecosystem globally |
 
 > **⚠️ Important:** GitHub documents reasons for data transfers out of the enterprise's region but does not send notifications when transfers occur.
+
+### Copilot with Data Residency
+
+Since 2026-04-13, GitHub Copilot supports data residency in the **US** and **EU** regions, where EU follows the Microsoft EU Data Boundary (EU member states plus EFTA countries). The enterprise policy **Restrict Copilot to data residency compliant models**, in the "Features" section of the enterprise's Copilot policies, routes every Copilot request to model endpoints in the enterprise's region and keeps inference, prompts, responses, logs and telemetry in-region. For US government customers, **Restrict Copilot to FedRAMP models** limits users to models with FedRAMP Moderate certification.
+
+- Both policies are **disabled by default**. Until you enable one, Copilot data is stored outside your region.
+- Requests processed under either policy consume **10% more GitHub AI Credits**: an interaction that would use 100 AI Credits uses 110.
+- All generally available Copilot features work under the policy, but users only see models available in their region, and newly released models can take longer to reach a region.
 
 ### Key Limitations
 
@@ -114,10 +122,11 @@ Enterprises using data residency on GHE.com should be aware of the following con
 
 - **No public repositories** — only internal and private repositories are supported in EMU enterprises
 - **API endpoint changes** — all API requests must target `api.<enterprise>.ghe.com`, not `api.github.com`
-- **Copilot feature gaps** — some GitHub Copilot features may be unavailable on GHE.com
+- **TLS key agreement** — from 2026-10-07, GHE.com rejects TLS connections from clients that offer only X25519 for key agreement. The endpoints keep supporting the FIPS-approved P-256 (`secp256r1`) and P-384 (`secp384r1`) groups; make sure clients offer P-256. Current browsers, operating systems, GitHub CLI releases and common TLS libraries already support P-256; check proxies, security appliances and libraries explicitly configured for X25519 only. SSH is not affected
+- **Copilot region coverage** — Copilot data residency covers the US and EU regions only, and model choice is limited to the models available in your region (see [Copilot with Data Residency](#copilot-with-data-residency))
 - **Enterprise isolation** — managed user accounts cannot interact with resources outside their enterprise
 - **No cross-enterprise collaboration** — users cannot contribute to public open-source projects on GitHub.com
-- **Migration complexity** — moving from GitHub.com to GHE.com requires a full migration, not a simple toggle
+- **Migration complexity** — moving from GitHub.com to GHE.com requires a full migration, not a simple toggle. From GitHub Enterprise Server, Enterprise Live Migrations (generally available since 2026-09-01) migrates repositories to GHE.com with near-zero downtime: it syncs continuously while developers keep working, and cutover only drains the remaining in-flight changes. It runs on the GHES appliance through the `gh elm` CLI extension, supports GHES 3.17.18+, 3.18.12+, 3.19.9+, 3.20.3+, 3.21.3+ and 3.22.0+, migrates one repository per migration (organization settings and teams are reconfigured manually), and complements GitHub Enterprise Importer
 
 ## GDPR and Data Processing
 
@@ -375,6 +384,18 @@ Understanding GitHub's data retention timelines is essential for compliance plan
 | **Actions workflow logs** | 90 days default; configurable per repository |
 | **Actions artifacts** | 90 days default; configurable per repository |
 
+### Security Alert Retention
+
+Since 2026-09-25, GitHub applies a retention policy to closed Dependabot security alerts on GitHub.com, including GitHub Enterprise Cloud; GitHub Enterprise Server is excluded.
+
+| Alert state | Where it is available |
+|-------------|-----------------------|
+| **Open** | UI and API, regardless of age |
+| **Closed less than two years ago** | UI and API |
+| **Closed two or more years ago** | Archival storage only. Enterprise, organization and repository administrators and security managers can download archived alerts as CSV from the security alerts page at that level |
+
+Archived alerts are kept at full fidelity for the life of the account and are removed when the repository, organization or account is deleted or the enterprise agreement ends. With data residency, archived alerts stay in the same region as the rest of your data. Dependabot is the first alert type; GitHub will announce other alert types in the changelog at least 60 days before they adopt the policy. Reports or integrations that query closed alerts older than two years through the API must switch to the CSV archive.
+
 ### Backup and Export Options
 
 Enterprise administrators have several options for data backup and export:
@@ -535,3 +556,7 @@ Two-factor authentication (2FA) is both a security and privacy control:
 15. [GitHub Subprocessors](https://docs.github.com/en/site-policy/privacy-policies/github-subprocessors)
 16. [EU-U.S. Data Privacy Framework](https://www.dataprivacyframework.gov/)
 17. [GDPR Official Text — General Data Protection Regulation](https://gdpr.eu/)
+18. [GitHub Copilot with data residency](https://docs.github.com/en/enterprise-cloud@latest/admin/data-residency/github-copilot-with-data-residency)
+19. [About live migrations from GitHub Enterprise Server to GHE.com](https://docs.github.com/en/enterprise-cloud@latest/migrations/elm/about-live-migrations)
+20. [Upcoming cloud data retention policy for closed security alerts](https://github.blog/changelog/2026-06-30-cloud-data-retention-policy-for-closed-security-alerts) (changelog, 2026-06-30)
+21. [X25519-only TLS ends for GHE.com on October 7](https://github.blog/changelog/2026-09-30-x25519-only-tls-ends-for-ghe-com-on-september-15) (changelog, 2026-09-30)
