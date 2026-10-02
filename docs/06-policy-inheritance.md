@@ -255,7 +255,7 @@ Self-hosted runners introduce significant security considerations because they e
 - Ephemeral runner requirements for public repositories
 - Required labels and environment segregation
 
-GitHub also enforces runner software versions on github.com. A runner needs version `2.329.0` or later to register, and must install each runner release within 30 days of publication to keep receiving jobs. Full enforcement began on 2026-07-31 for GitHub Enterprise Cloud with data residency and on 2026-09-29 for GitHub Enterprise Cloud (the 2026-06-12 announcement said 2026-09-25; a 2026-09-28 post moved it). GitHub Enterprise Server isn't affected. Keep auto-update on, or rebuild runner images at least every 30 days; see [Runner Governance](30-actions-workflow-execution-protections.md#runner-governance).
+GitHub also enforces runner software versions on github.com. A runner needs version `2.329.0` or later to register, and must install each runner release within 30 days of publication to keep receiving jobs. Full enforcement began on 2026-07-31 for GitHub Enterprise Cloud with data residency and on 2026-09-29 for GitHub Enterprise Cloud (the 2026-06-12 announcement said 2026-09-25; a 2026-09-28 post moved it). GitHub Enterprise Server isn't affected. Keep auto-update on, or rebuild runner images at least every 30 days. Since 2026-09-03, the runner version end-of-life schedule endpoints (`GET /enterprises/{enterprise}/actions/runners/deprecations/{version}`, with organization and repository equivalents) return the registration and runtime deprecation dates for a runner version, so fleet owners can alert before a version falls out of support; see [Runner Governance](30-actions-workflow-execution-protections.md#runner-governance).
 
 ### GitHub Copilot Policies
 
@@ -344,6 +344,8 @@ Projects support several field types for structured tracking:
 
 Fields are defined per-project and are not shared across projects. Organizations should establish naming conventions to maintain consistency (e.g., always using "Status" and "Priority" with the same option values across team projects).
 
+**Organization issue fields:** Since 2026-07-02 (generally available; public preview from 2026-05-21), organizations can also define **issue fields**: typed metadata (single select, text, number or date) that appears on issues in every repository of the organization and can be added to project views. Every organization starts with four default fields (Priority, Effort, Start date, Target date), which can be edited or deleted. Organization owners manage them in **Settings** → "Planning" → **Issue fields**, pin each field to issue types, and choose who can see a field's values on issues in public repositories (**Organization only**, the default, or **Public**). Limits are 25 issue fields per organization, 100 options per single-select field, 10 pinned fields per issue type, and 50 fields per project, including issue fields. For metadata such as priority or effort that every team tracks the same way, an issue field replaces per-project copies and label schemes.
+
 #### Built-in Workflows (Automations)
 
 Projects include configurable automation workflows accessible via the **Workflows** tab:
@@ -358,7 +360,7 @@ Workflows are configured per-project and do not cascade from org-level settings.
 #### Governance Recommendations
 
 - Use **org-level projects** for cross-team or leadership visibility into work streams
-- **Standardize field definitions** across projects using documented naming conventions to enable consistent reporting
+- **Standardize field definitions** across projects using documented naming conventions to enable consistent reporting; define organization issue fields for metadata that every team tracks the same way
 - Enterprise admins should **set a policy on who can create org-level projects** to prevent sprawl and ensure projects align with organizational structure
 - Consider creating **project templates** (by duplicating a well-configured project) to ensure consistent structure, fields, and workflows across teams
 - Regularly audit project membership to ensure access aligns with current team composition, especially for private projects containing sensitive planning data
@@ -1209,6 +1211,7 @@ Understanding policy inheritance requires familiarity with the broader GitHub En
 - [Managing Organization Settings](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings) - Organization-level policy configuration
 - [Managing Security Settings for Your Organization](https://docs.github.com/en/enterprise-cloud@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization) - Organization security policies
 - [Organization Base Permissions](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/setting-base-permissions-for-an-organization) - Default access controls
+- [Managing Issue Fields in Your Organization](https://docs.github.com/en/enterprise-cloud@latest/issues/tracking-your-work-with-issues/using-issues/managing-issue-fields-in-an-organization) - Organization-level issue metadata, visibility and limits
 
 **Audit and Compliance**
 - [Reviewing Audit Logs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/about-the-audit-log-for-your-enterprise) - Audit log structure and querying

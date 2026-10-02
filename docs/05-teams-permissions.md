@@ -339,6 +339,7 @@ graph TD
 - Dismiss pull request reviews
 - Lock conversations
 - Hide duplicate comments
+- Create issues in repositories whose Issues setting is **Collaborators only** (since 2026-08-03; before that, only users with write access could)
 
 **Write Permission:**
 - All Triage permissions
@@ -386,7 +387,7 @@ graph TD
 - Limit interactions for users
 - Hide comments organization-wide
 - Lock conversations
-- Manage organization interaction limits
+- Manage organization interaction limits, including (since 2026-08-06) a pull request limit: the maximum number of open, non-draft pull requests a user without write access can have in each public repository of the organization
 
 **Billing Manager:**
 - View billing information
@@ -938,6 +939,8 @@ Code Owner Review Behavior:
   - Code Owner review replaces generic review requirement
   - Multiple owners = multiple approvals needed (if specified)
 ```
+
+> **Note:** Since 2026-07-07, repository rulesets offer the same dismissal control as **Restrict dismissals** above: in the **Require a pull request before merging** rule, select **Restrict who can dismiss reviews** and choose the users, teams or GitHub Apps that can dismiss reviews. It can be set in the UI, the REST API or GraphQL. GitHub recommends rulesets for protecting branches.
 
 **Example Enforcement:**
 

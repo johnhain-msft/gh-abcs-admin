@@ -466,6 +466,8 @@ Repository rulesets are the modern replacement for branch protection rules, offe
 
 **Migration guidance:** For a single repository, since 2026-08-11 you can convert a rule in place: **Settings → Branches**, then **Convert to ruleset** next to the rule. GitHub maps required reviews, status checks and push restrictions into equivalent ruleset rules; "Require conversation resolution before merging" doesn't map one-to-one, because in rulesets it belongs to the pull request rule. Choose **Evaluate** for a first migration, then delete the original rule once you've tested. For policy across many repositories, start organization rulesets in **evaluate mode** alongside existing branch protection. Monitor the rule insights dashboard for 1-2 weeks, then disable branch protection and switch rulesets to active enforcement.
 
+**Copilot pull requests:** Rulesets also have **Require an additional approval for unattributed Copilot pull requests** (public preview; on by default for new and existing rulesets, per the docs). When Copilot opens a pull request under its own app identity instead of for a person, for example from a Microsoft Teams or Slack thread (since 2026-08-21), the pull request needs one more approval than the ruleset sets. It has no effect when the ruleset requires zero approvals.
+
 > 📚 **References**:
 > - See [Repository Governance](07-repository-governance.md) for detailed configuration
 > - [Lab 06: Advanced Rulesets](../labs/lab06.md) for hands-on practice
@@ -485,12 +487,14 @@ How do we set up custom secret scanning patterns for our organization?
 Custom patterns let you detect organization-specific secrets (internal API keys, tokens, connection strings) beyond GitHub's 200+ built-in partner patterns.
 
 **Steps to configure:**
-1. Navigate to **Organization Settings → Code security → Secret scanning**
+1. In the organization's **Settings**, open **Advanced Security → Global settings** in the "Security" section of the sidebar
 2. Under "Custom patterns," click **New pattern**
 3. Define the pattern using Hyperscan regex syntax
 4. Add optional `before` and `after` context patterns to reduce false positives
-5. Run a **dry run** on selected repos to validate matches before enabling
-6. Enable the pattern org-wide once validated
+5. Click **Save and dry run** on up to 10 selected repositories, or all of them, to validate matches before publishing
+6. Click **Publish pattern** once validated
+
+**Automation:** Since 2026-07-13 the REST API can list, create, update and delete custom patterns at repository, organization and enterprise level, so you can keep patterns in code and apply them to many organizations. Dry runs and publishing still happen in the UI.
 
 **Best practices:**
 - Start with high-confidence patterns (e.g., known internal token prefixes)
@@ -501,6 +505,7 @@ Custom patterns let you detect organization-specific secrets (internal API keys,
 > 📚 **References**:
 > - See [Security & Compliance](08-security-compliance.md) for security configuration
 > - [GitHub Docs: Custom Patterns](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/using-advanced-secret-scanning-and-push-protection-features/custom-patterns/defining-custom-patterns-for-secret-scanning)
+> - [GitHub Docs: REST API endpoints for custom patterns](https://docs.github.com/en/enterprise-cloud@latest/rest/secret-scanning/custom-patterns)
 
 ---
 
@@ -538,24 +543,25 @@ How do we handle push protection bypass requests?
 
 ### Answer
 
-When a developer's push is blocked by secret scanning push protection, they can request a bypass. The workflow is:
+When a developer's push is blocked by secret scanning push protection, they can bypass it or request a bypass, depending on your settings:
 
 1. **Developer pushes** → push is blocked with the detected secret type
-2. **Developer selects a reason** — false positive, used in tests, or will fix later
-3. **Bypass request is created** (if delegated bypass is enabled)
-4. **Designated reviewers** receive a notification to approve or deny
+2. **Without delegated bypass**, anyone with write access can bypass by selecting a reason — false positive, used in tests, or will fix later
+3. **With delegated bypass**, contributors without bypass privileges submit a **bypass request** instead
+4. **Designated reviewers** receive a notification to approve or deny; push protection bypass requests expire after 7 days, and since 2026-04-08 the request emails show the expiry period
 5. **If approved**, the developer can push; the event is logged in the audit log
 
 **Configuring delegated bypass:**
-- Organization Settings → Code security → Push protection → **Enable delegated bypass**
-- Assign bypass reviewer teams (recommend: security team or senior engineers)
-- All bypass decisions are captured in the audit log (`secret_scanning_push_protection.bypass_created`)
+- Organization **Settings → Advanced Security → Configurations**: edit a custom security configuration, set "Push protection" **Bypass privileges** to **Specific actors**, then save the configuration and apply it to repositories
+- Assign bypass reviewer teams (recommend: security team or senior engineers); mark an actor **Exempt** only for trusted automation such as migration bots, because exempt actors skip push protection entirely
+- Bypasses and request decisions are captured in the audit log (`secret_scanning_push_protection.bypass` and `secret_scanning_push_protection_request.*`, for example `.approve` and `.deny`)
 
-**Metrics to monitor:** Track bypass request rates, approval rates, and reasons in the security overview dashboard. High bypass rates may indicate overly broad custom patterns.
+**Metrics to monitor:** Track bypass request rates, approval rates, and reasons in the security overview dashboard. Since 2026-05-26 you can sort request lists (Newest, Oldest, Recently updated, Least recently updated) at repository, organization and enterprise level, and the secret scanning alerts REST API accepts `is_bypassed=true` for reports on bypassed secrets. High bypass rates may indicate overly broad custom patterns.
 
 > 📚 **References**:
 > - See [Lab 07: Secret Scanning & Push Protection](../labs/lab07.md) for hands-on practice
-> - [GitHub Docs: Push Protection](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/using-advanced-secret-scanning-and-push-protection-features/push-protection-for-repositories-and-organizations)
+> - [GitHub Docs: Push Protection](https://docs.github.com/en/enterprise-cloud@latest/code-security/concepts/secret-security/push-protection)
+> - [GitHub Docs: Enabling delegated bypass for push protection](https://docs.github.com/en/enterprise-cloud@latest/code-security/how-tos/secure-your-secrets/manage-bypass-requests/enable-delegated-bypass)
 
 ---
 
@@ -572,8 +578,9 @@ Copilot governance operates at three levels with a cascading policy model:
 **Enterprise level** → Sets the ceiling for all orgs:
 - Enable/disable Copilot entirely
 - Control: code completions, chat, CLI, pull request summaries, agent mode
+- Agents and sessions: Copilot cloud agent, third-party agents (Anthropic Claude and OpenAI Codex, public preview), Copilot Memory (public preview, off by default) and **Store local sessions in the Cloud** (Unconfigured allows neither session sync nor remote control)
 - Privacy: telemetry opt-out, prompt/suggestion retention
-- Models: per-model availability, **Default availability for released models** (enforced 2026-08-26 to 2026-09-01) and bring-your-own-key policies
+- Models: per-model availability, **Default availability for released models** (enforced 2026-08-26 to 2026-09-01) and bring-your-own-key policies; open-weight models such as Kimi K2.7 Code and Kimi K3 are off by default
 - **Default policy for new features**: from 2026-10-22, generally available features left Unconfigured follow it; it ships Enabled, and previews stay opt-in
 
 **Organization level** → Can further restrict (never expand beyond enterprise):
@@ -847,7 +854,7 @@ How do we create custom repository roles for our organization?
 
 Custom roles let you define fine-grained permissions beyond the 5 built-in roles (Read, Triage, Write, Maintain, Admin):
 
-**Setup:** Organization Settings → Roles → New role → Select a base role → Add/remove individual permissions.
+**Setup:** Organization **Settings** → **Repository roles** (in the "Access" section) → **Create a Role** → choose a role to inherit → add individual permissions.
 
 **Example custom roles:**
 | Role Name | Base | Added Permissions | Use Case |
@@ -856,7 +863,7 @@ Custom roles let you define fine-grained permissions beyond the 5 built-in roles
 | Release Manager | Write | Edit repo rules, manage deploy keys | CI/CD team deployment access |
 | Compliance Auditor | Read | View audit log, download SBOM | Compliance team oversight |
 
-**Limits:** Up to 5 custom roles per organization (GHEC). Custom roles inherit all permissions from the base role.
+**Limits:** Up to 20 custom repository roles per organization (GitHub Enterprise Server before 3.19 allows 5). Custom roles inherit all permissions from the base role.
 
 > 📚 **References**:
 > - [Lab 09: Teams & Custom Roles](../labs/lab09.md) for hands-on practice

@@ -155,7 +155,7 @@ td:first-child { color: #8b949e; white-space: nowrap; }
 </div>
 
 <!-- Slide 4 -->
-<div class="slide" data-notes="Org rulesets cascade to every repo (including future ones). Repo-level rulesets add on top. Most restrictive combination wins. Evaluate mode is available at both levels.">
+<div class="slide" data-notes="Org rulesets cascade to every repo (including future ones). Repo-level rulesets add on top. Most restrictive combination wins. Evaluate mode is available at both levels. Since 2026-04-14, org rulesets can also target repos by deployment context with the deployable:true or deployed:true filters, which come from the org's linked artifacts records. Org rulesets live under Settings → Repository → Rulesets.">
   <h2>Organization vs Repository Rulesets</h2>
   <div class="cols">
     <div>
@@ -181,7 +181,7 @@ td:first-child { color: #8b949e; white-space: nowrap; }
 </div>
 
 <!-- Slide 5 -->
-<div class="slide" data-notes="Run through each rule type quickly. These map to what students will configure in Labs 3 & 6. Signed commits and linear history are the most commonly new for teams coming from branch protection.">
+<div class="slide" data-notes="Run through each rule type quickly. These map to what students will configure in Labs 3 &amp; 6. Signed commits and linear history are the most commonly new for teams coming from branch protection. Since 2026-08-21, Require an additional approval for unattributed Copilot pull requests (public preview, on by default per the docs) adds one required approval when Copilot opens a pull request under its own app identity, for example from a Teams or Slack thread. No effect when zero approvals are required.">
   <h2>Key Ruleset Rules</h2>
   <div class="cols">
     <div>
@@ -205,7 +205,7 @@ td:first-child { color: #8b949e; white-space: nowrap; }
 </div>
 
 <!-- Slide 6 -->
-<div class="slide" data-notes="Bypass modes: 'always' means the actor can skip on direct push AND pull requests. 'Pull requests only' means bypass only works through PR merge — direct push still blocked. Since 2026-05-07, repository rulesets can also list individual users (UI, REST, GraphQL), so a one-person team is no longer needed; enterprise teams are bypass actors since 2026-06-04 (see doc 28). Every bypass event is logged in Rule Insights for audit.">
+<div class="slide" data-notes="Bypass modes: 'always' means the actor can skip on direct push AND pull requests. 'Pull requests only' means bypass only works through PR merge — direct push still blocked. Since 2026-05-07, repository rulesets can also list individual users (UI, REST, GraphQL), so a one-person team is no longer needed; enterprise teams are bypass actors since 2026-06-04 (see doc 28). Every bypass event is logged in Rule Insights for audit. One exception: the REST API also accepts a bypass_mode of exempt, for which rules don't run at all and no bypass entry is recorded, so keep exempt actors rare and reviewed.">
   <h2>Bypass Actors &amp; Modes</h2>
   <table>
     <tr><th>Bypass Mode</th><th>Direct Push</th><th>PR Merge</th><th>Use Case</th></tr>
@@ -281,7 +281,7 @@ td:first-child { color: #8b949e; white-space: nowrap; }
 </div>
 
 <!-- Slide 10 -->
-<div class="slide" data-notes="As of 2025, GHAS is rebranded into two standalone products. Both available on GitHub Team and Enterprise plans. Licensed per active committer (commit in last 90 days to a repo with the feature enabled). Free on public repos.">
+<div class="slide" data-notes="As of 2025, GHAS is rebranded into two standalone products. Both available on GitHub Team and Enterprise plans. Licensed per active committer (commit in last 90 days to a repo with the feature enabled). Free on public repos. AI-detected secrets was called Copilot secret scanning until 2026-07-10; only the name changed, not the detection. It uses AI to find passwords and other secrets that have no fixed pattern.">
   <h2>GitHub Security Products</h2>
   <div class="cols">
     <div>
@@ -290,7 +290,7 @@ td:first-child { color: #8b949e; white-space: nowrap; }
         <li>Secret scanning (200+ partner patterns)</li>
         <li>Push protection (blocks before commit lands)</li>
         <li>Custom secret patterns</li>
-        <li>AI-powered generic detection</li>
+        <li>AI-detected secrets</li>
       </ul>
     </div>
     <div>

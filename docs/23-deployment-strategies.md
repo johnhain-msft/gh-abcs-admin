@@ -255,7 +255,7 @@ sequenceDiagram
 **Capabilities:**
 - Apps can post **status reports** (up to 10 per deployment, Markdown-formatted, max 1,024 characters) without approving or rejecting
 - Custom rules can be published to the **GitHub Marketplace** for organizational discovery
-- Custom deployment protection rules are currently in **public preview**
+- Custom deployment protection rules are in **public preview** (per docs.github.com, checked 2026-10-02)
 
 ## OIDC for Cloud Deployments
 
@@ -307,7 +307,7 @@ The JWT issued by GitHub's OIDC provider contains claims that identify the workf
 | `runner_environment` | Runner type | `github-hosted` or `self-hosted` |
 | `ref` | Git ref that triggered the run | `refs/heads/main` |
 | `workflow` | Workflow name | `Deploy Application` |
-| `repo_property_*` | Custom properties (public preview) | `repo_property_team=platform` |
+| `repo_property_*` | Repository custom properties selected by an organization or enterprise admin (generally available since 2026-04-02) | `repo_property_team=platform` |
 
 ### Subject Claim Customization
 
@@ -324,7 +324,7 @@ The `sub` claim format varies by trigger context and can be customized at the or
 
 Organizations can customize the `sub` claim via the REST API to include additional claim fields such as `repository_id` or `repository_visibility`. This enables **attribute-based access control (ABAC)** patterns where cloud trust policies gate access based on repository metadata.
 
-**Repository custom properties as OIDC claims (public preview):** Organization and enterprise admins can include repository custom properties as claims in OIDC tokens, prefixed with `repo_property_`. For example, a custom property `team=platform` results in a `repo_property_team` claim, allowing cloud trust policies to authorize access based on team ownership rather than per-repository configuration.
+**Repository custom properties as OIDC claims (generally available since 2026-04-02):** Organization and enterprise admins can include repository custom properties as claims in OIDC tokens, prefixed with `repo_property_`. Once a property is added to the OIDC configuration, every repository with a value for it includes the claim automatically. For example, a custom property `team=platform` results in a `repo_property_team` claim, allowing cloud trust policies to authorize access based on team ownership rather than per-repository configuration.
 
 ### Configuring OIDC for Azure
 
@@ -550,6 +550,8 @@ Deployment statuses follow a defined state machine:
 
 > **Auto-inactivation:** When a deployment status is set to `success`, GitHub automatically marks all prior non-transient, non-production deployments in the same environment as `inactive`.
 
+> **Retention:** Since 2026-07-16, GitHub keeps previous deployment statuses for 90 days. Older statuses are deleted and no longer returned by the REST or GraphQL API; a deployment's current state is unaffected. Export status history you need for audits before it ages out.
+
 ### Deployment REST API
 
 The Deployments REST API enables programmatic deployment management:
@@ -588,7 +590,7 @@ jobs:
     environment: production
     concurrency:
       group: production-deploy
-      cancel-in-progress: false  # Queue rather than cancel
+      cancel-in-progress: false  # Don't cancel the active deployment
     steps:
       - uses: actions/checkout@v6
       - run: ./deploy.sh production
@@ -596,10 +598,13 @@ jobs:
 
 | Setting | Behavior |
 |---------|----------|
-| `cancel-in-progress: false` | New deployments queue behind the active one |
+| `cancel-in-progress: false` (default `queue: single`) | At most one deployment waits behind the active one; a newer run cancels and replaces the waiting run |
+| `cancel-in-progress: false` with `queue: max` | Since 2026-05-07, up to 100 runs wait in the group and run in order; when the queue is full, additional runs are canceled |
 | `cancel-in-progress: true` | New deployments cancel any pending deployment |
 
-> **Best Practice:** Use `cancel-in-progress: false` for production environments to avoid accidentally canceling a deployment that is actively rolling out. Use `cancel-in-progress: true` for development or preview environments where only the latest version matters.
+`queue: max` can't be combined with `cancel-in-progress: true`; that combination fails workflow validation.
+
+> **Best Practice:** Use `cancel-in-progress: false` for production environments to avoid accidentally canceling a deployment that is actively rolling out, and add `queue: max` when every queued release must deploy in order rather than only the latest one. Use `cancel-in-progress: true` for development or preview environments where only the latest version matters.
 
 ### Notifications and Integrations
 
@@ -657,6 +662,8 @@ steps:
   - uses: azure/webapps-deploy@2fdd5c3ebb4e540834b57a43d9352a5b2e6a2cd  # v3.0.2
 ```
 
+**Actions in the same repository:** Since 2026-07-30, a workflow can call an action or reusable workflow stored in its own repository with the self-repository reference `uses: $/path/to/action` (for example `$/.github/actions/deploy`). It resolves to the commit that is already running, needs no checkout and takes no `@ref`, so internal references stay pinned when callers pin to a full-length SHA — which makes the enterprise SHA-pinning policy workable for repositories that call their own actions. `$/` is the recommended form on github.com, requires runner 2.336.0 or later, and isn't available on GitHub Enterprise Server.
+
 ### GITHUB_TOKEN Default Permissions
 
 The `GITHUB_TOKEN` is an automatically generated token available to every workflow job. Enterprise policy controls its default permission level:
@@ -667,6 +674,8 @@ The `GITHUB_TOKEN` is an automatically generated token available to every workfl
 | **Read and write** | Legacy default; workflows have broad write access unless restricted |
 
 > **Important:** Enterprises created on or after **February 2, 2023** default to read-only `GITHUB_TOKEN` permissions. This is the security-first default that L300 administrators should understand and maintain. Existing enterprises should audit and migrate to read-only defaults.
+
+Since 2026-09-03, workflows that only need to read Dependabot alerts can request `vulnerability-alerts: read` instead of a broader scope. The permission accepts only `read` and `none`.
 
 ### Artifact and Log Retention
 
@@ -827,3 +836,6 @@ jobs:
 16. [About Actions policies](https://docs.github.com/en/enterprise-cloud@latest/actions/concepts/about-actions-policies)
 17. [Immutable subject claims for GitHub Actions OIDC tokens (changelog, 2026-04-23)](https://github.blog/changelog/2026-04-23-immutable-subject-claims-for-github-actions-oidc-tokens)
 18. [Actions retention now covers checks, runs, and statuses (changelog, 2026-10-01)](https://github.blog/changelog/2026-10-01-actions-retention-now-covers-checks-runs-and-statuses)
+19. [Control the concurrency of workflows and jobs](https://docs.github.com/en/enterprise-cloud@latest/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)
+20. [REST API endpoints for deployment statuses (data retention)](https://docs.github.com/en/enterprise-cloud@latest/rest/deployments/statuses)
+21. [Finding and customizing actions (self-repository references)](https://docs.github.com/en/enterprise-cloud@latest/actions/how-tos/write-workflows/choose-what-workflows-do/find-and-customize-actions)

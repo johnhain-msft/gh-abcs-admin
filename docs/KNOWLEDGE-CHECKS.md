@@ -197,7 +197,7 @@ These questions validate understanding of key concepts from each workshop module
 **Q1.2.1:** What is the recommended modern approach for protecting branches in GitHub Enterprise Cloud?
 
 - A) Branch protection rules (Settings → Branches)
-- B) Repository rulesets (Settings → Rules → Rulesets)
+- B) Repository rulesets (Settings → Rulesets → Rulesets)
 - C) CODEOWNERS file
 - D) Required status checks only
 

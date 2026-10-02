@@ -103,6 +103,14 @@ Enterprise admins can download CSV license reports from the Billing & Licensing 
 - `GitHub com cost center`
 - `Total user accounts`
 
+Since 2026-07-16, Visual Studio subscription (VSS) assignments can also be managed through the REST API:
+
+- `GET /enterprises/{enterprise}/visual-studio-subscriptions` lists assignments and whether each is matched to a GitHub user (`is_unmatched_only=true` returns only unmatched ones)
+- `PUT /enterprises/{enterprise}/visual-studio-subscriptions/{visual_studio_subscription_id}` matches a subscription to a user through `user_identifier`, a GitHub handle or a verified email
+- `DELETE` on the same path removes a manual match
+
+These help when subscribers' UPNs don't line up with their SCIM identities, which prevents automatic matching: script the matches from a UPN-to-handle mapping instead of fixing them one by one in the UI.
+
 > **Note:** License reports are essential for periodic audits. Schedule monthly downloads or automate retrieval via the REST API for continuous compliance monitoring.
 
 ## Billing Models
@@ -237,6 +245,8 @@ Since 2026-06-01, Copilot plans are billed on the AI Credits they consume. Befor
 - **What is billed:** Copilot features that call AI models, such as Copilot Chat, Copilot CLI, Copilot cloud agent, Copilot code review, Copilot Spaces and third-party agents. Code completions and next edit suggestions are not billed in AI Credits and stay unlimited on paid plans.
 - **Model pricing:** Copilot Business and Enterprise have no request multipliers. Each model has per-token prices (input, cached input, cache write and output, per 1 million tokens) listed in [Models and pricing for GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/copilot-billing/models-and-pricing).
 - **Compliance uplift:** On GitHub Enterprise Cloud with data residency, enabling **Restrict Copilot to data residency compliant models** or (US only) **Restrict Copilot to FedRAMP models** adds 10% to AI Credit consumption: an interaction that would use 100 AI Credits uses 110. Both policies are disabled by default.
+- **Auto model selection:** When a user picks **Auto**, usage is billed at the AI Credit rate of the model auto selects, with a 10% discount on paid plans in Copilot Chat, Copilot CLI, the GitHub Copilot app and Copilot cloud agent. Auto only routes to models that administrator model policies, and any data residency or FedRAMP restriction, allow.
+- **Context window and reasoning level:** On supported models, choosing the 1 million token context window or a higher reasoning level (available since 2026-06-04) processes more tokens, so each interaction uses more AI Credits; some models also price these extended capabilities separately. GitHub's guidance is to keep the defaults for everyday tasks.
 
 #### Included Usage and Pooling
 
@@ -248,6 +258,8 @@ Each Copilot Business license includes 1,900 AI Credits and each Copilot Enterpr
 #### Additional Usage
 
 When the pool is exhausted, usage continues as additional (metered) usage at $0.01 per AI Credit, charged to the organization or enterprise, if the AI credit paid-usage policy allows it. That policy is enabled by default; to block all spending beyond included usage, an enterprise or organization admin must disable it in **AI controls**. With it disabled, AI Credit usage is blocked until the pool resets. There is no automatic fallback to a cheaper model when a budget is exhausted.
+
+Rate limits are separate from AI Credits. GitHub rate-limits Copilot to protect capacity and fairness, so a user can hit a temporary limit while AI Credits remain; waiting and trying again usually clears it. The 2026-04-10 changelog post adds that a limit on one model or model family can be avoided by switching models or using auto model selection.
 
 > **Important:** Model choice drives cost. Per-token prices vary widely between lightweight and frontier models, and agentic sessions make many model calls per task. Set budgets before rollout (see [Budgets and Alerts](#budgets-and-alerts)) and review the **AI usage** page in billing settings regularly.
 
@@ -268,8 +280,11 @@ Key billing rules for Copilot in enterprise environments:
 |----------|-----------------|
 | User has personal Copilot Pro, Pro+ or Max + org seat | Personal plan auto-canceled with prorated refund |
 | User in multiple orgs (same enterprise) | Enterprise billed once per billing cycle |
+| User with Copilot seats in several organizations on GitHub Team plans (since 2026-08-31) | Model access follows only the organization paying for the user's usage, shown as "Usage billed to" on the user's Copilot features page. Users whose Copilot access comes entirely through an enterprise and its organizations are unaffected |
 | User has both Business and Enterprise seats | Only Enterprise seat is billed |
 | Cloud agent usage | Consumes both Actions minutes AND AI Credits |
+| Copilot cloud agent sessions started from Microsoft Teams (public preview since 2026-08-21) | Consume AI Credits under the organization's usage-based billing budgets; the cloud sandbox the session runs in is billed separately |
+| Cloud sandboxes (public preview; for example `copilot --cloud`) | Billed separately from AI Credits as the `sandbox` product (compute, memory and snapshot storage meters) to the account that owns the sandbox: the repository owner when started in a repository. Control spend with a product-level or SKU-level budget, because Bundled AI credits budgets don't cover sandboxes. Local sandboxing is included in the Copilot seat. See [Billing for cloud and local sandboxes](https://docs.github.com/en/enterprise-cloud@latest/billing/concepts/product-billing/cloud-and-local-sandboxes) for meter prices |
 | Copilot code review (since 2026-06-01) | Consumes AI Credits AND, on private repositories, Actions minutes from the plan's included minutes (overage at standard Actions rates; public repositories stay free). Runs on a standard GitHub-hosted runner unless an organization admin sets a default runner |
 | Seats paid by credit card or PayPal | Pay before access, then an upfront seat charge at the start of each billing cycle (existing customers from 2026-10-01); see [Mid-Cycle Change Behavior](#mid-cycle-change-behavior) |
 
@@ -342,6 +357,8 @@ Active committers are counted uniquely across the enterprise:
 
 > **Important:** Since April 2025, GHAS features are available on GitHub Team plans — previously they were restricted to Enterprise plans only.
 
+**Trials:** Since 2026-09-09, enterprises with 300 or fewer seats (previously 100) can start a self-serve trial under **Billing and licensing** → **Licensing**: next to "GitHub Advanced Security", click **Start free trial** to evaluate Secret Protection and Code Security for 30 days. The enterprise must not have bought GHAS before or be paying for it through metered billing, and may have had at most one earlier trial, which ended at least 180 days ago. A trial has no license fees, but Actions minutes and AI Credits used by the security features are billed as usual. Enterprises that pay by invoice arrange trials with GitHub's Sales team.
+
 ### GHAS Cost Optimization Strategies
 
 To manage Advanced Security costs effectively:
@@ -362,7 +379,7 @@ Since 2026-07-20, GitHub Code Quality is a standalone paid product on GitHub Ent
 | **AI-powered features** | AI-assisted detection and Copilot Autofix consume AI Credits from the shared pool; no Copilot subscription is needed |
 | **Analysis** | CodeQL scans run as GitHub Actions workflows and consume Actions minutes, unless you use self-hosted runners. In the detailed usage report, filter `workflow_path` for `dynamic/github-code-quality/codeql` |
 
-The **Billing and licensing** → **Licensing** page shows consumed Code Quality licenses (a license estimate card was in public preview from 2026-07-13). The estimate covers only the per-committer license at list price, not Actions minutes or AI usage. To stop future scans and charges, disable Code Quality for the repository or organization.
+The **Billing and licensing** → **Licensing** page shows consumed Code Quality licenses (a license estimate card was in public preview from 2026-07-13). The estimate covers only the per-committer license at list price, not Actions minutes or AI usage. To stop future scans and charges, disable Code Quality for the repository or organization. Since 2026-08-20, the `repo.code_quality_enabled`, `repo.code_quality_disabled` and `repo.code_quality_updated` audit events show when each repository entered or left the billed scope; see [22-audit-log-deep-dive.md](22-audit-log-deep-dive.md#enterprise-level-event-categories).
 
 ## Billing Management and Cost Optimization
 
@@ -417,6 +434,7 @@ Enterprise administrators can set spending limits to control metered usage costs
 | User-level budgets | Universal, cost center or individual per-user caps on total AI Credit consumption |
 | Bundled AI credits or SKU-level budgets | Cap additional AI Credit spend for the enterprise, an organization or a cost center |
 | AI credit pool (cost centers) | Caps a cost center's share of the pooled included AI Credits at what its own licenses fund |
+| AI credit session limit (Copilot CLI and SDK, public preview since 2026-07-01) | Soft cap on the AI Credits one session can spend, including subagents and background work: `/limits set max-ai-credits NUMBER` in an interactive CLI session or `--max-ai-credits NUMBER` for a scripted run (minimum 30). A response already in progress finishes, so usage can slightly exceed the cap. It complements budgets rather than replacing them |
 | Organization-level assignment | Restrict which orgs have Copilot enabled |
 
 ### Cost Optimization Strategies
@@ -480,6 +498,8 @@ GitHub automatically monitors included free usage allowances with notifications 
 
 Enterprise owners and billing managers create budgets under the enterprise's **Billing and licensing** → **Budgets and alerts** → **New budget**. Choose a budget type (**Product-level budget**, **SKU-level budget** or **Bundled AI credits budget**), then a scope. For a user-level budget, choose **Bundled AI credits budget** and the **Users** scope: leave the user empty for a universal budget, select a cost center for a cost center user-level budget, or select one user for an individual budget. GitHub's setup guidance is to set the universal budget above the per-license value ($19 for Copilot Business, $39 for Copilot Enterprise) so heavier users can still draw on the shared pool.
 
+Since 2026-09-01, an individual user budget can expire. Under "Expiration", choose **No expiration** (the default), **End of current billing cycle** or **Specific date**. When the budget expires, GitHub removes it and the user falls back to their cost center user-level budget, or otherwise the universal budget. This suits temporary increases that would otherwise need manual cleanup.
+
 #### Creating a Budget via API
 
 ```bash
@@ -499,7 +519,21 @@ gh api \
   -f 'budget_alerting[alert_recipients][]={billing_manager_login}'
 ```
 
-The budgets REST API is generally available since 2026-06-04. `budget_amount` is in whole US dollars, or a license count for license-based products such as GHAS. Budgets that existed for premium requests before 2026-06-01 were converted to AI Credit budgets automatically.
+The budgets REST API is generally available since 2026-06-04. `budget_amount` is in whole US dollars, or a license count for license-based products such as GHAS. Budgets that existed for premium requests before 2026-06-01 were converted to AI Credit budgets automatically. For a budget with `budget_scope` set to `user`, `expires_at` (a future `YYYY-MM-DD` date) sets the expiration; on update, `null` or `0` clears it.
+
+To find users close to their limit, `GET /enterprises/{enterprise}/settings/billing/budgets/{budget_id}/user-states` (since 2026-07-10) pages through every user covered by a universal or cost center user-level budget. Each entry has `consumed_amount`, `target_amount` and, for a user with an individual budget, `override_budget_id`. Filter with `user`, or with `threshold_lower_bound` and `threshold_upper_bound` (percent used, measured against the universal budget amount even for users with an override):
+
+```bash
+# Users at or above 80% of a universal or cost center user-level budget
+gh api \
+  --method GET \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2026-03-10" \
+  /enterprises/{enterprise}/settings/billing/budgets/{budget_id}/user-states \
+  -F threshold_lower_bound=80 \
+  -F per_page=100 \
+  --jq '.user_states[] | {user, consumed_amount, target_amount, override_budget_id}'
+```
 
 #### Member Budget Increase Requests
 
@@ -685,8 +719,11 @@ Finance teams frequently ask: *"Is Copilot worth it for Department X?"* Combine 
 | Active users per cost center | Copilot seat API + cost center membership | Utilization rate |
 | Suggestions accepted / lines of code | Copilot metrics API | Productivity signal |
 | PR cycle time delta | Repository metrics (before/after Copilot rollout) | Velocity impact |
+| Review latency and review cycles by adoption phase | Copilot usage metrics API: `avg_pull_requests_minutes_to_review` and `avg_pull_requests_review_cycles` in `totals_by_ai_adoption_phase` (since 2026-07-07; merged pull requests only, in the enterprise and organization aggregated reports) | Review velocity by depth of adoption |
 
 The ROI calculation becomes: `(Productivity gains × developer hourly cost) / (Seat cost + additional AI Credit charges)` per cost center.
+
+Since 2026-08-07, the Copilot impact dashboard (enterprise **Insights** → **Copilot impact**, also available for organizations) has a **Potential return on investment** section. Select a compensation band, then compare cost per developer per month (from actual AI Credit consumption), share of payroll and pull requests per month for passive and code-first users (phases 0–1) against agent-first users (phases 2–3). It needs the **Copilot usage metrics** policy and is available to enterprise owners, billing managers, organization owners and custom roles with the `View Copilot Metrics` permission. GitHub presents the figures as directional estimates, not financial results.
 
 ### Tracking GitHub Advanced Security via Cost Centers
 
@@ -846,7 +883,7 @@ gh api \
   -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2026-03-10" \
   "/enterprises/{enterprise}/settings/billing/usage/summary?cost_center_id={cost_center_id}&year=2026&month=4" \
-  --jq '.usageItems[] | {product, sku, quantity, grossAmount, netAmount}'
+  --jq '.usageItems[] | {product, sku, grossQuantity, netQuantity, grossAmount, netAmount}'
 ```
 
 #### Monthly Chargeback Report Automation
@@ -865,7 +902,7 @@ COST_CENTERS=$(gh api \
 YEAR=$(date -d "last month" +%Y)
 MONTH=$(date -d "last month" +%-m)
 
-echo "cost_center,product,sku,quantity,net_amount" > chargeback-report.csv
+echo "cost_center,product,sku,net_quantity,net_amount" > chargeback-report.csv
 
 for CC_ID in $COST_CENTERS; do
   CC_NAME=$(gh api \
@@ -878,7 +915,7 @@ for CC_ID in $COST_CENTERS; do
     -H "Accept: application/vnd.github+json" \
     -H "X-GitHub-Api-Version: 2026-03-10" \
     "/enterprises/{enterprise}/settings/billing/usage/summary?cost_center_id=${CC_ID}&year=${YEAR}&month=${MONTH}" \
-    --jq ".usageItems[] | [\"${CC_NAME}\", .product, .sku, .quantity, .netAmount] | @csv" \
+    --jq ".usageItems[] | [\"${CC_NAME}\", .product, .sku, .netQuantity, .netAmount] | @csv" \
     >> chargeback-report.csv
 done
 ```
@@ -980,6 +1017,9 @@ The GitHub REST API provides comprehensive billing usage data at user, organizat
 | `/enterprises/{enterprise}/settings/billing/usage/summary` | GET | Summary usage report (enterprise level) |
 | `/enterprises/{enterprise}/settings/billing/ai_credit/usage` | GET | AI Credit usage report (enterprise level) |
 | `/orgs/{org}/settings/billing/advanced-security` | GET | GHAS active committers per repository |
+| `/enterprises/{enterprise}/settings/billing/reports` | POST | Create a CSV usage report export (generally available since 2026-06-04) |
+| `/enterprises/{enterprise}/settings/billing/reports` | GET | List usage report exports |
+| `/enterprises/{enterprise}/settings/billing/reports/{report_id}` | GET | Get an export's status and download URLs |
 
 The `premium_request/usage` endpoints at the same levels are still documented. They report premium-request usage, which for Copilot Business and Enterprise means usage before 2026-06-01.
 
@@ -1084,6 +1124,7 @@ For programmatic budget creation and usage queries, use these product and SKU id
 | `copilot` | GitHub Copilot |
 | `ghas` | GitHub Advanced Security (now Secret Protection + Code Security) |
 | `ghec` | GitHub Enterprise Cloud |
+| `sandbox` | Cloud and local sandboxes for GitHub Copilot (public preview) |
 
 #### Key SKU Identifiers
 
@@ -1101,6 +1142,9 @@ For programmatic budget creation and usage queries, use these product and SKU id
 | `ghas_secret_protection_licenses` | Secret Protection licenses |
 | `code_quality_licenses` | Code Quality licenses |
 | `code_quality_ai_credit` | Code Quality AI Credits |
+| `sandbox_linux` | Sandboxes for GitHub Copilot: Linux |
+| `sandbox_memory` | Sandboxes for GitHub Copilot: Memory |
+| `sandbox_snapshot` | Sandboxes for GitHub Copilot: Snapshot |
 
 To budget for every AI Credit SKU at once, use `budget_type: BundlePricing` with `budget_product_sku: ai_credits`. Before 2026-06-01, Copilot usage was recorded under the premium-request SKUs (`copilot_premium_request`, `copilot_agent_premium_request`, `spark_premium_request`), which still appear in historical reports.
 
@@ -1114,7 +1158,27 @@ Three report types are available from the GitHub web UI, two on the **Metered us
 | **Detailed usage** | 31 days | Adds username, workflow_path |
 | **AI usage** | 31 days | date, model, username, quantity (AI Credits), gross_amount, discount_amount, net_amount, plus per-model input, output, cache_read and cache_write tokens |
 
-> **Important:** The detailed usage report with `username` and `workflow_path` fields is only available via the GitHub web UI download, NOT via the REST API `/usage` endpoint.
+> **Note:** Since 2026-06-04, enterprise admins and billing managers (or a GitHub App with read access to enterprise billing) can also create these CSV reports through the usage report export API, including the detailed report with `username` and `workflow_path`; the JSON `/usage` endpoints still return only summarized data. Create an export with a `report_type` of `detailed`, `summarized` or `ai_credit` (or `premium_request` for premium-request usage, which for Copilot Business and Enterprise means usage before 2026-06-01) and a `start_date` (`end_date` defaults to today, UTC). Then poll the export until its `status` is `completed` and download the files from `download_urls`. Completed and failed exports are kept for 31 days.
+
+```bash
+# Request the detailed usage report for September 2026 as CSV
+gh api \
+  --method POST \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2026-03-10" \
+  /enterprises/{enterprise}/settings/billing/reports \
+  -f report_type='detailed' \
+  -f start_date='2026-09-01' \
+  -f end_date='2026-09-30' \
+  --jq '{id, status}'
+
+# Check the export and get its download URLs once status is "completed"
+gh api \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2026-03-10" \
+  /enterprises/{enterprise}/settings/billing/reports/{report_id} \
+  --jq '{status, download_urls}'
+```
 
 ### Automating Usage Reports
 
@@ -1137,6 +1201,9 @@ jobs:
         run: |
           YEAR=$(date -d "last month" +%Y)
           MONTH=$(date -d "last month" +%-m)
+          # Each step runs in a new shell: pass the values on to later steps
+          echo "YEAR=$YEAR" >> "$GITHUB_ENV"
+          echo "MONTH=$MONTH" >> "$GITHUB_ENV"
           gh api \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2026-03-10" \
@@ -1147,7 +1214,7 @@ jobs:
         run: |
           # Parse JSON and generate summary
           jq -r '.usageItems[] |
-            [.product, .sku, .quantity, .grossAmount] |
+            [.product, .sku, .grossQuantity, .grossAmount] |
             @csv' usage-summary.json > report.csv
           echo "Report generated for ${YEAR}-${MONTH}"
 ```

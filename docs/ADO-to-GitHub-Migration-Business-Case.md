@@ -36,11 +36,11 @@ Microsoft has made its strategic investment direction clear through a series of 
 | May 2025 | Microsoft Build: "Agentic DevOps" keynote -- GitHub Copilot as the future of SDLC | [Azure Blog](https://azure.microsoft.com/en-us/blog/agentic-devops-evolving-software-development-with-github-copilot-and-microsoft-azure/) |
 | Nov 2025 | ADO-to-GitHub Migration Playbook published by Microsoft | [All Things Azure](https://devblogs.microsoft.com/all-things-azure/azure-devops-to-github-migration-playbook-unlocking-agentic-devops/) |
 
-**Key signal:** The most transformative developer tooling and AI capabilities are landing on GitHub first (and often exclusively). GitHub Copilot's agentic capabilities -- autonomous agents such as Copilot cloud agent, agentic code review, Copilot Autofix -- require code to be hosted on GitHub.
+**Key signal:** The most transformative developer tooling and AI capabilities are landing on GitHub first (and often exclusively). GitHub Copilot's agentic capabilities -- autonomous agents such as Copilot cloud agent, agentic code review, Copilot Autofix -- are generally available on GitHub. Copilot cloud agent requires code to be hosted on GitHub; on Azure DevOps, Copilot code review and Copilot Autofix are previews.
 
 ### 1.2 The Risk of Inaction
 
-- **Innovation gap:** Teams on Azure DevOps Repos cannot leverage Copilot's most advanced capabilities (Copilot cloud agent, agentic code review, Copilot Autofix, Agent HQ).
+- **Innovation gap:** Teams on Azure DevOps Repos cannot use Copilot cloud agent or Agent HQ, and get Copilot code review (since 2026-06-02) and Copilot Autofix only as previews, billed in GitHub AI Credits through Azure.
 - **Talent competitiveness:** 180M+ developers use GitHub. Developer familiarity and preference increasingly skew toward GitHub workflows.
 - **Technical debt accumulation:** Without AI-assisted security scanning, dependency management, and automated remediation, security and maintenance burdens grow.
 - **Platform stagnation:** Microsoft's investment trajectory clearly favours GitHub for new features; Azure DevOps receives maintenance and integration updates, not breakthrough innovation.
@@ -53,7 +53,7 @@ Microsoft has made its strategic investment direction clear through a series of 
 
 Microsoft introduced **"Agentic DevOps"** at Build 2025 -- a paradigm where AI agents collaborate alongside developers throughout the entire SDLC: planning, coding, testing, deploying, and monitoring.
 
-**GitHub Copilot capabilities exclusively available on GitHub:**
+**GitHub Copilot capabilities available first on GitHub** (Azure DevOps has only previews of code review and Autofix):
 
 | Capability | What It Does | Business Impact |
 |-----------|-------------|-----------------|
@@ -74,7 +74,7 @@ Microsoft introduced **"Agentic DevOps"** at Build 2025 -- a paradigm where AI a
 
 **Critical Distinction:** GitHub maintains persistent, server-side indexes automatically updated on every push. Azure DevOps relies on client-side, ephemeral indexing in VS Code that disappears when sessions end.
 
-**Copilot Workspace** leverages this intelligence to scan server-side indexes, generate natural language Specifications, create step-by-step Plans listing files to modify, and understand dependency graphs for comprehensive changes. This capability is exclusive to GitHub with no equivalent in Azure DevOps.
+On GitHub.com, **Copilot cloud agent** can (since 2026-04-01) research a repository, create an implementation plan, and make changes on a branch that you review and iterate on before it opens a pull request; assigned a GitHub Issue, it works the issue through to a pull request. This capability is exclusive to GitHub with no equivalent in Azure DevOps.
 
 ### 2.2 Proven Productivity Impact
 
@@ -150,7 +150,7 @@ GitHub's architecture naturally supports InnerSource -- applying open-source bes
 | Security scanning | Third-party integrations | GitHub Advanced Security — Secret Protection & Code Security (native) |
 | Package management | Azure Artifacts | GitHub Packages / Azure Artifacts |
 | Project management | Azure Boards (retained) | Azure Boards (integrated with GitHub) |
-| AI assistance | IDE-only Copilot | Full agentic Copilot (Copilot cloud agent, code review, autofix) |
+| AI assistance | IDE Copilot, plus previews of Copilot code review and Autofix | Full agentic Copilot (Copilot cloud agent, code review, autofix) |
 | Developer ecosystem | Limited marketplace | 20,000+ Actions, 180M+ developer community |
 
 ---
@@ -190,7 +190,7 @@ GitHub Advanced Security (GHAS) — comprising GitHub Secret Protection and GitH
 
 | Product | Price | Capabilities |
 |---------|-------|-------------|
-| GitHub Secret Protection | $19/active committer/month | Secret scanning, AI password detection, push protection, custom patterns |
+| GitHub Secret Protection | $19/active committer/month | Secret scanning, AI-detected secrets (such as passwords), push protection, custom patterns |
 | GitHub Code Security | $30/active committer/month | CodeQL scanning, Copilot Autofix, supply chain protection, security campaigns |
 
 ### 4.1.1 Enterprise Managed Users (EMU)
@@ -281,7 +281,7 @@ The software development lifecycle is being fundamentally transformed by autonom
 
 ### 5.2.1 GitHub Agentic Workflows (Repository Automation)
 
-GitHub Agentic Workflows enable six continuous automation patterns with built-in security guardrails:
+GitHub Agentic Workflows has been in public preview since 2026-06-11. You write each workflow in Markdown and it compiles into standard GitHub Actions YAML, so it reuses your existing runner groups and Actions policies. Agentic workflows enable six continuous automation patterns with built-in security guardrails:
 
 | Workflow | Function |
 |----------|----------|
@@ -292,19 +292,19 @@ GitHub Agentic Workflows enable six continuous automation patterns with built-in
 | **Continuous Quality Hygiene** | Investigate CI failures and propose fixes |
 | **Continuous Reporting** | Create regular repository health reports |
 
-These workflows run with read-only permissions by default, with write operations requiring explicit approval through safe outputs -- a defense-in-depth security architecture protecting against unintended behaviours and prompt-injection attacks.
+These workflows run with read-only permissions by default, inside a sandboxed container behind the Agent Workflow Firewall, and write operations are allowed only through declared safe outputs that a threat-detection job checks -- a defense-in-depth security architecture protecting against unintended behaviours and prompt-injection attacks. Since 2026-06-11, a workflow can bill its Copilot usage to the organization through the workflow's `GITHUB_TOKEN` (`copilot-requests: write`) instead of a personal access token; the **Allow use of Copilot CLI billed to the organization** policy controls this and is on by default where the Copilot CLI policy is enabled.
 
 ### 5.2.2 The Intelligence Gap: Azure DevOps vs GitHub
 
 Azure DevOps faces fundamental limitations that cannot be addressed through incremental updates:
 
-| Limitation (Azure DevOps) | GitHub Exclusive Capability |
+| Limitation (Azure DevOps) | GitHub Capability |
 |---------------------------|----------------------------|
-| No native Copilot for Azure Repos (not on current roadmap) | Full Copilot integration with server-side repository intelligence |
+| Copilot in Azure Repos limited to previews: code review (since 2026-06-02) and Autofix for code scanning | Full Copilot integration with server-side repository intelligence |
 | Client-side only indexing (locked in IDE, not available in web portal) | Persistent server-side semantic search and knowledge graphs |
-| Q&A interface only (no autonomous plan-and-execute) | Copilot Workspace: AI generates specs and multi-file plans from issues |
+| Q&A interface only (no autonomous plan-and-execute) | Copilot cloud agent: researches the repository, plans, and makes changes on a branch, from an issue or the agents panel |
 | Synchronisation lags (indexes rely on IDE to initiate) | Always-up-to-date indexes, automatically maintained on every push |
-| No repository agents | Copilot Autofix, Agentic Workflows, Copilot cloud agent, SRE Agent |
+| Repository agents limited to a preview of Copilot Autofix for code scanning | Copilot Autofix, Agentic Workflows, Copilot cloud agent, SRE Agent |
 
 Microsoft's current investment trajectory and roadmap indicate that advanced repository intelligence capabilities are being developed exclusively for GitHub, positioning it as the primary platform for next-generation developer productivity.
 
@@ -516,7 +516,7 @@ Forrester's 2025 TEI study of GitHub Enterprise Cloud (composite: 5,000-develope
 
 1. **Microsoft recommends it.** The official position from Azure DevOps leadership is to migrate repos to GitHub to unlock agentic AI capabilities.
 
-2. **The AI advantage is exclusive.** Copilot's most powerful features -- Copilot cloud agent, Agentic Code Review, Copilot Autofix, SRE Agent -- require GitHub-hosted code.
+2. **The AI advantage is concentrated on GitHub.** Copilot cloud agent and SRE Agent workflows require GitHub-hosted code, and Agentic Code Review and Copilot Autofix, generally available on GitHub, reach Azure DevOps only as previews.
 
 3. **The licensing model incentivises it.** Azure DevOps Basic is now free with GitHub Enterprise Cloud, eliminating cost barriers.
 
@@ -571,4 +571,4 @@ Forrester's 2025 TEI study of GitHub Enterprise Cloud (composite: 5,000-develope
 
 ---
 
-*Document prepared with data sourced from official Microsoft, GitHub, and Azure documentation as of March 2026; Copilot billing and product names updated 2026-10-02.*
+*Document prepared with data sourced from official Microsoft, GitHub, and Azure documentation as of March 2026; Copilot billing, product names and Azure DevOps Copilot previews updated 2026-10-02.*

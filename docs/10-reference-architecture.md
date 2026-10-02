@@ -539,13 +539,13 @@ GitHub Enterprise Cloud provides larger runner options beyond the standard 2-vCP
 
 **Pricing:** Larger runners have per-minute cost multipliers over standard runners. A 4-core Linux runner costs approximately 2× the standard rate, 8-core is 4×, and GPU runners carry premium pricing. Larger runners are always billed—there are no included free minutes, even for public repositories. Review the [GitHub Actions billing documentation](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions) for current rates.
 
-**ARM64 Runners:** ARM-based Linux runners are available for workloads that benefit from ARM-native builds, such as mobile apps, embedded systems, or ARM container images. Target them with `runs-on: ubuntu-24.04-arm` or the equivalent label configured on your larger runner.
+**ARM64 Runners:** Arm64 GitHub-hosted runners suit workloads that benefit from Arm-native builds, such as mobile apps, embedded systems, or Arm container images. Target Linux with `runs-on: ubuntu-24.04-arm`, `ubuntu-22.04-arm` or `ubuntu-26.04-arm` (generally available since 2026-09-17), target Windows with `windows-11-arm` or `windows-11-vs2026-arm` (generally available since 2026-08-20), or use the label configured on an Arm64 larger runner. GitHub took over maintenance of the Arm64 images from Arm Limited, as announced on 2026-05-14. Between 2026-09-21 and 2026-09-30, `windows-11-arm` moved to Visual Studio 2026, which can break workflows that depend on Visual Studio 2022.
 
 **Static IP Ranges:** Larger runners support static IP egress, which enables firewall allowlisting for external services that require known source IPs. Configure static IP networking in the runner's networking settings at the enterprise or organization level.
 
 **Auto-Scaling:** GitHub manages scaling automatically for hosted larger runners. The maximum concurrency is determined by your GitHub plan limits. No manual scaling or capacity configuration is required—runners spin up and down on demand.
 
-**Azure Private Networking (VNET Injection):** GitHub-hosted runners can be deployed into your Azure VNET, allowing them to access private Azure resources (databases, storage accounts, internal APIs) without exposing those services to the public internet. VNET injection is configured at the enterprise or organization level and requires an Azure subscription linked to your GitHub enterprise. This is the recommended pattern when jobs need both the managed infrastructure of GitHub-hosted runners and secure access to corporate network resources.
+**Azure Private Networking (VNET Injection):** GitHub-hosted runners can be deployed into your Azure VNET, allowing them to access private Azure resources (databases, storage accounts, internal APIs) without exposing those services to the public internet. VNET injection is configured at the enterprise or organization level and requires an Azure subscription linked to your GitHub enterprise. This is the recommended pattern when jobs need both the managed infrastructure of GitHub-hosted runners and secure access to corporate network resources. Since 2026-04-02 (public preview), a network configuration can also include a failover network: a secondary Azure subnet, which can be in another Azure region. Switching to it is manual, so add the switch to your outage runbook.
 
 **When to use larger runners:**
 - CI builds that exceed 10 minutes on standard 2-vCPU runners
@@ -674,7 +674,7 @@ graph TB
 ```mermaid
 graph TB
     subgraph "Source Platform"
-        SourceVCS[Source VCS<br/>GitLab/Bitbucket/Azure DevOps]
+        SourceVCS[Source VCS<br/>GitLab/Bitbucket/Azure DevOps/GHES]
         SourceRepos[Repositories]
         SourceIssues[Issues/Work Items]
         SourceCI[CI/CD Pipelines]
@@ -682,6 +682,7 @@ graph TB
     
     subgraph "Migration Tools"
         GEI[GitHub Enterprise Importer]
+        ELM[Enterprise Live Migrations<br/>GHES to GHE.com]
         Scripts[Custom Scripts]
         API[REST/GraphQL API]
     end
@@ -708,11 +709,13 @@ graph TB
     end
     
     SourceRepos -->|Git Clone/Push| GEI
+    SourceRepos -->|Continuous sync| ELM
     SourceIssues -->|Export/Import| API
     SourceCI -->|Translate| Scripts
     
     GEI --> Orgs
     GEI --> Repos
+    ELM --> Repos
     API --> Issues
     Scripts --> Workflows
     
@@ -729,9 +732,12 @@ graph TB
     Training --> Cutover
     
     style GEI fill:#0366d6,color:#fff
+    style ELM fill:#0366d6,color:#fff
     style Validation fill:#28a745,color:#fff
     style Cutover fill:#dc3545,color:#fff
 ```
+
+Enterprise Live Migrations (ELM), generally available since 2026-09-01, migrates repositories from GitHub Enterprise Server to GitHub Enterprise Cloud with data residency (GHE.com). It syncs continuously while developers keep working, so cutover only drains the remaining in-flight changes. It moves one repository per migration and doesn't migrate organization settings or teams. GitHub positions it alongside GEI: GEI for migrations where brief downtime is acceptable, ELM for repositories that need near-zero downtime.
 
 ### Migration Phases
 

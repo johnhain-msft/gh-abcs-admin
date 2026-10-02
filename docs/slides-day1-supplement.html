@@ -212,7 +212,7 @@ aside.notes { display: none; }
     <tr><td><strong>Enterprise</strong></td><td><strong>$39/user/mo</strong></td><td>Large enterprises</td><td>3,900 AI Credits/user, pooled</td></tr>
   </table>
   <div class="callout info">Both Business &amp; Enterprise include: IP indemnification, audit logs, exclusions, code review, cloud agent, agent mode, BYOK, Spaces, MCP policy.</div>
-  <aside class="notes">Since 2026-06-01 every plan bills in GitHub AI Credits ($0.01 each). Each Business license adds 1,900 and each Enterprise license 3,900 AI Credits a month to an enterprise-wide pool; usage beyond it is billed unless the "AI credits paid usage" policy is turned off. Completions stay unlimited on paid plans. Enterprise adds the bigger pool; policies, audit logs, content exclusions and bring your own key (BYOK, on by default since 2026-04-22) come with both. Max ($100/mo) launched 2026-06-01 for existing Student, Pro and Pro+ subscribers. Retention isn't zero: Claude Fable 5 and 5.1 need Anthropic to retain prompts and outputs (their policies are off by default), and since 2026-07-01 vision attachments are kept about 24 hours. IDE features work for GHES users licensed via github.com; code review and cloud agent need GHEC.</aside>
+  <aside class="notes">Since 2026-06-01 every plan bills in GitHub AI Credits ($0.01 each). Each Business license adds 1,900 and each Enterprise license 3,900 AI Credits a month to an enterprise-wide pool; usage beyond it is billed unless the "AI credits paid usage" policy is turned off. Completions stay unlimited on paid plans. Enterprise adds the bigger pool; policies, audit logs, content exclusions and bring your own key (BYOK, on by default since 2026-04-22) come with both. Max ($100/mo) launched 2026-06-01 for existing Student, Pro and Pro+ subscribers. New sign-ups for Student, Pro and Pro+ paused 2026-04-20, when Opus models also left Pro, and reopened gradually from 2026-06-17. Retention isn't zero: Claude Fable 5 and 5.1 need Anthropic to retain prompts and outputs (their policies are off by default), and since 2026-07-01 vision attachments are kept about 24 hours. IDE features work for GHES users licensed via github.com; code review and cloud agent need GHEC.</aside>
 </section>
 
 <!-- Slide 4: Organization Policies -->
@@ -240,7 +240,7 @@ aside.notes { display: none; }
     </div>
   </div>
   <div class="callout warning">⚠️ Security-by-default: Block public code matching, disable cloud agent &amp; MCP servers until reviewed. Delegate agent mode to org owners.</div>
-  <aside class="notes">Each policy has 3 states at org level: Enabled, Disabled, Unconfigured. Unconfigured is not "off": from 2026-10-22, unconfigured GA features, including code review and MCP servers, follow the "Default policy for new features", which ships Enabled (previews stay opt-in), and since the 2026-08-26 to 2026-09-01 rollout unconfigured models follow "Default availability for released models" (shown as "Delegate to Default Policy"). Best practice: explicitly configure ALL policies rather than leaving them unconfigured, and set MCP servers before 2026-10-22. Privacy policies: block prompt/suggestion collection to maintain data privacy (retention is limited, not zero; see docs/12). Preview features should be disabled in production. Policies decide who gets a feature; since 2026-07-01 enterprise managed settings control how the clients behave (see doc 29, self-paced Lab 17).</aside>
+  <aside class="notes">Each policy has 3 states at org level: Enabled, Disabled, Unconfigured. Unconfigured is not "off": from 2026-10-22, unconfigured GA features, including code review and MCP servers, follow the "Default policy for new features", which ships Enabled (previews stay opt-in), and since the 2026-08-26 to 2026-09-01 rollout unconfigured models follow "Default availability for released models" (shown as "Delegate to Default Policy"). Best practice: explicitly configure ALL policies rather than leaving them unconfigured, and set MCP servers before 2026-10-22. Privacy policies: block prompt/suggestion collection to maintain data privacy (retention is limited, not zero; see docs/12). Preview features should be disabled in production; for Business and Enterprise, the Editor preview features policy gates IDE previews. Newer policies to review before enabling: third-party agents (public preview), Copilot Memory (public preview, off by default), Store local sessions in the Cloud (Unconfigured allows neither sync nor remote control) and open-weight models such as Kimi K3 (off by default); see docs/12. Policies decide who gets a feature; since 2026-07-01 enterprise managed settings control how the clients behave (see doc 29, self-paced Lab 17).</aside>
 </section>
 
 <!-- Slide 5: Content Exclusions -->
@@ -300,18 +300,18 @@ aside.notes { display: none; }
       <h3>Monitoring &amp; APIs</h3>
       <ul>
         <li>Enterprise <strong>Insights</strong> tab — active users, feature adoption</li>
-        <li>Billing API: <code>GET /enterprises/{ent}/copilot/metrics/...</code></li>
-        <li>28-day usage reports per user and enterprise</li>
+        <li>Metrics API: <code>GET /enterprises/{ent}/copilot/metrics/...</code></li>
+        <li>1- and 28-day reports per user and enterprise</li>
       </ul>
       <h3>License Inheritance</h3>
       <ul>
         <li>Access through org membership</li>
-        <li>Multiple org memberships → most permissive policy wins</li>
+        <li>Multiple orgs → least restrictive usually wins</li>
         <li>Enterprise policies can override org-level controls</li>
       </ul>
     </div>
   </div>
-  <aside class="notes">Key cost tip: identify users who haven't used Copilot recently, send reminders, then reclaim. The billing API provides 28-day rolling reports. Team-based assignment is the most scalable approach — team membership changes automatically adjust Copilot access. Since 2026-06-04 the enterprise can also assign Copilot Business licenses to enterprise teams (see doc 28, self-paced Lab 16). Self-service via GitHub App or issue templates reduces admin overhead and accelerates adoption.</aside>
+  <aside class="notes">Key cost tip: identify users who haven't used Copilot recently, send reminders, then reclaim. The Copilot usage metrics API has 1-day and 28-day reports, plus user-teams-1-day (since 2026-05-14) and repos-1-day (since 2026-07-17). Team-based assignment is the most scalable approach — team membership changes automatically adjust Copilot access. Since 2026-06-04 the enterprise can also assign Copilot Business licenses to enterprise teams (see doc 28, self-paced Lab 16). Self-service via GitHub App or issue templates reduces admin overhead and accelerates adoption. On conflicts within one enterprise, the least restrictive setting usually wins; a few sensitive policies, such as Copilot Metrics API access, suggestions matching public code and Copilot Memory, use the most restrictive. Across enterprises, the most restrictive usually applies.</aside>
 </section>
 
 <!-- Slide 7: Transition to Lab 15 -->

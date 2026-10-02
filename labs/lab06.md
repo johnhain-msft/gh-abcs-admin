@@ -25,9 +25,9 @@ In Lab 03, you created a basic branch ruleset scoped to a single repository. Org
 
 1. Navigate to your **organization** page on GitHub.com
 2. Click **Settings** in the organization navigation bar
-3. In the left sidebar under **"Code, planning, and automation"**, click **Rules**, then click **Rulesets**
+3. In the left sidebar under **"Code, planning, and automation"**, click **Repository**, then click **Rulesets**
 
-> **Troubleshooting:** If you don't see the **Rules** option in the sidebar, verify you have organization **Owner** permissions. Members and non-admin roles cannot create org-level rulesets.
+> **Troubleshooting:** If you don't see **Rulesets** under **Repository** in the sidebar, verify you have organization **Owner** permissions. Members and non-admin roles cannot create org-level rulesets.
 4. Click **New ruleset**, then select **New branch ruleset**
 5. Set the **Ruleset name** to `YOUR-HANDLE-org-branch-standards` (replace `YOUR-HANDLE` with your GitHub username to avoid naming conflicts in a shared workshop org)
 6. Set **Enforcement status** to **Evaluate** — this is a GHEC-only feature that lets you dry-run the ruleset against real traffic without blocking anyone. You will see results in Rule Insights.
@@ -160,7 +160,7 @@ In Lab 03 you learned that rulesets are the modern replacement for branch protec
 | Audit trail | Limited | **Rule Insights** with full evaluation history |
 | Import / Export | Not supported | JSON export / import |
 
-4. Navigate to **Settings > Rules > Rulesets** in the repository. Note that any repo-level rulesets you created in Lab 03 appear here alongside the org-level rulesets inherited from section 6.1.
+4. Navigate to **Settings > Rulesets** in the repository (under "Code, planning, and automation", click **Rulesets**, then **Rulesets**). Note that any repo-level rulesets you created in Lab 03 appear here alongside the org-level rulesets inherited from section 6.1.
 5. Key decision point: **When should you migrate from branch protection to rulesets?**
     - Migrate if you need org-wide enforcement, evaluate mode, layering, or tag rulesets
     - Keep legacy rules if you rely on features not yet in rulesets (check [available rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets) for the latest list)
@@ -180,7 +180,7 @@ Use this checklist to confirm everything is configured correctly.
     - [ ] You see evaluation entries from when `YOUR-HANDLE-org-branch-standards` was in **Evaluate** mode (section 6.3, step 2)
     - [ ] You see enforcement entries from after you switched to **Active** mode
     - [ ] Tag ruleset events appear if you tested tag creation
-3. Navigate to any targeted repository's **Settings > Rules > Rulesets**:
+3. Navigate to any targeted repository's **Settings > Rulesets**:
     - [ ] The org-level `YOUR-HANDLE-org-branch-standards` ruleset appears alongside any repo-level rulesets from Lab 03
     - [ ] The tag ruleset `YOUR-HANDLE-release-tag-protection` appears in the list
 4. Confirm bypass behavior:

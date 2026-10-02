@@ -281,7 +281,7 @@ This outline provides the structure for creating a slide deck for the GitHub Adm
 
 **Slide 2: Understanding the GHAS Cost Model**
 - Key Visual: Cost breakdown diagram (Secret Protection $19/committer + Code Security $30/committer, per active committer billing)
-- Speaker Notes: GHAS is billed per active committer across a 90-day trailing window. A committer active in multiple repos is counted once per org. Costs scale with the number of unique contributors, not repos.
+- Speaker Notes: GHAS is billed per active committer across a 90-day trailing window. A committer active in multiple repos is counted once across the organization or enterprise. Costs scale with the number of unique contributors, not repos.
 
 **Slide 3: Active Committer Optimization**
 - Key Visual: 90-day trailing window diagram showing how committer counts change over time

@@ -18,7 +18,7 @@ This document explores the technical architecture, configuration patterns, and o
 
 ### Architecture and Components
 
-GitHub Advanced Security (now GitHub Secret Protection + GitHub Code Security) is an integrated security platform built into the GitHub development workflow. GHAS features are embedded in code review, pull request workflows, and the **Security & quality** tab of repositories, organizations and enterprises (renamed from **Security** on 2026-04-02; URLs and APIs unchanged). As of 2025, GHAS comprises two standalone products — each available separately on GitHub Team and Enterprise plans:
+GitHub Advanced Security (sold as GitHub Secret Protection and GitHub Code Security since 2025-04-01) is an integrated security platform built into the GitHub development workflow. GHAS features are embedded in code review, pull request workflows, and the **Security & quality** tab of repositories, organizations and enterprises (renamed from **Security** on 2026-04-02; URLs and APIs unchanged). As of 2025, GHAS comprises two standalone products — each available separately on GitHub Team and Enterprise plans:
 
 #### GitHub Secret Protection ($19/active committer/month)
 
@@ -28,7 +28,7 @@ GitHub Advanced Security (now GitHub Secret Protection + GitHub Code Security) i
 
 **Custom Secret Patterns** allow organizations to define patterns for proprietary or internal secret formats beyond the 200+ built-in partner patterns.
 
-**AI-Powered Generic Detection** uses machine learning to identify non-pattern-based secrets such as passwords and generic credentials.
+**AI-Detected Secrets** (called "Copilot secret scanning" until 2026-07-10) uses AI to find secrets that don't follow a pattern, such as passwords. It is part of Secret Protection and doesn't need a Copilot license. Pattern-based detection of generic secrets, such as private keys and connection strings, is called **generic patterns**.
 
 #### GitHub Code Security ($30/active committer/month)
 
@@ -109,7 +109,7 @@ CodeQL performs deep semantic analysis of source code to identify security vulne
 
 ### Default Setup vs Advanced Configuration
 
-**Default Setup** is recommended for most repositories. It provides pre-configured CodeQL scanning with GitHub-maintained queries covering OWASP Top 10, CWE Top 25, and common security anti-patterns. Default Setup auto-detects languages and runs on pull requests and on a weekly schedule.
+**Default Setup** is recommended for most repositories. It provides pre-configured CodeQL scanning with GitHub-maintained queries covering OWASP Top 10, CWE Top 25, and common security anti-patterns. Default Setup auto-detects languages and runs on pull requests and on a weekly schedule. Weekly scans run only on active repositories, where a push or pull request has triggered a scan in the last 180 days. Since 2026-10-01, the initial scan after you enable default setup no longer counts as activity, so rolling out a security configuration doesn't start weekly scans on dormant repositories. To keep dormant repositories covered, turn on **Keep scheduled scans running every 30 days for inactive repositories** in organization **Settings → Advanced Security → Global settings** (since 2026-06-09).
 
 **Advanced Setup** (custom workflow YAML) is available for teams with specific analysis needs, such as multi-language scanning, custom query suites, or granular build mode control. See [Configuring code scanning](https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/configuring-advanced-setup-for-code-scanning) for workflow configuration details.
 
@@ -152,6 +152,7 @@ Secret scanning continuously monitors repositories for accidentally committed cr
 3. **Ongoing Monitoring**: Continuously scans new commits and pull requests
 4. **Custom Pattern Detection**: Organizations define custom secret patterns matching internal credential formats
 5. **Public Monitoring** (public preview since 2026-07-01, no additional cost for GitHub Enterprise Cloud with Secret Protection): Scans public content across github.com, including code, issues and pull request comments, and attributes leaked secrets to your enterprise by enterprise membership or by a committer email on a verified domain, so it catches leaks from personal accounts and public forks. It never scans private repositories. Enterprise owners and security managers turn it on from the enterprise **Security & quality** tab, and findings appear in the enterprise-level security overview. GHEC with data residency wasn't supported at launch.
+6. **Merge Protection** (public preview since 2026-09-09): The ruleset rule **Require secret scanning alerts are resolved** blocks a pull request from merging until a secret scan has completed on its head commit and no alerts remain open for secrets its commits introduced. It covers provider, custom and generic patterns (not AI-detected secrets) and needs Secret Protection. It complements push protection, for example for secret types you don't block at push time.
 
 ### Supported Patterns
 
@@ -216,7 +217,7 @@ When a secret is detected during push:
 
 ### Custom Patterns and Enterprise Integration
 
-Organizations can define custom secret patterns for proprietary token formats using regex patterns. Enterprise admins can push custom patterns to all orgs via enterprise-level configuration. See [Defining custom patterns](https://docs.github.com/en/code-security/secret-scanning/using-advanced-secret-scanning-and-push-protection-features/custom-patterns-for-secret-scanning).
+Organizations can define custom secret patterns for proprietary token formats using regex patterns. Enterprise admins can push custom patterns to all orgs via enterprise-level configuration. See [Defining custom patterns](https://docs.github.com/en/enterprise-cloud@latest/code-security/how-tos/secure-your-secrets/customize-leak-detection/define-custom-patterns). Since 2026-07-13, the REST API can list, create, update and delete custom patterns at repository, organization and enterprise level (`/repos/{owner}/{repo}/secret-scanning/custom-patterns`, `/orgs/{org}/secret-scanning/custom-patterns`, `/enterprises/{enterprise}/secret-scanning/custom-patterns`), so patterns can be managed as code. Dry runs and publishing a pattern still happen in the UI.
 
 ## Dependency Management
 
@@ -232,11 +233,17 @@ Dependabot operates at three levels:
 
 **Security Updates**: Automatic PRs when a dependency has a published CVE. These are high-priority and should merge quickly. Enabled by default when Dependabot is active.
 
-**Version Updates**: Periodic PRs for newer versions of dependencies. Frequency configurable (daily, weekly, monthly). Allows batching non-critical updates.
+**Version Updates**: Periodic PRs for newer versions of dependencies. Frequency configurable (daily, weekly, monthly). Allows batching non-critical updates. Since 2026-07-14, version updates wait until a release has been on its registry for at least three days, a default cooldown you can change or turn off with the `cooldown` option in `dependabot.yml`. Security updates are not delayed.
 
 **Digest Updates**: For Docker images and other digested dependencies, updates to latest digest even when version remains the same.
 
 Dependabot is configured via a `dependabot.yml` file in each repository's `.github/` directory. Enterprise admins can enforce Dependabot enablement through Security Configurations at the org level. For configuration options, see [Configuring Dependabot](https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates).
+
+**Malware Alerts**: Dependabot can also alert on dependencies that match known malicious packages. Enable **Dependabot malware alerts** in repository **Settings → Advanced Security** (Dependabot alerts must be on), or set **Malware alerts** in a security configuration. Since 2026-07-28, the GitHub Advisory Database also ingests OpenSSF malicious-packages advisories, extending malware coverage beyond npm (for example to PyPI); repositories with malware alerts enabled get the new alerts automatically.
+
+**Private Registries**: Since 2026-04-14, organization owners can register several private registries per ecosystem for Dependabot in organization **Settings → Secrets and variables → Private registries**, and authenticate with OIDC instead of stored secrets (Azure DevOps Artifacts, AWS CodeArtifact and JFrog Artifactory at launch; the docs also list Cloudsmith and Google Cloud Artifact Registry). Code scanning default setup uses organization-level registries too, for C#, Go and Java. Since 2026-09-08, Dependabot can read private GitHub Packages registries without a personal access token: it reuses the package's **Manage Actions access** grant (the repository needs **Read** access).
+
+**Assigning Alerts to Agents** (GA 2026-04-07): Users with write access can assign a Dependabot alert to Copilot or, where enabled in the repository, to third-party agents such as Claude or Codex. Each agent opens its own draft pull request, which can include the code changes a breaking upgrade needs. This requires Code Security and a Copilot plan with cloud agent access. Review every agent pull request before merging.
 
 ### Dependency Review and Governance
 
@@ -265,6 +272,10 @@ GitHub's Dependency Review API enables custom governance policies:
     license-check: true
     comment-summary-in-pr: true
 ```
+
+**Open Source License Compliance** (public preview since 2026-06-30, GitHub Enterprise Cloud with Code Security): Define one enterprise license policy and enforce it with a ruleset condition that requires license compliance results before merging, instead of maintaining `dependency-review-action` license lists in every repository. Rulesets in **Evaluate** mode annotate pull requests; **Active** rulesets block noncompliant dependencies until they're removed, replaced or granted an exception. People with the predefined **Enterprise Open Source License Manager** role approve exceptions.
+
+**License Data Source**: Since 2026-08-13, the dependency graph takes license information primarily from package registries (for example npmjs.org, PyPI and NuGet) and falls back to ClearlyDefined. License results in dependency insights, dependency review, SBOMs and license compliance can change, so recheck allow and deny lists.
 
 ### Dependency Graph Architecture
 
@@ -351,6 +362,12 @@ Organizations enable private vulnerability reporting through repository settings
 5. Patch development proceeds confidentially
 6. Public advisory released with CVE upon remediation
 
+Since 2026-10-01, for public repositories with private vulnerability reporting enabled:
+
+- Reports use a structured form by default: summary, details, a proof of concept of at least 150 characters, and impact. Customize it with a `.github/VULNERABILITY_REPORT.yml` file in the repository, or in the owner's `.github` repository to cover all its repositories.
+- You can require reporters to assign a CWE: repository **Settings → Advanced Security → Private vulnerability reporting → Settings → Submission requirements → Require a CWE assignment**. Organization and enterprise owners can enforce this setting by policy.
+- Daily rate limits cap how many new reports one account can submit. Repository administrators can set a custom daily limit and allow-list trusted reporters in the same settings.
+
 ### GitHub Security Advisories
 
 GitHub Security Advisories are structured records for vulnerabilities affecting publicly available software:
@@ -396,6 +413,8 @@ Advisories provide:
 - Dependabot integration for automatic update PR creation
 - Export to security databases and vulnerability management systems
 - Public searchability for vulnerability intelligence gathering
+
+**Innersource advisories** (GA 2026-07-08): Enterprises with Code Security can publish advisories, through the REST API, that are visible only inside the enterprise and can cover internal or open source components. Dependabot then alerts affected repositories in the enterprise (the alerts carry an "Innersource" label) and can open upgrade pull requests. Each advisory applies to the whole enterprise, and an enterprise can have up to 2,000 active advisories.
 
 ## Audit Logging and SIEM Integration
 
@@ -629,13 +648,13 @@ GitHub Cloud for Government meets FedRAMP Moderate baseline requirements:
 
 ### Security Campaigns
 
-Security campaigns enable coordinated remediation across hundreds of repositories. Enterprise security teams create campaigns from the Security Overview dashboard to prioritize and track vulnerability remediation at scale.
+Security campaigns enable coordinated remediation across hundreds of repositories. Enterprise security teams create campaigns from the Security Overview dashboard to prioritize and track vulnerability remediation at scale. With Microsoft Defender for Cloud connected (GA 2026-05-05), organization alert lists and campaign creation can filter on runtime context: `has:deployment` for deployed artifacts and `runtime-risk:` (for example `runtime-risk:internet-exposed`) for workloads Defender reports as exposed or handling sensitive data.
 
 ### Software Bill of Materials (SBOM)
 
 GitHub supports generating SBOMs for supply chain transparency and regulatory compliance:
 
-- **Generate via UI:** Repository. Insights. Dependency graph. Export SBOM (SPDX format)
+- **Generate via UI:** Repository → **Insights** → **Dependency graph** → **Export SBOM** (SPDX format). Since 2026-04-14 the export runs asynchronously: the page prepares the file and offers it for download when it's ready, so large repositories no longer time out
 - **Generate via REST API:** The synchronous `GET /repos/{owner}/{repo}/dependency-graph/sbom` endpoint is deprecated and stops working after 2026-11-13. Use the asynchronous flow: `GET /repos/{owner}/{repo}/dependency-graph/sbom/generate-report` starts the export and returns an `sbom_url`; poll `GET /repos/{owner}/{repo}/dependency-graph/sbom/fetch-report/{sbom_uuid}`, which returns `202` while processing and then redirects to a temporary download URL for the SPDX JSON (reports are kept for up to one week). Update scripts and `gh api` calls that use the old endpoint.
 - **Supported formats:** SPDX 2.3 (JSON) — the industry standard for software component inventory
 - **Scope:** Includes all dependencies detected by the dependency graph (manifest files + lock files)
@@ -1033,6 +1052,8 @@ All GHAS features are **free on public repositories**. For enterprises contribut
 
 Before purchasing Secret Protection, use GitHub's **free, periodic (available every 90 days) secret risk assessment** — a point-in-time scan of all repositories in an organization that identifies leaked secrets without requiring paid licenses. This assessment helps quantify exposure and prioritize which organizations or repos to enable first, turning a cost decision into a data-driven one.
 
+For Code Security, run the free **code security risk assessment** (since 2026-04-08, GitHub Team and GitHub Enterprise Cloud). Organization owners and security managers start it from the "Assessments" view of the organization's **Security & quality** tab. It scans up to 20 repositories with CodeQL without charging licenses or Actions minutes, reports vulnerabilities by severity, rule and language and how many Copilot Autofix can fix, and can be rerun every 90 days. Since 2026-05-19, eligible enterprise admins can start a trial, or enable Secret Protection and Code Security, directly from either assessment.
+
 #### Azure Billing Integration and MACC
 
 Enterprises routing GitHub billing through an Azure subscription can apply GHAS costs toward their **Microsoft Azure Consumption Commitment (MACC)**. This means pre-committed Azure spend can effectively cover GHAS licensing, reducing incremental budget impact. Work with your Microsoft account team to confirm MACC applicability for your GitHub Enterprise agreement.
@@ -1147,13 +1168,13 @@ Enterprises frequently encounter these avoidable cost mistakes during GHAS rollo
 
 6. **Automation via user accounts**: CI/CD pipelines and automation that commit using personal access tokens (PATs) tied to user accounts count those users as active committers. Migrate automation to GitHub App identities, which are excluded from billing.
 
-7. **Not leveraging the free secret risk assessment**: Purchasing Secret Protection for the entire enterprise without first running the free assessment to identify which repos actually have secret exposure. Assessment data should inform enablement scope.
+7. **Not leveraging the free risk assessments**: Purchasing Secret Protection or Code Security for the entire enterprise without first running the free secret and code security risk assessments to identify which repos actually have exposure. Assessment data should inform enablement scope.
 
 ### Cost Optimization Checklist
 
 Use this checklist during initial rollout and quarterly reviews:
 
-- [ ] Run the free secret risk assessment before purchasing Secret Protection
+- [ ] Run the free secret and code security risk assessments before purchasing Secret Protection or Code Security
 - [ ] Classify repositories into tiers (critical, important, standard) per the governance framework
 - [ ] Enable Secret Protection on all tiers — universal value at lower cost
 - [ ] Enable Code Security only on critical and important tier repos

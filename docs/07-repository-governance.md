@@ -393,6 +393,8 @@ Status checks integrate CI/CD systems with merge requirements, ensuring all auto
 - **Missing checks:** New workflows not added to requirements
 - **Circular dependencies:** Status check waits for merge to run
 
+**Code coverage thresholds (public preview):** Since 2026-06-30, a branch ruleset can block merges on test coverage with the **Restrict code coverage** rule: a minimum line coverage percentage, a maximum drop in percentage points from the default branch, or both. The repository needs GitHub Code Quality (a separate paid product since 2026-07-20) with coverage uploads configured; the rule isn't available on GitHub Enterprise Server. It evaluates only coverage data that has already been uploaded, so also make each coverage upload's status check a required check. Start the ruleset in **Evaluate**. Since 2026-09-18, the REST API manages the rule as `code_coverage` with `minimum_coverage` and `max_coverage_drop` parameters.
+
 ### Required Reviews and CODEOWNERS
 
 Code review requirements enforce quality gates and knowledge distribution across teams.
@@ -661,6 +663,12 @@ Custom repository properties enable fine-grained ruleset targeting based on meta
 
 **Default values:** Set a default value when defining a property so that newly created repositories automatically inherit a standard classification (e.g., `environment = development`). Teams can override the default as needed.
 
+**Copilot-suggested allowed values (public preview):** Since 2026-09-15, with Copilot Business or Copilot Enterprise, Copilot can suggest allowed values when an enterprise or organization owner creates a single-select or multi-select property. The **Repository custom property suggestions** Copilot policy controls the feature; in an enterprise, the enterprise policy decides whether organizations can manage it.
+
+**Deployment context targeting:** Since 2026-04-14, organization rulesets can also target repositories by deployment context taken from the organization's linked artifacts page: `deployable:true` (the repository has an active storage record) or `deployed:true` (it has an active deployment record). Use them in **Target repositories** → **Repositories matching a filter**, or to filter the organization's repository list. The targeting is only as accurate as the storage and deployment records your pipelines upload.
+
+**External custom properties (public preview):** Since 2026-09-29, an external system of record such as a CMDB or developer portal can own repository properties. A GitHub App writes the values under its own display-name prefix (for example, `port.environment`), the values are read-only in the GitHub UI, and they work anywhere custom properties do, including repository filtering and ruleset targeting. Port is the first partner integration; you can also build your own app. See [Integrating custom properties with an external system](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/sync-external-custom-properties).
+
 **Bulk-setting via API:** Use the organization-level properties endpoint to set values across many repositories in a single call:
 ```bash
 gh api /orgs/ORG/properties/values -X PATCH -f '{"repository_names":["repo-a","repo-b"],"properties":[{"property_name":"environment","value":"production"}]}'
@@ -767,6 +775,8 @@ Push rulesets extend governance to file-level granularity, enabling controls bas
 - **Maximum file path length:** Prevent Windows compatibility issues
 - **Branch name patterns:** Enforce naming conventions
 - **Non-fast-forward prevention:** Block force pushes
+
+**Allowed exceptions:** Since 2026-08-25 (announced as public preview), the **Restrict file paths** and **Restrict file size** rules accept **Allowed exceptions**: `fnmatch` path patterns the rule skips, validated when you save the ruleset. Exempt a narrow path instead of relaxing the rule for everyone — for example, block `**/*.jar` but allow `**/gradle/wrapper/*.jar`, or adopt a file size limit while exempting files that already exceed it. **Restrict file extensions** doesn't take exceptions; to allow one file of a blocked type, use **Restrict file paths** with a pattern such as `**/*.jar` plus the exception.
 
 **Implementation Strategy:**
 
@@ -914,6 +924,10 @@ on:
 **Failure modes and batch bisection:** When a batch of PRs fails CI, GitHub automatically bisects the batch — it removes the likely-failing PR and retries the remaining PRs in a new merge group. Individual PRs that repeatedly fail CI are ejected from the queue entirely, preventing a single broken PR from blocking all other merges.
 
 **Queue depth monitoring:** Monitor merge queue depth and average wait times as operational health signals. Long queues typically indicate that CI is too slow relative to merge velocity, or that too many PRs are landing simultaneously. Consider optimizing CI runtime, increasing batch sizes, or staggering merge windows to reduce queue pressure.
+
+**Stacked pull requests (public preview):** Since 2026-07-30, developers can split a large change into a stack of small pull requests, each targeting the layer below, and merge the stack in one operation. Stacks need no enablement. Required reviews, required status checks, CODEOWNERS and code scanning are evaluated as if every pull request targeted the stack's base branch, and a pull request can merge only when every pull request below it also meets those requirements. Stacks work with merge queues: the whole stack is queued in order, and the merge group may exceed its configured maximum size by up to 50 percent to keep a stack together. A `pull_request` workflow runs for every pull request in a stack, so watch Actions minutes on large stacks.
+
+**Async merge API:** Since 2026-10-01, the asynchronous merge API is generally available and is the recommended way to merge pull requests programmatically. Submit with `PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge-async` and poll `GET /repos/{owner}/{repo}/pulls/{pull_number}/merge-async/{uuid}`. `merge_action` is `default` (use the merge queue if the branch has one), `direct_merge` or `merge_queue`, and `bypass_rules: true` bypasses only the rules the caller is already allowed to bypass. It is the only API that can merge a stacked pull request, so update merge bots and ChatOps tooling before teams adopt stacks.
 
 ### Repository Merge Settings
 
@@ -1307,6 +1321,8 @@ while read repo; do
 done
 ```
 
+**Commit comments:** Since 2026-04-23, organization owners can turn off commit comments by default for every repository in the organization: **Settings** → **Repository** → **General** → under "Commits", clear **Allow comments on individual commits**. People can't create new commit comments, existing ones stay visible, and repository administrators can still override the default in a repository's settings.
+
 **Ruleset Hierarchy:**
 
 ```
@@ -1336,8 +1352,8 @@ Repository Level (additive):
 **Audit Trails:**
 
 ```bash
-# Recent repository changes
-gh api /orgs/ORGANIZATION/audit-log \
+# Recent repository changes (-f adds query parameters; --method GET stops gh from sending a POST)
+gh api --method GET /orgs/ORGANIZATION/audit-log \
   --paginate \
   -f phrase='action:repo.*' \
   -f per_page=100
@@ -1541,6 +1557,10 @@ gh api \
 - [Managing Code Review Settings](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/about-protected-branches#require-pull-request-reviews-before-merging) - Pull request review requirements
 - [About Code Owners](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners) - CODEOWNERS file syntax and behavior
 - [Managing Merge Queue](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-a-merge-queue) - Merge queue configuration and usage
+- [Stacked Pull Requests](https://docs.github.com/en/enterprise-cloud@latest/pull-requests/reference/stacked-pull-requests) - How rules, checks and merge queues apply to stacks
+- [REST API: Merge a Pull Request Asynchronously](https://docs.github.com/en/enterprise-cloud@latest/rest/pulls/pulls#merge-a-pull-request-asynchronously) - The async merge API
+- [Available Rules for Rulesets](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets) - Includes Restrict code coverage and allowed exceptions for push rules
+- [Managing Commit Comments for Your Organization](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/managing-commit-comments-for-your-organization) - Organization default for commit comments
 - [About Commit Signature Verification](https://docs.github.com/en/enterprise-cloud@latest/authentication/managing-commit-signature-verification/about-commit-signature-verification) - GPG and SSH commit signing
 - [About Tag Protection Rules](https://docs.github.com/en/enterprise-cloud@latest/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/configuring-tag-protection-rules) - Protecting release tags
 - [Archiving Repositories](https://docs.github.com/en/enterprise-cloud@latest/repositories/archiving-a-github-repository/archiving-repositories) - Repository archival procedures

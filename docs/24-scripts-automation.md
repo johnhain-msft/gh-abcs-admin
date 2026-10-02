@@ -1086,6 +1086,8 @@ resource "github_repository_ruleset" "main_protection" {
 }
 ```
 
+> **Review dismissals in rulesets:** Since 2026-07-07, the **Require a pull request before merging** rule in repository rulesets can **Restrict who can dismiss reviews** to chosen users, teams and GitHub Apps, configurable in the UI, REST API and GraphQL API. That covers what `restrict_dismissals` does in the branch protection example above. Check that your Terraform provider version exposes the setting before you move this control from branch protection to rulesets.
+
 ### State Management
 
 Terraform state tracks all managed resources. For team collaboration, use remote state:

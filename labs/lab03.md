@@ -21,12 +21,12 @@ References:
 
 1. Navigate to your repository on GitHub.com
 2. Click **Settings** in the repository navigation bar
-3. In the left sidebar under **"Code and automation"**, click **Rules**, then click **Rulesets**
+3. In the left sidebar under **"Code, planning, and automation"**, click **Rulesets**, then click **Rulesets** in the menu that opens
 4. Click **New ruleset**, then select **New branch ruleset**
 5. Set the **Ruleset name** to `default-branch-protection`
-6. Leave **Enforcement status** as **Active**
+6. Change **Enforcement status** from **Disabled** (the default for a new ruleset) to **Active**. This lab enforces the ruleset on purpose, so you can test it in section 3.6
 
-> **Note:** If you do not see the **Rulesets** option under **Rules**, ensure you are on GitHub Enterprise Cloud or a repository in an organization. Rulesets are not available on personal free-tier repositories.
+> **Note:** If you do not see the **Rulesets** option in the sidebar, ensure you are on GitHub Enterprise Cloud or a repository in an organization. Rulesets are not available on personal free-tier repositories.
 
 ## 3.2 Configure bypass actors
 
@@ -51,6 +51,7 @@ In the **"Branch protections"** section, enable the following rules:
     - ✅ Check **"Dismiss stale pull request approvals when new commits are pushed"**
     - ✅ Check **"Require review from Code Owners"**
     - ✅ Check **"Require conversation resolution before merging"**
+    - _(Optional)_ Select **"Restrict who can dismiss reviews"** and pick the users, teams or apps allowed to dismiss a review (generally available for repository rulesets since 2026-07-07). Without it, anyone with write access can dismiss a blocking review
 3. **Require status checks to pass before merging** — ✅ Check this box, then:
     - In the search box, type `build` and select the status check. If no `build` check appears, you need to create a workflow first — follow the quick setup below, then return to this step.
     - ✅ Check **"Require branches to be up to date before merging"**
@@ -104,7 +105,7 @@ In the **"Branch protections"** section, enable the following rules:
 
 ## 3.7 _(Optional)_ View Rule Insights
 
-1. Go to **Settings**, then in the left sidebar under **"Code and automation"**, click **Rules**, then click **Insights**
+1. Go to **Settings**, then in the left sidebar under **"Code, planning, and automation"**, open the ruleset menu you used in section 3.1 and click **Insights** (on some screens this menu is labeled **Rules**)
 2. At the top of the **Rule Insights** page, review the dashboard charts (generally available since 2026-08-25 on GitHub Team and GitHub Enterprise Cloud): successes, failures and bypasses over time, and the most active bypassers. Each chart links to the filtered list below it
 3. Use the dropdown menus at the top of the page to filter by ruleset, branch, actor and time period, then review the timeline of rule evaluations — you should see your recent PR activity with pass/fail/bypass events. To see which rules failed or were bypassed, click the **···** menu next to an event and expand the ruleset name
 4. _(Note)_ On GitHub Enterprise Cloud, you can set rulesets to **Evaluate** mode to dry-run rules against real traffic before activating them

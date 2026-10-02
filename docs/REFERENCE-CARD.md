@@ -192,6 +192,9 @@ Enterprise (Copilot policies)
 | Editor Availability | Enterprise / Org | Control which editors can use Copilot |
 | Copilot in GitHub.com | Enterprise / Org | Copilot Chat on the web. Announced 2026-08-28 to merge with Chat in GitHub Mobile and Copilot cloud agent into one default-on policy; not launched by 2026-10-01 |
 | Default policy for new features | Enterprise / Org | From 2026-10-22, GA features left Unconfigured follow it; ships Enabled |
+| Agents | Enterprise / Org | Copilot cloud agent; third-party agents (Anthropic Claude, OpenAI Codex) in public preview |
+| Copilot Memory, session sync | Enterprise / Org | Copilot Memory (public preview) is off by default; **Store local sessions in the Cloud** left Unconfigured allows neither sync nor remote control |
+| Open-weight models | Enterprise / Org | Kimi K2.7 Code and Kimi K3 are off by default for Business and Enterprise |
 
 > Policies decide who gets a feature. How Copilot clients behave (bypass mode, MCP server allowlists) is set in enterprise managed settings: see [Enterprise Managed Settings](29-enterprise-managed-settings.md) and self-paced [Lab 17](../labs/lab17.md).
 
@@ -217,6 +220,13 @@ gh api "/orgs/ORG/copilot/metrics/reports/organization-1-day?day=YYYY-MM-DD"
 # Get Copilot usage metrics for an enterprise (daily report)
 gh api "/enterprises/ENTERPRISE/copilot/metrics/reports/enterprise-1-day?day=YYYY-MM-DD"
 
+# Map licensed users to their teams (since 2026-05-14; teams with fewer than five seated users are left out)
+gh api "/orgs/ORG/copilot/metrics/reports/user-teams-1-day?day=YYYY-MM-DD"
+
+# Per-repository cloud agent and code review activity (since 2026-07-17)
+gh api "/orgs/ORG/copilot/metrics/reports/repos-1-day?day=YYYY-MM-DD"
+# Enterprise versions: /enterprises/ENTERPRISE/copilot/metrics/reports/user-teams-1-day and .../repos-1-day
+
 # Get Copilot seat assignments
 gh api /orgs/ORG/copilot/billing/seats --paginate
 ```
@@ -225,12 +235,12 @@ gh api /orgs/ORG/copilot/billing/seats --paginate
 
 | Need | Feature | Where to Configure |
 |------|---------|-------------------|
-| Protect branches across all repos | Organization Rulesets | Org → Settings → Rules → Rulesets |
-| Require 2FA for all members | Enterprise/Org Policy | Enterprise → Settings → Authentication |
-| Block public repos | Enterprise Policy | Enterprise → Settings → Policies → Repositories |
+| Protect branches across all repos | Organization Rulesets | Org → Settings → Repository → Rulesets |
+| Require 2FA for all members | Enterprise/Org Policy | Enterprise → Settings → Authentication security (not with EMU) |
+| Block public repos | Enterprise Policy | Enterprise → Policies → Member privileges → Repository creation |
 | Enable secret scanning org-wide | Security configurations | Org → Settings → Advanced Security → Configurations |
-| Stream audit log to SIEM | Audit Log Streaming | Enterprise → Settings → Audit log |
-| Automate user provisioning | SCIM | Enterprise → Settings → Authentication |
+| Stream audit log to SIEM | Audit Log Streaming | Enterprise → Settings → Audit log → Log streaming |
+| Automate user provisioning | SCIM | Your IdP's GitHub application (EMU: enterprise SCIM; otherwise per organization) |
 
 ### Rate Limit Quick Check
 

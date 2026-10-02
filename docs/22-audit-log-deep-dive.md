@@ -718,7 +718,7 @@ The GitHub audit log organizes events into categories based on the resource type
 |---|---|---|
 | `business` | Enterprise settings and administration | `business.add_admin`, `business.add_organization`, `business.enable_saml`, `business.enable_two_factor_requirement` |
 | `org` | Organization membership and settings | `org.add_member`, `org.remove_member`, `org.update_member`, `org.invite_member` |
-| `repo` | Repository lifecycle and settings | `repo.create`, `repo.destroy`, `repo.access`, `repo.rename`, `repo.transfer` |
+| `repo` | Repository lifecycle and settings | `repo.create`, `repo.destroy`, `repo.access`, `repo.rename`, `repo.transfer`; Code Quality enablement (since 2026-08-20): `repo.code_quality_enabled`, `repo.code_quality_disabled`, `repo.code_quality_updated` |
 | `team` | Team management | `team.create`, `team.destroy`, `team.add_member`, `team.add_repository` |
 | `hook` | Webhook management | `hook.create`, `hook.destroy`, `hook.events_changed` |
 | `protected_branch` | Branch protection rules | `protected_branch.create`, `protected_branch.update`, `protected_branch.destroy` |
@@ -733,6 +733,8 @@ The GitHub audit log organizes events into categories based on the resource type
 | `personal_access_token` | Fine-grained PAT management | Token approval and denial events |
 | `dependabot_alerts` | Dependabot configuration | Organization-level Dependabot alert settings |
 | `api` | API request events (streaming only) | `api.request` (must be explicitly enabled) |
+
+GitHub Code Quality bills active committers on the repositories where it's enabled, so the three `repo.code_quality_*` events show when a repository entered or left that billed scope, and who changed it. They appear in both the organization and enterprise audit logs and in the audit log API.
 
 ### Git Events
 

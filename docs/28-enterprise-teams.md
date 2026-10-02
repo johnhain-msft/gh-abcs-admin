@@ -190,7 +190,7 @@ How it evaluates:
 
 ## Team Specialization in Enterprise Managed Settings
 
-Since 2026-08-03, server-managed Copilot enterprise managed settings can give enterprise teams their own values for keys the enterprise marks overridable. The enterprise file `copilot/managed-settings.json` in the `.github-private` repository wraps those keys as `{ "overridable": VALUE }`, `copilot/team-mappings.json` maps team settings files to enterprise team slugs, and the team files live in `copilot/teams/`. Keys that aren't overridable stay enterprise decisions. A user in several mapped teams gets the least restrictive value for each key.
+Since 2026-08-03, server-managed Copilot enterprise managed settings can give enterprise teams their own values for keys the enterprise marks overridable. The enterprise file `copilot/managed-settings.json` in the `.github-private` repository wraps those keys as `{ "overridable": VALUE }`, `copilot/team-mappings.json` maps team settings files to enterprise team slugs, and the team files live in `copilot/teams/`. Keys that aren't overridable stay enterprise decisions. A user in several mapped teams gets the least restrictive value for each key. Overridable keys include the MCP server allowlist and denylist (`allowedMcpServers`, `deniedMcpServers`; generally available since 2026-08-06) and the agent permission rules (`permissions.deny`, `permissions.ask`, `permissions.allow`; generally available since 2026-09-09), so a platform team can get a wider MCP allowlist or different approval rules than the rest of the enterprise.
 
 For the supported keys, an example and rollout guidance, see [Enterprise Team Specialization](29-enterprise-managed-settings.md#enterprise-team-specialization) in [29-enterprise-managed-settings.md](29-enterprise-managed-settings.md).
 
@@ -201,7 +201,9 @@ Since 2026-06-25, enterprise owners can add enterprise teams to cost centers, in
 - All usage incurred by team members is attributed to the cost center. Attribution follows membership changes, including IdP changes synced through SCIM, with no reassignment.
 - A resource, including an enterprise team, belongs to one cost center at a time. Adding it to another cost center moves it.
 - If a user is also assigned to a cost center directly, the direct assignment wins. If a user is in several enterprise teams assigned to different cost centers, the team **created first** decides.
-- Budgets attach to the cost center, not the team. Adding a team is how you keep membership current; a budget on the cost center then applies to every member, including a cost center user-level budget that caps each member's GitHub AI Credits.
+- Budgets attach to the cost center, not the team. Adding a team is how you keep membership current; a budget on the cost center then applies to every member, including a cost center user-level budget (REST API since 2026-06-30, billing UI since 2026-07-07) that caps each member's GitHub AI Credits, whether the member was added directly or through an enterprise team.
+- A cost center that contains only users and enterprise teams can also turn on an AI credit pool (since 2026-07-02), which caps its share of the enterprise's included AI Credits at what its own Copilot licenses fund. The 2026-07-02 post asks for at least one user or enterprise team; the REST reference allows the pool only when the cost center contains nothing but users and enterprise teams.
+- An enterprise can create up to 1,000 cost centers (since 2026-06-26).
 
 See [19-licenses-billing.md](19-licenses-billing.md#cost-centers) for cost center budgets, AI credit pools and allocation rules.
 

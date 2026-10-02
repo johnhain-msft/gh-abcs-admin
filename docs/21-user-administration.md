@@ -142,6 +142,8 @@ GitHub Enterprise Cloud defines a hierarchy of enterprise-level roles that contr
 | **User (member)** | No administrative access by default; includes org members and unaffiliated users | Only in orgs where they are a member |
 | **Guest collaborator** | EMU only — provisioned by IdP with limited access; cannot see internal repos except in assigned orgs | Limited to explicitly assigned orgs |
 
+> **Note:** Open source license compliance (public preview since 2026-06-30, for GitHub Enterprise Cloud enterprises with GitHub Code Security licenses) adds a predefined **Enterprise Open Source License Manager** role; the changelog post calls it Enterprise Open Source License Policy Manager. Enterprise owners assign it to users or teams under **People** → **Enterprise roles** → **Role assignments** → **Assign role**. Holders review and approve requests for license and package exceptions to the enterprise license policy, and receive request notifications. As of 2026-10-02, the enterprise roles overview page doesn't list this role.
+
 > **⚠️ Critical Detail:** Enterprise owners do **not** automatically have access to organization content. They must join an organization to access its repositories, issues, and other resources. This is one of the most common misconceptions in GitHub Enterprise Cloud administration.
 
 ### Custom Enterprise Roles
@@ -172,7 +174,7 @@ Within each organization, users can hold specific roles that control their acces
 |------|-------------|
 | **Organization owner** | Complete administrative access to the organization |
 | **Organization member** | Default non-admin role; can create repos and projects |
-| **Moderator** | Can block/unblock non-member contributors, set interaction limits, hide comments |
+| **Moderator** | Can block/unblock non-member contributors, set interaction limits (including, since 2026-08-06, an organization-wide limit on open pull requests per user without write access), hide comments |
 | **Billing manager** | Manages organization billing settings |
 | **Security manager** | View security alerts and manage security settings across the org |
 | **GitHub App manager** | Manage GitHub App registrations for the organization |
@@ -707,15 +709,21 @@ Enterprise owners can manage SSH access through certificate authorities and key 
 
 **SSH CA configuration:**
 
-```bash
-# Upload an SSH CA public key via the API
-gh api \
-  --method POST \
-  /enterprises/YOUR-ENTERPRISE/audit-log/ssh-certificates \
-  -f key="$(cat ca_key.pub)"
+docs.github.com documents no REST API for SSH certificate authorities, so manage them in the UI:
 
-# List existing SSH CAs
-gh api /enterprises/YOUR-ENTERPRISE/audit-log/ssh-certificates
+1. In the enterprise, go to **Settings** → **Authentication security**.
+2. To the right of "SSH Certificate Authorities", click **New CA**, paste the CA's public key under "Key", and click **Add CA**.
+3. Optionally, select **Require SSH Certificates** and click **Save**. The requirement doesn't apply to authorized GitHub Apps, deploy keys, or GitHub Actions and Codespaces.
+4. With Enterprise Managed Users, select **Access User Owned Repository** to let the certificates reach repositories owned by managed users.
+
+A CA can be uploaded to only one organization or enterprise account on GitHub. To audit CA changes, query the enterprise audit log API for the `ssh_certificate_authority` events (`create`, `destroy`); the requirement toggles are logged as `ssh_certificate_requirement.enable` and `ssh_certificate_requirement.disable`:
+
+```bash
+# List SSH CA additions and deletions from the enterprise audit log
+gh api \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2026-03-10" \
+  "/enterprises/YOUR-ENTERPRISE/audit-log?phrase=action:ssh_certificate_authority"
 ```
 
 ### SAML Credential Audit

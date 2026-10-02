@@ -2826,7 +2826,8 @@ class GitHubCostOptimizer:
         
         print("Top 10 Actions consumers:")
         for repo, minutes in top_10:
-            print(f"  {repo}: {minutes} minutes (${minutes * 0.008})")
+            # Linux 2-core (x64) list rate; larger, Windows and macOS runners cost more
+            print(f"  {repo}: {minutes} minutes (${minutes * 0.006})")
         
         return top_10
     
@@ -3064,13 +3065,18 @@ class CostTracker:
         """Detailed cost breakdown by category"""
         billing = self.gh.get_billing_info(org)
         
+        # List prices in USD, checked on docs.github.com on 2026-10-02. Illustrative only:
+        # negotiated contracts differ, and minutes and storage count only paid usage
+        # beyond the included allowances.
         costs = {
-            'github_pro_seats': billing['pro_users'] * 4,  # $4/user/month
-            'actions_minutes': billing['actions_minutes_used'] * 0.008,
-            'packages_storage': billing['packages_gb_used'] * 0.25,
-            'actions_storage': billing['actions_storage_gb'] * 0.25,
-            'advanced_security': billing['ghas_repos'] * 3,
-            'copilot_seats': billing['copilot_seats'] * 10,
+            'enterprise_seats': billing['enterprise_users'] * 21,  # GitHub Enterprise Cloud, $21/user/month
+            'actions_minutes': billing['actions_minutes_used'] * 0.006,  # Linux 2-core (x64) rate
+            'packages_storage': billing['packages_gb_used'] * 0.25,  # shared storage, $0.25/GB-month
+            'actions_storage': billing['actions_storage_gb'] * 0.25,  # artifacts use the same shared storage rate
+            'secret_protection': billing['secret_protection_committers'] * 19,  # per active committer/month
+            'code_security': billing['code_security_committers'] * 30,  # per active committer/month
+            'copilot_seats': billing['copilot_business_seats'] * 19,  # Copilot Business; Copilot Enterprise is $39
+            'copilot_ai_credits': billing['paid_ai_credits'] * 0.01,  # GitHub AI Credits beyond the included pool
         }
         
         total = sum(costs.values())
@@ -3337,7 +3343,7 @@ Tools and Infrastructure:
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2024 | Initial comprehensive WAF documentation |
-| 1.1 | October 2026 | Apr–Oct 2026 changelog refresh: `actions/checkout` v7 and `pull_request_target`, workflow execution protections, `ubuntu-latest` migration to Ubuntu 26.04, self-hosted runner version enforcement, retention of checks, workflow runs and statuses |
+| 1.1 | October 2026 | Apr–Oct 2026 changelog refresh: `actions/checkout` v7 and `pull_request_target`, workflow execution protections, `ubuntu-latest` migration to Ubuntu 26.04, self-hosted runner version enforcement, retention of checks, workflow runs and statuses; cost scripts use list prices checked on 2026-10-02 |
 
 ---
 

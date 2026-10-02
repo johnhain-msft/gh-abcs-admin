@@ -61,9 +61,11 @@ GitHub offers multiple Copilot subscription plans tailored for different organiz
 | **IP Indemnification** | ✓ | ✓ |
 | **Data Privacy** | Limited, documented retention (see [Compliance Considerations](#compliance-considerations)) | Same as Business |
 
-> **Note:** Copilot also offers individual plans: Copilot Free, Copilot Student, Copilot Pro, Copilot Pro+ and Copilot Max (launched 2026-06-01 as an upgrade for existing Student, Pro and Pro+ subscribers). Business and Enterprise are the managed, policy-governed tiers covered in this governance guide. Since 2026-06-01, every Copilot plan bills in AI Credits (1 AI Credit = $0.01); see [Licenses and Billing](19-licenses-billing.md#github-ai-credits) for pooling, paid usage and budgets. Copilot IDE features (code completions, chat, agent mode) are available for GHES users who are licensed through a github.com enterprise account. Cloud-native features such as Copilot code review, cloud agent, and web chat require GitHub Enterprise Cloud.
+> **Note:** Copilot also offers individual plans: Copilot Free, Copilot Student, Copilot Pro, Copilot Pro+ and Copilot Max (launched 2026-06-01 as an upgrade for existing Student, Pro and Pro+ subscribers). Business and Enterprise are the managed, policy-governed tiers covered in this governance guide. Since 2026-06-01, every Copilot plan bills in AI Credits (1 AI Credit = $0.01); see [Licenses and Billing](19-licenses-billing.md#github-ai-credits) for pooling, paid usage and budgets. Copilot IDE features (code completions, chat, agent mode) are available for GHES users who are licensed through a github.com enterprise account. Cloud-native features such as Copilot code review, cloud agent, and web chat require GitHub Enterprise Cloud. Since GHES 3.22 (generally available 2026-09-08), administrators of disconnected or air-gapped GHES instances can also set up a model provider in GHES so users run Copilot CLI with their GHES credentials (technical preview).
 
-> **Bring your own key (BYOK):** Since 2026-04-22, Copilot Business and Enterprise users can add their own model provider keys to chat in VS Code (local BYOK; it doesn't apply to code completions). It is on by default, and an enterprise or organization policy can turn it off. The provider bills that usage, not GitHub. Separately, enterprise owners can add provider keys centrally as custom models (public preview) under **AI controls** → **Copilot** → **Configure custom models**; the **Enable custom models** policy lets organization owners add their own.
+> **Bring your own key (BYOK):** Since 2026-04-22, Copilot Business and Enterprise users can add their own model provider keys to chat in VS Code (local BYOK; it doesn't apply to code completions). It is on by default, and an enterprise or organization policy can turn it off. The provider bills that usage, not GitHub. Separately, enterprise owners can add provider keys centrally as custom models (public preview) under **AI controls** → **Copilot** → **Configure custom models**; the **Enable custom models** policy lets organization owners add their own. Custom models appear in Copilot Chat, Copilot CLI and IDEs.
+>
+> Copilot CLI (since 2026-04-07) and the GitHub Copilot app (since 2026-06-23) also accept a user's own model provider, and since 2026-07-07 the app runs with a user's own key and no Copilot plan at all. With its own provider, Copilot CLI doesn't need a GitHub sign-in, and `COPILOT_OFFLINE=true` stops it contacting GitHub and turns off its telemetry. Use like that isn't tied to a license on your Copilot plan, so your Copilot policies, budgets and usage metrics don't cover it.
 
 ### Licensing Model
 
@@ -85,9 +87,9 @@ Copilot Business and Enterprise licenses are assigned per seat. Billing starts w
 - Since 2026-09-03, new seats for customers who pay by credit card or PayPal must be paid for before the user gets access. From 2026-10-01, existing card and PayPal customers are also charged upfront for assigned seats at the start of each billing cycle
 
 **License Inheritance**:
-- Users receive Copilot access through their organization membership
+- Users receive Copilot through a license that an organization assigns, or that the enterprise assigns directly (Copilot Business only)
 - Enterprise policies can override organization-level license controls
-- Users with multiple organization memberships inherit the most permissive policy
+- A user licensed by several organizations in one enterprise usually gets the **least restrictive** setting of each policy. A few sensitive policies use the **most restrictive** setting instead, including Copilot Metrics API access, suggestions matching public code, Copilot code review for members without a license, and Copilot Memory. A user licensed by several enterprises usually gets the most restrictive setting. See [Feature availability when GitHub Copilot policies conflict](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/enterprise-administrators/policy-conflicts)
 
 ## Policy Architecture
 
@@ -130,7 +132,15 @@ GitHub Copilot policies follow the standard GitHub Enterprise Cloud policy inher
 
 ### Client-Side Controls: Enterprise Managed Settings
 
-Policies decide which Copilot features, clients, agents and models users can access. Since 2026-07-01, enterprise managed settings decide how the clients behave. The enterprise keeps a `copilot/managed-settings.json` file in the `.github-private` repository of an organization it selects under **AI controls** → **Agents**, and the settings apply to everyone who receives a Copilot Business or Copilot Enterprise license from the enterprise or its organizations. Keys cover bypass ("yolo") mode, deny, ask and allow rules for shell commands, file access and network domains (since 2026-09-09), plugins and marketplaces, MCP server allow and deny lists (since 2026-08-06) and the default model. Copilot CLI, VS Code, JetBrains IDEs, the GitHub Copilot app and Copilot cloud agent enforce them, though not every client supports every key. Settings can also reach devices through MDM or a file (since 2026-07-08), and enterprise teams can receive their own values for keys you mark overridable (since 2026-08-03). See [Enterprise Managed Settings](29-enterprise-managed-settings.md) and [Lab 17](../labs/lab17.md).
+Policies decide which Copilot features, clients, agents and models users can access. Since 2026-07-01, enterprise managed settings decide how the clients behave. The enterprise keeps a `copilot/managed-settings.json` file in the `.github-private` repository of an organization it selects under **AI controls** → **Agents**, and the settings apply to everyone who receives a Copilot Business or Copilot Enterprise license from the enterprise or its organizations. Copilot CLI, VS Code, JetBrains IDEs, the GitHub Copilot app and Copilot cloud agent enforce them, though not every client supports every key. The settings cover:
+
+- **Agent behavior:** bypass ("yolo") mode, and deny, ask and allow rules for shell commands, file access and network domains (since 2026-09-09)
+- **Extensions:** plugins and marketplaces, including Agent Plugins 1.0 packages (since 2026-08-12), and MCP server allow and deny lists (since 2026-08-06)
+- **Default model** for new conversations: Auto (since 2026-07-01) or any model (since 2026-09-02); users can still pick another model per conversation
+- **Monitoring:** OpenTelemetry export of agent activity to your own collector (since 2026-07-08); prompts, responses and tool arguments are left out unless you turn content capture on
+- **Local execution:** remote control of sessions (since 2026-07-30), local sandbox restrictions (public preview since 2026-06-02), and computer use (public preview since 2026-10-01)
+
+Settings can also reach devices through MDM or a file (since 2026-07-08). Enterprise teams can receive their own values for keys you mark overridable (since 2026-08-03): a team value replaces the enterprise default for keys such as `extraKnownMarketplaces`, `strictKnownMarketplaces` and `sandbox`, while a team's `enabledPlugins` adds to the enterprise baseline. Since 2026-09-25, a validator in the "Copilot settings validation" section of the **Agents** page reports errors in these files. See [Enterprise Managed Settings](29-enterprise-managed-settings.md) and [Lab 17](../labs/lab17.md).
 
 ### Policy Types
 
@@ -143,10 +153,13 @@ GitHub Copilot policies are organized into three categories:
 - Copilot Chat in GitHub Mobile
 - Copilot CLI, with **Allow use of Copilot CLI billed to the organization**. It is on by default wherever Copilot CLI is enabled and lets agentic workflows (since 2026-06-11) and Copilot CLI (since 2026-07-02) in GitHub Actions bill AI Credits to the organization with `GITHUB_TOKEN`; user-level budgets don't apply to that usage
 - GitHub Copilot app (its own policy since 2026-07-27, separate from Copilot CLI; **Enabled everywhere** by default)
-- Copilot code review, including whether Copilot approvals count toward required approvals (public preview since 2026-09-01)
-- Copilot cloud agent
+- Copilot code review, including whether Copilot approvals count toward required approvals (public preview since 2026-09-01), and **Allow members without a Copilot license to use Copilot code review in GitHub.com** (off by default)
+- Copilot cloud agent. Cloud sandboxes, which host Copilot CLI and Copilot app sessions in GitHub-hosted environments and run cloud agent sessions started from Microsoft Teams, need the **Cloud Sandbox access** policy (off by default), which shares Copilot cloud agent's policy configuration
+- Third-party agents (public preview): **Anthropic Claude** and **OpenAI Codex**, which work in the same repositories as Copilot cloud agent
 - Copilot Agent Mode in IDE Chat
 - MCP servers in Copilot
+- Copilot Memory (public preview, off by default)
+- **Store local sessions in the Cloud**: whether local Copilot sessions sync to users' GitHub accounts (**View from cloud**) and can also be remotely controlled from GitHub.com and GitHub Mobile (**View and control**). Unconfigured allows neither, and the Default policy for new features doesn't change this policy
 
 From 2026-10-22, eligible generally available features left **Unconfigured**, including **Copilot code review** and **MCP servers in Copilot**, follow the **Default policy for new features** (Enabled by default). See [Feature and Model Configuration](#feature-and-model-configuration).
 
@@ -156,15 +169,17 @@ From 2026-10-22, eligible generally available features left **Unconfigured**, in
 - Suggestions matching public code
 - Prompt and suggestion collection
 - User feedback collection
-- Preview feature opt-in
+- Preview feature opt-in (the **Editor preview features** policy gates preview features in IDEs)
 
 **Models Policies**: Control access to AI models (enterprise: **AI controls** → **Copilot** → **Configure models**; organization: **Settings** → **Copilot** → **Models**)
-- Per-model availability: **Enabled**, **Disabled**, or delegated to organizations (in Enterprise teams mode, to enterprise teams and apps)
+- Per-model availability: **Enabled**, **Disabled**, or delegated to organizations (in Enterprise teams mode, to enterprise teams and apps). Each model has its own policy, named after the model (for example **Claude Opus 4.7**)
 - **Default availability for released models**: what happens to models nobody has configured (shown as **Delegate to Default Policy**; enforced 2026-08-26 to 2026-09-01)
 - Targeted model rules: allow specific models for selected organizations (public preview since 2026-05-26)
 - Enterprise teams mode: grant models to enterprise teams instead of organizations (opt-in public preview since 2026-07-31)
 - Custom models (enterprise BYOK, public preview) and the **Enable custom models** policy
 - The base model (GPT-5.3-Codex since 2026-05-17), used when no other model is enabled
+- Open-weight models (**Kimi K2.7 Code** since 2026-07-07, **Kimi K3** since 2026-08-06): off by default for Business and Enterprise, and outside default availability
+- Deprecations: GitHub announces each one on the changelog with a suggested alternative. Under default availability, the alternative is enabled automatically unless the default policy is off or the model is explicitly disabled (stated in the 2026-09-18 notice of six deprecations on 2026-10-19)
 
 ### Policy Enforcement Options
 
@@ -213,38 +228,45 @@ For enterprise deployments following security-by-default principles, the followi
 | Policy | Security-by-Default Setting | Rationale | Reference |
 |--------|----------------------------|-----------|----------|
 | Default policy for new features | **Disabled** or **Let organizations decide** if every new feature needs review (the policy ships **Enabled**) | From 2026-10-22, eligible generally available features left **Unconfigured**, including Copilot code review and MCP servers in Copilot, follow this policy. Explicit choices are kept and previews stay opt-in | [Default availability of features and models](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/default-availability) |
-| Copilot in IDE | **Enabled** | Core productivity feature with code remaining local | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
-| Copilot Chat in the IDE | **Enabled** | Essential for context-aware assistance | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
-| Copilot in GitHub.com | **Enabled** | Enables web-based chat for GitHub workflows. Announced to merge with Copilot Chat in GitHub Mobile and Copilot cloud agent into one policy, not launched by 2026-10-01 | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise) |
-| Copilot CLI | **Enabled** | Useful for command-line workflows | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
+| Copilot in IDE | **Enabled** | Core productivity feature. Code around the cursor and from open editor tabs is sent as a prompt to a GitHub-hosted model, so pair it with content exclusions | [Responsible use: inline suggestions](https://docs.github.com/en/enterprise-cloud@latest/copilot/responsible-use/inline-suggestions) |
+| Copilot Chat in the IDE | **Enabled** | Essential for context-aware assistance | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/policies) |
+| Copilot in GitHub.com | **Enabled** | Enables web-based chat for GitHub workflows. Announced to merge with Copilot Chat in GitHub Mobile and Copilot cloud agent into one policy, not launched by 2026-10-01 | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-enterprise-policies) |
+| Copilot CLI | **Enabled** | Useful for command-line workflows. Since 2026-07-14, disabling this policy no longer blocks the Copilot CLI agent provider inside JetBrains IDEs | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/policies) |
 | Allow use of Copilot CLI billed to the organization (organization policy, under Copilot CLI) | **Disabled** until organization or cost-center budgets cover it (on by default wherever Copilot CLI is enabled) | Lets agentic workflows (since 2026-06-11) and Copilot CLI (since 2026-07-02) in GitHub Actions bill AI Credits to the organization with `GITHUB_TOKEN`; user-level budgets don't apply | [Using Copilot CLI in GitHub Actions](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-cli/use-copilot-cli-in-actions) |
 | GitHub Copilot app | **Disabled everywhere** until enterprise managed settings are in place (the policy ships **Enabled everywhere**) | Its own policy since 2026-07-27, separate from Copilot CLI. The app runs agent sessions on developer machines and enforces enterprise managed settings | [About the GitHub Copilot app](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/agents/github-copilot-app) |
 | Copilot code review | **Enabled** | Improves code quality and security. Since 2026-06-01, each review uses AI Credits and, on private repositories, GitHub Actions minutes | [Configuring Copilot code review](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review) |
 | Allow Copilot to approve pull requests | **Disabled everywhere** (the default) | When enabled, Copilot approvals can count toward required approvals (public preview since 2026-09-01). Keep merges gated on human review | [Configuring Copilot code review](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-on-github/set-up-copilot/configure-code-review) |
+| Allow members without a Copilot license to use Copilot code review in GitHub.com | **Disabled** (the default) unless the organization budgets for it | Bills reviews for members without a license to the organization as paid usage, and since 2026-08-27 also covers automatically requested reviews of bot-authored pull requests. It needs **AI credits paid usage**, and the most restrictive setting applies across organizations | [About Copilot code review](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/agents/code-review) |
 | Copilot cloud agent | **Disabled**, or **Enabled for selected organizations** for a pilot | Requires careful evaluation; allows autonomous code changes. Since 2026-04-15 you can enable it for selected organizations: by name in the UI, or by organization custom property through the REST API (evaluated once, when you save) | [Enabling Copilot cloud agent](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-agents/enable-copilot-cloud-agent) |
-| Copilot Agent Mode in IDE Chat | **Let organizations decide** | Let organizations decide based on security posture | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
-| MCP servers in Copilot | **Disabled**, set explicitly before 2026-10-22 | External integrations require security review. Left **Unconfigured**, the policy follows the Default policy for new features from 2026-10-22. To allow only vetted servers, use the MCP allow and deny lists in enterprise managed settings (since 2026-08-06) | [MCP documentation](https://docs.github.com/en/copilot/concepts/context/mcp) |
+| Third-party agents (**Anthropic Claude**, **OpenAI Codex**) | **Disabled** until reviewed like Copilot cloud agent | Public preview. They work in the repositories where Copilot cloud agent is enabled, consume Actions minutes and AI Credits, and install a GitHub App for each agent that an organization allows (**Copilot** → **Cloud agent** → "Partner agents") | [About third-party agents](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/agents/about-third-party-coding-agents) |
+| Cloud Sandbox access | **Disabled** (the default) until cloud sandbox use is approved | Runs Copilot CLI and Copilot app sessions, and cloud agent sessions started from Microsoft Teams (public preview since 2026-08-21), in GitHub-hosted sandboxes. Sandbox usage is billed separately from AI Credits, so give it a budget | [About cloud and local sandboxes](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/security-governance-and-network-settings/about-cloud-and-local-sandboxes) |
+| Copilot Agent Mode in IDE Chat | **Let organizations decide** | Let organizations decide based on security posture | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/policies) |
+| MCP servers in Copilot | **Disabled**, set explicitly before 2026-10-22, until an MCP allowlist is in place | External integrations require security review. Left **Unconfigured**, the policy follows the Default policy for new features from 2026-10-22. GitHub's MCP management docs recommend keeping the policy enabled and limiting users to approved servers; the MCP allow and deny lists in enterprise managed settings (generally available since 2026-08-06) are the recommended allowlist | [MCP management](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/mcp-management) |
+| Copilot Memory | **Disabled** (the default) until reviewed | Public preview. Stores repository-level facts that sessions in that repository can use and, since 2026-06-02, user-level preferences that follow a user across repositories. Unused entries are deleted after 28 days; admins can export or bulk-delete preferences, and since 2026-05-26 repository admins can turn Memory off for a repository | [Managing Copilot Memory as an administrator](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/use-copilot-agents/copilot-memory/manage-as-administrator) |
+| Store local sessions in the Cloud | **Disabled** or **View from cloud**; choose **View and control** only together with the `remoteControl` managed setting | **View from cloud** syncs local Copilot sessions to each user's GitHub account; **View and control** also allows remote control from GitHub.com and GitHub Mobile (generally available since 2026-05-18). Admins can't read synced sessions, and the Default policy for new features doesn't apply to this policy | [About remote control](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/agents/copilot-cli/about-remote-control) |
 | Bring your own key (local BYOK in IDEs) | **Disabled** unless approved providers are documented (on by default since 2026-04-22) | Users' own keys send prompts straight from the client to that provider, not through GitHub's Copilot API, and the provider bills the usage | [Bring your own key](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/models/bring-your-own-key) |
 
 **Privacy Policies (Critical for Security)**:
 
 | Policy | Security-by-Default Setting | Rationale | Reference |
 |--------|----------------------------|-----------|----------|
-| Suggestions matching public code | **Blocked** | Prevents suggestions identical to public code; reduces IP and licensing risks | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise) |
+| Suggestions matching public code | **Blocked** | Prevents suggestions identical to public code; reduces IP and licensing risks | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-enterprise-policies) |
 | Prompt and suggestion collection | **Blocked** | Maintains data privacy (retention caveats in [Compliance Considerations](#compliance-considerations)) | [GitHub Copilot Trust Center](https://copilot.github.trust.page/) |
-| User feedback collection | **Allowed** (Optional) | Helps improve Copilot; enable only if participating in product improvement | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise) |
-| Preview features | **Disabled** | Avoid preview features in production; enable only for evaluation. Copilot vision (images and PDFs in chat) no longer depends on this policy: it became generally available on 2026-07-01 and is on for every plan, and GitHub keeps Business and Enterprise attachments for about 24 hours | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise) |
+| User feedback collection | **Allowed** (Optional) | Helps improve Copilot; enable only if participating in product improvement | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-enterprise-policies) |
+| Preview features | **Disabled** | Avoid preview features in production; enable only for evaluation. For Business and Enterprise, the **Editor preview features** policy gates IDE previews, for example the Claude and Codex agent providers in JetBrains IDEs and HydraFusion (a research preview, in VS Code since 2026-09-30). Copilot vision (images and PDFs in chat) no longer depends on this policy: it became generally available on 2026-07-01 and is on for every plan, and GitHub keeps Business and Enterprise attachments for about 24 hours | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-enterprise-policies) |
 
 **Models Policies**:
 
 | Policy | Security-by-Default Setting | Rationale | Reference |
 |--------|----------------------------|-----------|----------|
-| Base model | **GPT-5.3-Codex** (GitHub's base model for Business and Enterprise since 2026-05-17; long-term support until 2027-02-04) | Used when the organization hasn't approved other models; a 12-month LTS model gives internal model reviews a stable target | [Supported AI models](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/ai-models/supported-models) |
+| Base model | **GPT-5.3-Codex** (GitHub's base model for Business and Enterprise since 2026-05-17; designated the base and long-term support (LTS) model on 2026-03-18) | Used when the organization hasn't approved other models. LTS lasts one year from the 2026-03-18 designation, per the docs; the 2026-05-17 changelog says it stays available through 2027-02-04 (12 months from its launch). A long-term support model gives internal model reviews a stable target | [Base and LTS models](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/models/fallback-and-lts-models) |
 | Default availability for released models | **Disabled** if every model must pass review (the policy ships **Enabled**) | Enforced 2026-08-26 to 2026-09-01: models you haven't configured show **Delegate to Default Policy** and follow this policy. Open-weight models and models outside GitHub's data retention agreement stay off either way | [Default availability of features and models](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/default-availability) |
 | Model availability (per model) | **Enabled** for reviewed models, **Disabled** for models that fail review; delegate only where organizations or enterprise teams own the decision | Each model shows **Enabled**, **Disabled**, a delegate state, or **Delegate to Default Policy**. Targeted model rules (public preview since 2026-05-26) allow specific models for selected organizations | [Managing availability of models in your enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-availability-of-default-models) |
 | Enterprise teams mode | **Off** until enterprise teams exist for every audience (opt-in public preview since 2026-07-31) | When on, organization model settings stop applying and delegated models are granted per enterprise team; a user gets a model if any of their teams has it. See [Enterprise Teams](28-enterprise-teams.md) | [Managing availability of models in your enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-availability-of-default-models) |
 | Models that require provider data retention (Claude Fable 5, Claude Fable 5.1) | **Disabled** unless the retention has been accepted, or the enterprise has a zero data retention exemption | Off by default and outside default availability. Enabling the policy acknowledges that Anthropic retains prompts and outputs; eligible enterprises can use zero data retention through the end of 2026 | [Plans for GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/get-started/plans) |
 | Custom models (enterprise BYOK) | Add vetted provider keys centrally; leave **Enable custom models** off unless organizations need their own keys | Public preview. Keys are added under **AI controls** → **Copilot** → **Configure custom models** | [Enabling custom models](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/enable-custom-models) |
+| Open-weight models (**Kimi K2.7 Code**, **Kimi K3**) | **Disabled** (the default) until reviewed | Off by default for Business and Enterprise and outside default availability. GitHub hosts Kimi K2.7 Code on Azure AI Foundry and Kimi K3 on Fireworks AI under zero data retention agreements, and recommends reviewing open-weight models against your security, compliance and data-governance requirements before enabling them | [Hosting of models for GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/ai-models/model-hosting) |
+| Default model for new conversations (`model` in enterprise managed settings) | Auto, or a model that passed review | Since 2026-07-01 the default can be Auto model selection, and since 2026-09-02 any model, with per-team defaults through overridable settings. Users can still pick another model for a conversation | [Enterprise Managed Settings](29-enterprise-managed-settings.md#default-model) |
 
 ### Configuring Policies Step-by-Step
 
@@ -280,6 +302,7 @@ Organization owners configure Copilot policies through organization settings:
 4. Select **Policies** to configure feature availability
 5. Select **Models** to configure model access
 6. Use the other pages under **Copilot** for agent settings: **Cloud agent** (runner and partner agents), **Code review** (review effort and approvals), **Internet access** (the firewall for Copilot cloud agent and Copilot code review) and **Runner type**
+7. Use **Custom instructions** for organization custom instructions (generally available since 2026-04-02), which apply to Copilot Chat on GitHub.com, Copilot code review and Copilot cloud agent in every repository in the organization
 
 Organization policies are subject to enterprise-level constraints—settings enforced at the enterprise level cannot be changed at the organization level. If the enterprise turns on **Enterprise teams mode** (opt-in public preview since 2026-07-31), organization model settings no longer apply: model access is managed at the enterprise and granted through enterprise teams (see [Enterprise Teams](28-enterprise-teams.md)).
 
@@ -490,15 +513,20 @@ The following patterns represent security-by-default exclusions for enterprise e
 
 Enterprise users connecting through firewalls or proxy servers must ensure Copilot endpoints are accessible. The following domains should be added to your allowlist:
 
-**Essential Endpoints**:
+**Essential Endpoints** (from the Copilot allowlist reference for GitHub.com):
 | Domain | Purpose |
 |--------|---------|
-| `github.com` | Authentication and repository access |
-| `api.github.com` | GitHub API access |
-| `copilot.github.com` | Copilot service |
-| `*.githubcopilot.com` | Copilot completions |
-| `copilot-proxy.githubusercontent.com` | Copilot proxy |
-| `copilot-telemetry.githubusercontent.com` | Telemetry (if enabled) |
+| `github.com` | Authentication (`/login/*`) and Copilot on GitHub (`/copilot/*`) |
+| `api.github.com` | User management (`/user`, `/copilot_internal/*`) |
+| `github.githubassets.com`, `avatars.githubusercontent.com` | Authentication |
+| `*.githubcopilot.com` | API service for Copilot suggestions, for any Copilot plan |
+| `copilot-proxy.githubusercontent.com` | API service for Copilot suggestions |
+| `origin-tracker.githubusercontent.com` | API service for Copilot suggestions |
+| `copilot-telemetry.githubusercontent.com` | Copilot client telemetry |
+| `collector.github.com` | Analytics telemetry |
+| `default.exp-tas.com` | Copilot client experimentation |
+
+To allow only your company's Copilot plan on the corporate network, use subscription-based network routing: allow `*.business.githubcopilot.com` or `*.enterprise.githubcopilot.com` and leave out `*.githubcopilot.com` and `*.individual.githubcopilot.com`. GitHub's `/meta` API endpoint returns most of the wildcard domains (`gh api meta -q '.domains | .website, .copilot'`). On GHE.com, `*.SUBDOMAIN.ghe.com` and `SUBDOMAIN.ghe.com` cover most services.
 
 **Additional Endpoints for Full Functionality**:
 | Domain | Purpose |
@@ -592,9 +620,28 @@ Track license utilization to optimize costs:
 ```
 GET /enterprises/{enterprise}/copilot/metrics/reports/enterprise-28-day/latest
 GET /enterprises/{enterprise}/copilot/metrics/reports/users-28-day/latest
+GET /enterprises/{enterprise}/copilot/metrics/reports/user-teams-1-day?day=YYYY-MM-DD
+GET /enterprises/{enterprise}/copilot/metrics/reports/repos-1-day?day=YYYY-MM-DD
 ```
 
-Since 2026-04-10, the reports' top-level totals (`code_generation_activity_count`, `code_acceptance_activity_count`, `user_initiated_interaction_count`, `loc_added_sum`, `loc_deleted_sum`) count IDE and Copilot CLI activity together. CLI also appears as `feature=copilot_cli` in the feature breakdowns, but not in `totals_by_ide`. Rebase any dashboard or threshold that assumed IDE-only totals. Since 2026-05-20, report download links point to `copilot-reports.github.com` (see [Firewall and Proxy Configuration](#firewall-and-proxy-configuration)).
+Since 2026-04-10, the reports' top-level totals (`code_generation_activity_count`, `code_acceptance_activity_count`, `user_initiated_interaction_count`, `loc_added_sum`, `loc_deleted_sum`) count IDE and Copilot CLI activity together. CLI also appears as `feature=copilot_cli` in the feature breakdowns, but not in `totals_by_ide`. Rebase any dashboard or threshold that assumed IDE-only totals. Since 2026-05-20, report download links point to `copilot-reports.github.com` (see [Firewall and Proxy Configuration](#firewall-and-proxy-configuration)). Organizations have matching reports under `/orgs/{org}/copilot/metrics/reports/`.
+
+What the reports added between 2026-04-02 and 2026-09-25:
+
+| Report | What admins can see |
+|--------|---------------------|
+| Enterprise and organization (1-day and 28-day) | Copilot cloud agent active users (2026-04-10); active and passive Copilot code review users (2026-04-22); merges and time to merge for Copilot-reviewed pull requests (2026-04-08); code review suggestions by comment type (2026-05-08); AI adoption phases (2026-05-29), with pull requests merged per phase (2026-06-26); activity per third-party agent app (2026-08-07); VS Code Agents window use (2026-09-11); 28-day feature engagement (2026-09-17) |
+| Per user (`users-1-day`, `users-28-day`) | Copilot CLI use, sessions and versions (2026-04-02); active or passive code review (2026-04-06); AI adoption phase (2026-05-29); AI Credits consumed, `ai_credits_used` (2026-06-19); Copilot app use (2026-07-28) |
+| Teams (`user-teams-1-day`, 2026-05-14) | The teams each licensed user belongs to, for joining with the per-user report to build team-level metrics. Teams with fewer than five seated users are left out |
+| Repositories (`repos-1-day`, 2026-07-17) | Copilot cloud agent pull requests created and merged, and Copilot code review activity with suggestions by comment type; since 2026-09-25, median and 90th-percentile time in each human review stage |
+
+**Reading the numbers**: Since 2026-06-15, active-user counts include users that only server-side telemetry confirms; their feature and IDE breakdowns start empty, so more activity looks unattributed. Since 2026-07-02, `ai_credits_used` includes usage that was missed before and Copilot CLI reports suggested lines of code. Since 2026-07-28, `daily_active_users` also counts users active only in the GitHub Copilot app. Compare periods across these dates with care, and treat `ai_credits_used` as a metrics signal, not a billed total.
+
+**Copilot Impact Dashboard** (since 2026-07-22; enterprise **Insights** → **Copilot impact**, also available to organization owners):
+- Groups users into adoption cohorts: Passive, Phase 1 Code first, Phase 2 Agent first, and Phase 3 Multi-agent or Copilot app, based on the surfaces each user used on at least two days in the trailing 28 days. Each cohort shows pull request throughput and merge speed, and an adoption multiplier compares engaged users with passive ones
+- Since 2026-08-07, a "Potential return on investment" section compares cost per developer, based on actual AI Credits consumption, and pull requests per month between passive and code-first users and agent-first users. Treat it as directional
+- Since 2026-09-17, it shows how many active users used each key feature, such as Copilot CLI, Copilot cloud agent, Copilot code review and the GitHub Copilot app, on at least two days in the 28-day period
+- The dashboards and reports need the **Copilot usage metrics** policy. Enterprise owners and billing managers, organization owners, and custom roles with a Copilot metrics permission (for organization roles, **View organization Copilot metrics**) can see them
 
 **Inactive User Management**:
 - Identify users who haven't used Copilot recently
@@ -692,9 +739,10 @@ Define clear metrics to evaluate Copilot adoption:
 
 | Metric Category | Metrics | Target |
 |-----------------|---------|--------|
-| **Adoption** | Total active users, license activation rate | 70-90% within first month |
-| **Engagement** | Daily/weekly active users, feature usage | Stable or increasing over time |
-| **Productivity** | Acceptance rate, code velocity | Positive feedback from developers |
+| **Adoption** | Total active users, license activation rate, users per AI adoption phase (impact dashboard) | 70-90% within first month |
+| **Engagement** | Daily/weekly active users, feature usage, feature engagement on 2+ days in 28 | Stable or increasing over time |
+| **Productivity** | Acceptance rate, code velocity, pull requests merged per adoption phase, time to merge and time in each review stage | Positive feedback from developers |
+| **Cost** | AI Credits per user (`ai_credits_used`), cost per developer in the impact dashboard | Within budget, rising only with deeper adoption |
 | **Satisfaction** | Survey results, NPS scores | Developers report efficiency gains |
 
 **Trial Success Indicators**:
@@ -821,7 +869,13 @@ Maintain security when using Copilot:
 
 Copilot cloud agent (formerly "Copilot coding agent") is an autonomous AI capability that runs in GitHub Actions-powered ephemeral environments. It can research a repository, create implementation plans, make code changes on a branch, run tests and linters, and create pull requests — all with minimal human intervention. Due to its autonomous nature, it requires careful governance.
 
-Cloud agent can be triggered via GitHub Issues (assign to `@copilot`), the agents panel on GitHub.com, Copilot Chat, GitHub CLI, or integrated tools (Slack, Teams, Jira, Linear, Azure Boards). Organizations can also create **custom agents** — specialized Copilot instances tailored for specific task types (e.g., frontend, documentation, testing).
+Cloud agent can be triggered via GitHub Issues (assign to `@copilot`), the agents panel on GitHub.com, Copilot Chat, GitHub CLI, the Agent tasks REST API (public preview since 2026-05-13, Copilot Business and Enterprise), or integrated tools (Slack, Teams, Jira, Linear, Azure Boards). Organizations can also create **custom agents** — specialized Copilot instances tailored for specific task types (e.g., frontend, documentation, testing).
+
+Two ways of starting the agent need extra governance attention:
+- **Automations** (since 2026-06-02) run the agent unattended on a schedule (hourly, daily or weekly) or when an issue is created or a pull request is created or updated. Each one is scoped to a single private or internal repository, uses the tools its creator selects, and bills its token usage to the user who created it
+- **Shared sessions in Microsoft Teams and Slack** (public preview since 2026-08-21): mentioning `@GitHub` starts a session that anyone in the conversation can steer, but only users with write access to the repository can trigger changes. Pull requests created from a shared conversation are attributed to the Copilot app identity, not a person
+
+Third-party agents (Anthropic Claude and OpenAI Codex, public preview) can take the same kinds of tasks once an administrator allows them.
 
 > **⚠️ Security Consideration**: Copilot cloud agent operates with repository permissions and can create commits, branches, and pull requests. It consumes GitHub Actions minutes and AI Credits (see [Licenses and Billing](19-licenses-billing.md#copilot-billing-behavior)). Organizations should carefully evaluate the security implications before enabling.
 
@@ -835,6 +889,9 @@ Cloud agent can be triggered via GitHub Issues (assign to `@copilot`), the agent
 | **Secrets and Variables** | Use **Agents** secrets and variables, scoped to selected repositories | Since 2026-05-08, organization-level Agents secrets can be shared with chosen repositories. The agent gets no Actions, Codespaces or Dependabot secrets, and values prefixed `COPILOT_MCP_` go only to MCP servers |
 | **Enterprise Managed Settings** | Restrict plugins and marketplaces in `copilot/managed-settings.json` | Since 2026-07-27, the cloud agent applies the plugin and marketplace keys; bypass-prompt controls apply only to interactive clients. See [Enterprise Managed Settings](29-enterprise-managed-settings.md) |
 | **Rulesets** | **Required** | Ensure all agent-created PRs go through review via repository rulesets |
+| **Signed Commits** | Keep **Require signed commits** where you use it | Since 2026-04-03, the agent signs its commits (shown as **Verified**), so this rule no longer blocks it. Rules that only allow specific commit authors still do; add Copilot as a ruleset bypass actor where the agent needs access |
+| **Unattributed Pull Requests** | Keep **Require an additional approval for unattributed Copilot pull requests** (on by default in rulesets) | Pull requests that Copilot opens under its app identity, for example from a shared Teams or Slack conversation, need one more approval than the ruleset otherwise requires |
+| **Configuration Audit** | Review each repository with `GET /repos/{owner}/{repo}/copilot/cloud-agent/configuration` | Public preview since 2026-05-18: returns the repository's MCP server configuration, enabled tools, Actions workflow approval settings and firewall configuration, so you can audit agent setup across many repositories |
 | **Required Reviews** | **Minimum 2 reviewers** | Human oversight for autonomous changes. Since 2026-09-01 (public preview), Copilot approvals can count toward required approvals once an admin allows it; keep **Allow Copilot to approve pull requests** at **Disabled everywhere** (the default) so agent changes still need human approval |
 | **Status Checks** | **Required** | Ensure CI/CD validation of agent changes |
 | **CODEOWNERS** | **Configured** | Domain experts must review changes |
@@ -848,8 +905,10 @@ Copilot code review also runs on GitHub Actions and has its own controls:
 - **Runner**: Since 2026-06-01, organization owners can set a default runner under **Settings** → **Copilot** → **Runner type**; since 2026-06-12 they can also stop repositories overriding it. Repositories can set their own runner and setup steps in `.github/workflows/copilot-code-review.yml` (since 2026-07-17)
 - **Firewall**: Since 2026-07-17, reviews run behind a firewall that is on by default and configured separately from cloud agent under **Copilot** → **Internet access**. Self-hosted runners don't use it, so restrict their network yourself
 - **Content exclusions**: Honored since 2026-06-12
+- **Members without a license and bots**: With **AI credits paid usage** and **Allow members without a Copilot license to use Copilot code review in GitHub.com** both on, the organization pays for reviews of unlicensed members' pull requests and, since 2026-08-27, for automatically requested reviews of bot-authored pull requests. Since 2026-08-27, pull requests from Copilot cloud agent get a full agentic review, and the 300-file / 20,000-line size limit no longer applies
+- **Skills and MCP** (generally available since 2026-07-29): reviews use agent skills from `.github/skills` and the repository's MCP servers, with read-only tool calls. MCP configurations set up for cloud agent apply to code review, and the GitHub and Playwright MCP servers are on by default. The **MCP servers in Copilot** policy also applies to code review
 - **Approvals** (public preview since 2026-09-01): enterprise options are **Let organizations decide**, **Enable for selected organizations** and **Disabled everywhere** (the default)
-- **Review effort**: Since 2026-09-28, **Default** means **Balanced**, which uses more AI Credits than **Lite**. Select **Lite** explicitly where cost matters
+- **Review effort**: Since 2026-09-28, **Default** means **Balanced**, which uses more AI Credits than **Lite**. Select **Lite** explicitly where cost matters. Organization owners set the organization default under **Settings** → **Copilot** → **Code review** (Lite and Balanced generally available since 2026-08-07); since 2026-09-23, enterprise administrators can also set an enterprise default that organization-owned repositories inherit, and every user has a personal code review settings page
 
 ### When to Enable Cloud Agent
 
@@ -875,6 +934,8 @@ The **Model Context Protocol (MCP)** is the primary extensibility mechanism for 
 - **Enterprise policy:** "MCP servers in Copilot" (AI Controls → MCP). From 2026-10-22, if it is left Unconfigured it follows the **Default policy for new features**, which ships **Enabled**. Set it explicitly if MCP servers need a security review first
 - **Visual Studio admin:** MCP server allowlist — only approved servers can connect
 - **Enterprise managed settings:** `allowedMcpServers` and `deniedMcpServers` in `copilot/managed-settings.json` (generally available since 2026-08-06) approve or block servers by URL, command or name. They fail closed and are enforced in the GitHub Copilot app, Copilot CLI and VS Code. See [Enterprise Managed Settings](29-enterprise-managed-settings.md#mcp-servers)
+- **MCP registry policies** (public preview): **MCP Registry URL** and **Restrict MCP access to registry servers** limit IDEs, Copilot CLI (since 2026-04-16) and the Copilot app to servers listed in your own registry. GitHub's docs rate this weaker than the managed-settings allowlist, because it matches only by name or ID, and it doesn't apply to Copilot cloud agent
+- **Plugins:** Agent Plugins 1.0 packages (generally available since 2026-08-12) can bundle MCP servers with skills. Govern them with the plugin and marketplace keys and the MCP allow and deny lists in enterprise managed settings
 - **GitHub MCP Server:** Official server that automates code-related tasks and connects third-party tools
 - **GitHub MCP Registry** (public preview): Curated list of partner and community MCP servers at github.com/mcp
 
@@ -900,6 +961,8 @@ The audit log doesn't include client session data, such as prompts sent from loc
 2. Click **Audit log**
 3. Search `action:copilot` for Copilot plan, policy and license events, and `actor:Copilot` for agent activity. The AI controls page also links to the audit log
 
+**OpenTelemetry Export**: For agent activity on developer machines, the `telemetry` key in enterprise managed settings sends OpenTelemetry traces from supported Copilot clients to a collector you choose (since 2026-07-08 for VS Code and Copilot CLI). Managed values override users' own settings. Prompts, responses and tool arguments are left out unless you turn on content capture, so review that choice with your privacy team. See [Enterprise Managed Settings](29-enterprise-managed-settings.md#telemetry).
+
 ### Compliance Considerations
 
 **Data Privacy**: retention is limited, not zero. Confirm the current schedule in the [GitHub Copilot Trust Center](https://copilot.github.trust.page/). Retention changes to know:
@@ -907,6 +970,8 @@ The audit log doesn't include client session data, such as prompts sent from loc
 - Since 2026-07-02 (public preview, Enterprise Managed Users only), enterprise owners can export agent session data (prompts, responses and tool calls) through audit log streaming or the Copilot usage records API
 - Claude Fable 5 and Claude Fable 5.1 require Anthropic data retention by default; eligible enterprises can use zero data retention under a time-bound exemption through the end of 2026
 - When the unified Copilot experience on GitHub.com launches (announced for no earlier than 2026-09-28), chat data is retained for the life of the account instead of 28 days
+- Since 2026-06-02, local Copilot sessions can sync to each user's GitHub account where the **Store local sessions in the Cloud** policy allows it. Administrators control the policy but can't read synced sessions
+- Copilot Memory (public preview, off by default) stores repository-level facts and user-level preferences, and deletes entries that go unused for 28 days
 - Telemetry can be disabled through privacy policies
 
 **IP Indemnification**:
@@ -945,7 +1010,7 @@ GitHub provides guidance on responsible use of Copilot features:
 ### Getting Support
 
 **Self-Service Resources**:
-- GitHub Copilot documentation: [docs.github.com/copilot](https://docs.github.com/copilot)
+- GitHub Copilot documentation: [docs.github.com/copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot)
 - GitHub Community discussions
 - IDE-specific troubleshooting guides
 
@@ -970,7 +1035,8 @@ GitHub provides guidance on responsible use of Copilot features:
 | **High** | License Governance | Implement approval workflows, monitor usage, reclaim inactive licenses, set AI Credits budgets |
 | **Medium** | Preview Features | Disable in production; enable only for controlled evaluation |
 | **Medium** | MCP Servers | Set **MCP servers in Copilot** explicitly before 2026-10-22; require security review before enabling and allow only listed servers |
-| **Medium** | Audit Logging | Enable audit log streaming to SIEM for Copilot events |
+| **Medium** | Sessions and Memory | Keep **Store local sessions in the Cloud**, Copilot Memory, third-party agents and cloud sandboxes off until each is reviewed |
+| **Medium** | Audit Logging | Enable audit log streaming to SIEM for Copilot events; export agent activity with OpenTelemetry through managed settings |
 | **Low** | User Feedback | Allow if participating in product improvement |
 
 ---
@@ -1009,46 +1075,52 @@ This document is part of the GitHub Enterprise Cloud Administration series:
 
 ### Official GitHub Documentation
 
-- [GitHub Copilot Documentation](https://docs.github.com/copilot)
+- [GitHub Copilot Documentation](https://docs.github.com/en/enterprise-cloud@latest/copilot)
 - [About Default Availability of Copilot Features and Models](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/default-availability)
 - [Managing Availability of Models in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-availability-of-default-models)
 - [Getting Started with Enterprise Managed Settings](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/use-managed-settings/get-started)
 - [Customizing the Firewall for Copilot Cloud Agent and Code Review](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-on-github/customize-copilot/customize-the-firewall)
 - [Usage-Based Billing for Organizations and Enterprises](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/billing-and-usage/organizations-and-enterprises/billing)
 - [Enforcing Policies for GitHub Copilot in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-github-copilot-in-your-enterprise)
-- [Managing Policies and Features for GitHub Copilot in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise)
-- [Managing Policies and Features for GitHub Copilot in Your Organization](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-github-copilot-in-your-organization/setting-policies-for-copilot-in-your-organization/managing-policies-for-copilot-in-your-organization)
-- [GitHub Copilot Policies to Control Availability of Features and Models](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies)
+- [Managing Policies and Features for GitHub Copilot in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-enterprise-policies)
+- [Managing Policies and Features for GitHub Copilot in Your Organization](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-organization/manage-policies)
+- [GitHub Copilot Policies for Enterprises and Organizations](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/policies)
+- [Feature Availability When GitHub Copilot Policies Conflict](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/enterprise-administrators/policy-conflicts)
 - [Best Practices for Using GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/get-started/best-practices)
-- [Excluding Content from GitHub Copilot](https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/setting-policies-for-copilot-in-your-organization/excluding-content-from-github-copilot)
-- [Setting up GitHub Copilot for Your Enterprise](https://docs.github.com/en/copilot/setting-up-github-copilot/setting-up-github-copilot-for-your-enterprise)
+- [Excluding Content from GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/configure-content-exclusion/exclude-content-from-copilot)
+- [Setting up GitHub Copilot for Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-on-github/set-up-copilot/enable-copilot/set-up-for-enterprise)
+- [MCP Management](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/mcp-management)
+- [About Remote Control of Copilot CLI Sessions](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/agents/copilot-cli/about-remote-control)
+- [Managing Copilot Memory as an Administrator](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/use-copilot-agents/copilot-memory/manage-as-administrator)
+- [GitHub Copilot Usage Metrics](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/billing-and-usage/copilot-usage-metrics/copilot-metrics)
+- [Viewing the Copilot Impact Dashboard](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/view-impact-dashboard)
 
 ### Rollout and Adoption
 
-- [Rolling Out GitHub Copilot at Scale](https://docs.github.com/en/copilot/rolling-out-github-copilot-at-scale)
-- [Driving GitHub Copilot Adoption in Your Company](https://docs.github.com/en/copilot/rolling-out-github-copilot-at-scale/driving-copilot-adoption-in-your-company)
-- [Setting Up a Self-Serve Process for GitHub Copilot Licenses](https://docs.github.com/en/copilot/rolling-out-github-copilot-at-scale/setting-up-a-self-serve-process-for-github-copilot-licenses)
-- [Measuring the Success of a GitHub Copilot Trial](https://docs.github.com/en/copilot/tutorials/roll-out-at-scale/measure-success)
-- [Assigning GitHub Copilot Licenses in Your Enterprise](https://docs.github.com/en/copilot/tutorials/roll-out-at-scale/assign-licenses)
+- [Rolling Out GitHub Copilot at Scale](https://docs.github.com/en/enterprise-cloud@latest/copilot/tutorials/roll-out-at-scale)
+- [Driving GitHub Copilot Adoption in Your Company](https://docs.github.com/en/enterprise-cloud@latest/copilot/tutorials/roll-out-at-scale/enable-developers/drive-adoption)
+- [Setting Up a Self-Serve Process for GitHub Copilot Licenses](https://docs.github.com/en/enterprise-cloud@latest/copilot/tutorials/roll-out-at-scale/assign-licenses/set-up-self-serve-licenses)
+- [Measuring the Success of a GitHub Copilot Trial](https://docs.github.com/en/enterprise-cloud@latest/copilot/tutorials/roll-out-at-scale/measure-success)
+- [Assigning GitHub Copilot Licenses in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/tutorials/roll-out-at-scale/assign-licenses)
 
 ### Developer Resources
 
-- [Prompt Engineering for GitHub Copilot Chat](https://docs.github.com/en/copilot/using-github-copilot/copilot-chat/prompt-engineering-for-copilot-chat)
-- [GitHub Copilot Chat Cookbook](https://docs.github.com/en/copilot/copilot-chat-cookbook)
+- [Prompt Engineering for GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/prompting/prompt-engineering)
+- [GitHub Copilot Cookbook](https://docs.github.com/en/enterprise-cloud@latest/copilot/tutorials/copilot-cookbook)
 - [Copilot Workshops Repository](https://github.com/copilot-workshops)
-- [Responsible Use of GitHub Copilot Features](https://docs.github.com/en/copilot/responsible-use-of-github-copilot-features)
+- [Responsible Use of GitHub Copilot Features](https://docs.github.com/en/enterprise-cloud@latest/copilot/responsible-use)
 
 ### Trust and Compliance
 
 - [GitHub Copilot Trust Center](https://copilot.github.trust.page/)
 - [GitHub Copilot Plans](https://github.com/features/copilot/plans)
-- [Finding Public Code That Matches GitHub Copilot Suggestions](https://docs.github.com/en/copilot/using-github-copilot/finding-public-code-that-matches-github-copilot-suggestions)
+- [Finding Public Code That Matches GitHub Copilot Suggestions](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-in-your-ide/copilot-for-common-tasks/find-matching-code)
 
 ### Network and Troubleshooting
 
-- [Configuring Your Proxy Server or Firewall for Copilot](https://docs.github.com/en/copilot/managing-copilot/managing-github-copilot-in-your-organization/configuring-your-proxy-server-or-firewall-for-copilot)
-- [Configuring Network Settings for GitHub Copilot](https://docs.github.com/en/copilot/managing-copilot/configure-personal-settings/configuring-network-settings-for-github-copilot)
-- [Troubleshooting GitHub Copilot](https://docs.github.com/en/copilot/troubleshooting-github-copilot)
+- [Copilot Allowlist Reference](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/copilot-allowlist-reference)
+- [Configuring Network Settings for GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/copilot-in-your-ide/set-up-copilot/configure-network-settings)
+- [Troubleshooting GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/troubleshoot-copilot)
 
 ### Additional Resources
 
@@ -1063,7 +1135,7 @@ This document is part of the GitHub Enterprise Cloud Administration series:
 | Version | Date | Changes |
 |---------|------|--------|
 | 1.0 | January 2026 | Initial document creation |
-| 1.1 | October 2026 | Updated for GitHub Changelog posts from 2026-04-01 to 2026-10-01: billing in GitHub AI Credits, the AI Controls page layout, default policies for new features and released models, enterprise managed settings, cloud agent firewall, runner and secrets controls, Copilot code review controls, usage metrics and report download domains |
+| 1.1 | October 2026 | Updated for GitHub Changelog posts from 2026-04-01 to 2026-10-01: billing in GitHub AI Credits, the AI Controls page layout, default policies for new features and released models, enterprise managed settings, cloud agent firewall, runner and secrets controls, Copilot code review controls, usage metrics and report download domains. Added session syncing and remote control, Copilot Memory, third-party agents, cloud sandboxes, open-weight models and model deprecations, the impact dashboard and newer metrics reports, cloud agent automations and shared sessions, the MCP registry and plugins, OpenTelemetry export, and current docs.github.com links |
 
 ---
 

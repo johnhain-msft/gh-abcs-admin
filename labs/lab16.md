@@ -143,8 +143,9 @@ References:
 
 1. **Copilot licenses:** go to **Billing and licensing** → **Licensing**, next to "Copilot" click **Manage**, then open the **Enterprise Teams** tab. Direct assignment covers Copilot Business licenses; Copilot Enterprise is granted through organizations. Don't assign licenses in this lab.
 2. **Enterprise roles:** go to **People** → **Enterprise roles** → **Role assignments**. App manager, security manager and custom roles can be assigned to teams; the security manager role can only be assigned to a team. Enterprise owner, billing manager and guest collaborator can't be assigned to teams.
-3. **Cost centers:** go to **Billing and licensing** → **Cost centers** and open a cost center. Enterprise teams can be listed under **Resources**, and their members' usage is then attributed to that cost center.
+3. **Cost centers:** go to **Billing and licensing** → **Cost centers** and open a cost center. Enterprise teams can be listed under **Resources**, and their members' usage is then attributed to that cost center. A cost center user-level budget on that cost center caps each member's AI Credits, including members who joined through the team.
 4. **Model access:** go to **AI controls** → **Copilot** and check whether **Enterprise teams mode** (public preview) is on. In that mode, organization-level model settings no longer apply. Don't toggle it in a production enterprise.
+5. **Managed settings:** if your enterprise uses server-managed Copilot settings, open `copilot/team-mappings.json` in its `.github-private` repository to see which enterprise teams get their own values for overridable keys. [Lab 17](lab17.md) walks through giving one enterprise team an exception.
 
 </details>
 
@@ -204,7 +205,7 @@ References:
 1. Confirm you completed the planning table in 16.1 and can explain why your use case fits an enterprise team rather than an organization team.
 2. If you are an enterprise owner, confirm the team from 16.2 appeared with an `ent:` slug, had members and was assigned only to your workshop organization.
 3. Confirm the `team_type=enterprise` query in 16.3 returned the enterprise team assigned to your organization, and that you could request the team's review on a pull request.
-4. Confirm you can name the controls from 16.4 that follow team membership: Copilot Business licenses, enterprise roles, cost center attribution and, in preview, model access.
+4. Confirm you can name the controls from 16.4 that follow team membership: Copilot Business licenses, enterprise roles, cost center attribution, managed settings overrides and, in preview, model access.
 5. If you are an enterprise owner, confirm you found `enterprise_team.*` events in 16.5 and deleted the workshop team in 16.6.
 6. Discuss with your table: **"Which of our access, licensing or chargeback processes would we move to IdP-synced enterprise teams first, and what would we keep on organization teams?"**
 

@@ -341,6 +341,8 @@ updates:
   # Add ecosystems based on project type (npm, pip, maven, etc.)
 ```
 
+> **Default cooldown:** Since 2026-07-14, Dependabot version updates wait until a release has been on its registry for at least 3 days before opening a pull request, even when `dependabot.yml` sets no `cooldown`. Security updates still open immediately. Add a `cooldown` block (`default-days`, or `semver-major-days`, `semver-minor-days` and `semver-patch-days`) to set a different wait; the changelog notes you can also opt out.
+
 #### 4.2.2 Push Protection Configuration
 
 | Task | Description | Owner | Status |
@@ -385,6 +387,7 @@ updates:
 |------|---------------------|--------|
 | **Require Pull Request** | **Enable** | ☐ |
 | **Required Approvals** | **At least 1** (2+ for production) | ☐ |
+| **Require an Additional Approval for Unattributed Copilot Pull Requests** | **Keep enabled** (on by default for new and existing rulesets, public preview since 2026-08-21) - See note below | ☐ |
 | **Dismiss Stale Reviews** | **Enable** | ☐ |
 | **Require CODEOWNERS Review** | **Enable** | ☐ |
 | **Require Conversation Resolution** | **Enable** | ☐ |
@@ -394,6 +397,8 @@ updates:
 | **Require Signed Commits** | **Enable** (if org readiness ≥80%) - See note below | ☐ |
 
 > **⚠️ Signed Commits Note:** Per [Security-by-Default Policies](./11-security-by-default-policies.md): "Consider organizational readiness before enforcing; developers need signing keys configured." Assess your organization's GPG/SSH signing key adoption before enabling this rule.
+
+> **⚠️ Unattributed Copilot Pull Requests Note:** When Copilot opens a pull request under its own app identity instead of on behalf of a person, for example from a Microsoft Teams or Slack conversation, this setting requires one more approval than the ruleset sets. It has no effect when the ruleset requires zero approvals.
 
 > **📋 Ruleset Philosophy:** These are **minimum baseline rulesets** at the organization level. Individual teams/repositories can apply **stricter rules** as needed (e.g., 2+ approvals for production repos, additional status checks).
 
@@ -412,6 +417,8 @@ updates:
 |------|-------------|-------|--------|
 | **Require Code Scanning Results** | Block merges if code scanning not run | Security Team | ☐ |
 | **Configure Severity Thresholds** | Block merges with Critical/High severity findings | Security Team | ☐ |
+
+> **⚠️ Severity Note:** Thresholds use the CodeQL security-severity score of each query, and CodeQL releases can change those scores. CodeQL 2.25.2 (2026-04-15) lowered most log-injection queries from high (7.8) to medium (6.1) and raised cross-site scripting (XSS) and related queries from medium (6.1) to high (7.8), so a **High or higher** threshold blocks those XSS findings and no longer blocks most log-injection findings. Review thresholds when CodeQL updates.
 
 #### 5.1.4 Configure Push Rulesets (Optional but Recommended)
 
@@ -466,7 +473,7 @@ updates:
 |--------|---------------------|-----------|--------|
 | **Actions Availability** | **Enable for all organizations** | Allow Actions with restrictions | ☐ |
 | **Allowed Actions** | **Restrict**: Enterprise actions, GitHub actions, verified creators | Prevent untrusted actions | ☐ |
-| **Require Actions SHA Pinning** | **Enable** | Prevent action version tampering | ☐ |
+| **Require Actions SHA Pinning** | **Enable** | Prevent action version tampering. For actions and reusable workflows in the same repository, use the `$/` self-repository syntax (since 2026-07-30, on GitHub.com, runner 2.336.0 or later): it resolves to the running commit, so workflows that call their own actions can meet the policy | ☐ |
 | **Default Workflow Permissions** | **Read-only** | Least privilege for GITHUB_TOKEN - See note | ☐ |
 | **Allow Actions to Create PRs** | **Disable** | Prevent automated PR creation/approval | ☐ |
 | **Fork Pull Request Workflows** | **Require approval for all outside collaborators** | Prevent malicious workflow execution - See note | ☐ |
@@ -538,8 +545,13 @@ updates:
 | **Copilot in GitHub.com** | **Enabled** | Web-based chat workflows. On 2026-08-28 GitHub announced that this policy, Copilot Chat in GitHub Mobile and Copilot cloud agent will become one policy, enabled by default, no earlier than 2026-09-28 (not launched by 2026-10-01) | ☐ |
 | **Copilot CLI** | **Enabled** | Command-line assistance | ☐ |
 | **GitHub Copilot app** | **Enabled** once enterprise managed settings are in place (7.6) | Its own policy since 2026-07-27; before that, the Copilot CLI policy also governed the app. The policy ships **Enabled everywhere** | ☐ |
-| **Copilot code review** | **Enabled** | Improves code quality. Each review uses AI Credits and, on private repositories, Actions minutes (since 2026-06-01). Since 2026-09-28 the review effort **Default** uses **Balanced**, which uses more AI Credits than **Lite**; select **Lite** explicitly where cost matters | ☐ |
+| **Copilot code review** | **Enabled** | Improves code quality. Each review uses AI Credits and, on private repositories, Actions minutes (since 2026-06-01). Since 2026-09-28 the review effort **Default** uses **Balanced**, which uses more AI Credits than **Lite**; select **Lite** explicitly where cost matters. Keep **Allow members without a Copilot license to use Copilot code review in GitHub.com** off (the default) unless the organization budgets for those reviews, which it pays for | ☐ |
 | **Copilot cloud agent** | **Let organizations decide**, or **Enabled for selected organizations** for a phased rollout | Agentic features will be used. Since 2026-04-15 you can enable the agent for selected organizations: by name under **AI controls** → **Agents** → **Copilot Cloud Agent**, or by organization custom property through the REST API (evaluated once, when you save) | ☐ |
+| **Third-party agents** (Anthropic Claude, OpenAI Codex) | **Disabled** until reviewed like Copilot cloud agent | Public preview, with policies separate from Copilot cloud agent's. They work in the repositories where Copilot cloud agent is enabled, use Actions minutes and AI Credits, and install a GitHub App for each agent an organization allows. Content exclusions don't cover them (7.2) | ☐ |
+| **Cloud Sandbox access** | **Disabled** (the default) until cloud sandbox use is approved | Runs Copilot CLI and GitHub Copilot app sessions in GitHub-hosted sandboxes, under the same policy configuration as Copilot cloud agent. Cloud sandboxing is billed by usage, so set a budget first | ☐ |
+| **Copilot Memory** | **Disabled** (the default) until reviewed | Public preview. Stores repository facts and user preferences for Copilot sessions and deletes entries that go unused for 28 days. A user licensed by several organizations gets Memory only if all of them enable it | ☐ |
+| **Store local sessions in the Cloud** | **Disabled**, or **View from cloud** | **View from cloud** syncs local Copilot sessions to each user's GitHub account; **View and control** also allows remote control from GitHub.com and GitHub Mobile. Unconfigured allows neither, and the **Default policy for new features** doesn't change this policy | ☐ |
+| **Open-weight models** | **Disabled** (the default) until reviewed | Off by default for Copilot Business and Copilot Enterprise and outside default model availability. Review them against your security, compliance and data-governance requirements first; see [GitHub Copilot Governance](./12-github-copilot-governance.md) | ☐ |
 | **Copilot Agent Mode in IDE Chat** | **Let organizations decide** | Let organizations decide | ☐ |
 | **MCP servers in Copilot** | **Let organizations decide** | Let organizations decide based on integration needs; allow only vetted servers with the MCP allow and deny lists in enterprise managed settings (7.6) | ☐ |
 
@@ -550,7 +562,7 @@ updates:
 | **Suggestions Matching Public Code** | **Blocked** | Reduces IP/licensing risks | ☐ |
 | **Prompt and Suggestion Collection** | **Blocked** | Maintains data privacy | ☐ |
 | **User Feedback Collection** | **Allowed** (optional) | Only if participating in improvement | ☐ |
-| **Preview Features** | **Disabled** | Avoid preview features in production | ☐ |
+| **Editor Preview Features** | **Disabled** | Avoid preview features in production. For Copilot Business and Copilot Enterprise, the **Editor preview features** policy gates preview features in IDEs | ☐ |
 
 ### 7.2 Content Exclusions
 
@@ -580,22 +592,27 @@ updates:
 | **Configure SSL Certificate Trust** | If using SSL inspection, ensure Copilot endpoints trusted | Network Team | ☐ |
 | **Document Proxy Configuration** | Document proxy settings for developer IDEs | Platform Team | ☐ |
 
-**Required Copilot Endpoints for Firewall Allowlist:**
+**Required Copilot Endpoints for Firewall Allowlist** (from the Copilot allowlist reference for GitHub.com):
 
 | Domain | Purpose |
 |--------|--------|
-| `github.com` | Authentication and repository access |
-| `api.github.com` | GitHub API access |
-| `copilot.github.com` | Copilot service |
-| `*.githubcopilot.com` | Copilot completions |
-| `copilot-proxy.githubusercontent.com` | Copilot proxy |
-| `copilot-telemetry.githubusercontent.com` | Telemetry (if enabled) |
+| `github.com` | Authentication (`/login/*`) and Copilot on GitHub (`/copilot/*`) |
+| `api.github.com` | User management (`/user`, `/copilot_internal/*`) |
+| `github.githubassets.com`, `avatars.githubusercontent.com` | Authentication |
+| `*.githubcopilot.com` | API service for Copilot suggestions, for any Copilot plan |
+| `copilot-proxy.githubusercontent.com` | API service for Copilot suggestions |
+| `origin-tracker.githubusercontent.com` | API service for Copilot suggestions |
+| `copilot-telemetry.githubusercontent.com` | Copilot client telemetry |
+| `collector.github.com` | Analytics telemetry |
+| `default.exp-tas.com` | Copilot client experimentation |
 | `*.github.dev` | GitHub Codespaces |
 | `vscode-cdn.net` | VS Code extensions |
 | `marketplace.visualstudio.com` | Extension marketplace |
 | `copilot-reports.github.com` | Copilot usage metrics report downloads since 2026-05-20 (on GHE.com: `copilot-reports.SUBDOMAIN.ghe.com`) |
 | `copilot-reports-*.b01.azurefd.net` | Report download fallback (Azure Front Door); the download host before 2026-05-20 |
 | `usagereports*.blob.core.windows.net` | Report download fallback (Azure Blob Storage) when Azure Front Door is unavailable |
+
+To allow only your company's Copilot plan on the corporate network, use subscription-based network routing: allow `*.business.githubcopilot.com` or `*.enterprise.githubcopilot.com` instead of `*.githubcopilot.com` and `*.individual.githubcopilot.com`. On GHE.com, `*.SUBDOMAIN.ghe.com` and `SUBDOMAIN.ghe.com` cover most services.
 
 > **Reference:** The [Copilot allowlist reference](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/copilot-allowlist-reference) is the maintained list of required domains. See also [GitHub Copilot Governance](./12-github-copilot-governance.md#firewall-and-proxy-configuration).
 
@@ -605,6 +622,7 @@ updates:
 |------|-------------|-------|--------|
 | **Define Coding Standards** | Document enterprise coding conventions | Architecture Team | ☐ |
 | **Create Custom Instructions** | Configure Copilot to follow enterprise patterns | Platform Team | ☐ |
+| **Set Organization Custom Instructions** | Generally available since 2026-04-02 for Copilot Business and Copilot Enterprise. In the organization's **Settings** → **Copilot** → **Custom instructions**, set default instructions that the docs list for Copilot Chat on GitHub.com, Copilot code review and Copilot cloud agent across the organization's repositories. The Visual Studio 2026 July update (2026-07-30) also applies them, and users can turn them off there | Org Admin | ☐ |
 | **Govern Instruction Files** | Since 2026-07-17, Copilot code review reads custom instructions (`copilot-instructions.md`, `*.instructions.md`, `AGENTS.md` and agent skills) from the pull request's head branch, and also reads `REVIEW.md`, `GEMINI.md` and `CLAUDE.md`, so a pull request can change the instructions its own review uses. Protect these files with CODEOWNERS or push rulesets (5.1.4) | Platform Team | ☐ |
 | **Share Context with Copilot Spaces** | Curate shared context for teams in Copilot Spaces (Copilot Business and Copilot Enterprise). Spaces replaced Copilot knowledge bases, which were retired on 2025-11-01; questions asked in a space draw on the AI Credits pool | Platform Team | ☐ |
 
@@ -646,6 +664,7 @@ Policies decide which Copilot features users can access; enterprise managed sett
 | **Azure DevOps** | GitHub Enterprise Importer (GEI) | Full migration support | ☐ |
 | **GitLab** | GitHub Enterprise Importer (GEI) with the `gh gl2gh` extension | Generally available since 2026-08-03 for GitLab.com and maintained GitLab Self-Managed versions, into GitHub Enterprise Cloud (GitHub.com or GHE.com); migrations into GitHub Enterprise Server aren't supported. Stage archives in GitHub-owned storage (`--use-github-storage`) or your own AWS S3 or Azure Blob Storage account | ☐ |
 | **Bitbucket Server** | GitHub Enterprise Importer (GEI) | Full migration support | ☐ |
+| **GitHub Enterprise Server** | GitHub Enterprise Importer (GEI), or Enterprise Live Migrations (ELM) into GHE.com | GEI supports GHES 3.4.1 and later. ELM (generally available since 2026-09-01) migrates repositories from supported GHES 3.17+ patch releases to GHE.com with near-zero downtime: it syncs continuously while developers keep working, runs as a service on the GHES appliance driven by the `gh elm` CLI extension, and moves one repository per migration, so organization settings and teams are reconfigured manually | ☐ |
 | **Bitbucket Cloud** | Git CLI (`git clone --mirror` + push) or GitHub Importer | Source and history only; GEI supports Bitbucket Server and Data Center, not Bitbucket Cloud | ☐ |
 | **Other Git hosts** | `git clone --mirror` + push | Manual migration | ☐ |
 

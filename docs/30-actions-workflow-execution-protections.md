@@ -151,7 +151,7 @@ Before you switch a policy to **Active**, use Policy insights to answer three qu
 - Is each would-be-blocked run legitimate (allow it with a narrower policy or workflow file targeting) or unwanted (keep it blocked)?
 - Did a bot or GitHub App identity trip an actor rule (add it as an allowed actor)?
 
-Evaluate mode is available on GitHub Enterprise Cloud only. Ruleset evaluations have their own page, **Rule Insights** (repository **Settings** → **Rules** → **Insights**); see [Repository Governance](07-repository-governance.md).
+Evaluate mode is available on GitHub Enterprise Cloud only. Ruleset evaluations have their own page, **Rule Insights**, in the repository's and the organization's settings; see [Repository Governance](07-repository-governance.md).
 
 ## Managing Actions Policies as Code
 
@@ -306,7 +306,7 @@ Self-hosted runners on github.com must meet two requirements:
 | GitHub Enterprise Cloud (github.com) | 2026-09-29. The change shipped on 2026-09-28. The 2026-06-12 announcement gave 2026-09-25; the 2026-09-28 post superseded that date |
 | GitHub Enterprise Server | Not affected |
 
-Runners with auto-update enabled meet the 30-day rule if they can reach the update service. Runners with auto-update disabled, such as ephemeral runners built into container images, need an image rebuild cadence of 30 days or less.
+Runners with auto-update enabled meet the 30-day rule if they can reach the update service. Runners with auto-update disabled, such as ephemeral runners built into container images, need an image rebuild cadence of 30 days or less. Some workflow features need a newer runner than the registration minimum: for example, `$/` self-repository references (since 2026-07-30) require runner 2.336.0 or later.
 
 **Find outdated runners:**
 
@@ -331,6 +331,8 @@ Since 2026-06-25 (GitHub Team and GitHub Enterprise plans), administrators can d
 - **Enterprise:** **Policies** → **Actions** → "Standard hosted runners" → **Disable for all organizations** → **Save**.
 
 macOS runners can also join runner groups, which restricts them to selected organizations, repositories or workflows, enforces concurrency limits and lets workflows route jobs by group name. Network configurations aren't supported for macOS runners. Before you disable standard runners, find the workflows that use standard labels and check the concurrency implications in the runner groups documentation.
+
+For GitHub-hosted runners on Azure private networking, a network configuration can include a failover network — a secondary Azure subnet, optionally in another region — in public preview since 2026-04-02. Switching to the failover network is manual, so add it to your outage runbook.
 
 Standard labels also change underneath you: from 2026-10-19 to 2026-11-19, `ubuntu-latest` moves gradually from Ubuntu 24.04 to Ubuntu 26.04. Pin critical workflows to `ubuntu-24.04` to defer the move.
 
@@ -398,9 +400,11 @@ flowchart LR
 - [Runner groups](https://docs.github.com/en/enterprise-cloud@latest/actions/concepts/runners/runner-groups)
 - [Disabling or limiting GitHub Actions for your organization](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings/disabling-or-limiting-github-actions-for-your-organization)
 - [Enforcing policies for GitHub Actions in your enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-github-actions-in-your-enterprise)
+- [About Azure private networking for GitHub-hosted runners in your enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/configuring-settings/configuring-private-networking-for-hosted-compute-products/about-azure-private-networking-for-github-hosted-runners-in-your-enterprise)
 
 ### GitHub Changelog
 
+- [GitHub Actions: Early April 2026 updates (2026-04-02)](https://github.blog/changelog/2026-04-02-github-actions-early-april-2026-updates)
 - [Bot-created pull requests can run workflows if approved (2026-06-11)](https://github.blog/changelog/2026-06-11-bot-created-pull-requests-can-run-workflows-if-approved)
 - [GitHub Actions: Minimum version enforcement timeline for self-hosted runners (2026-06-12)](https://github.blog/changelog/2026-06-12-github-actions-minimum-version-enforcement-timeline-for-self-hosted-runners)
 - [Control who and what triggers GitHub Actions workflows (2026-06-18)](https://github.blog/changelog/2026-06-18-control-who-and-what-triggers-github-actions-workflows)
@@ -408,6 +412,7 @@ flowchart LR
 - [More control over your GitHub-hosted runners (2026-06-25)](https://github.blog/changelog/2026-06-25-more-control-over-your-github-hosted-runners)
 - [Read-only Actions cache for untrusted triggers (2026-06-26)](https://github.blog/changelog/2026-06-26-read-only-actions-cache-for-untrusted-triggers)
 - [GitHub Actions holds potentially malicious workflows for approval (2026-07-28)](https://github.blog/changelog/2026-07-28-github-actions-holds-potentially-malicious-workflows-for-approval)
+- [Reference same-repository actions with self-repository syntax (2026-07-30)](https://github.blog/changelog/2026-07-30-reference-same-repository-actions-with-self-repository-syntax)
 - [GitHub Actions: Early September 2026 updates (2026-09-03)](https://github.blog/changelog/2026-09-03-github-actions-early-september-2026-updates)
 - [Control GitHub Actions cache access with cache-mode (2026-09-10)](https://github.blog/changelog/2026-09-10-control-github-actions-cache-access-with-cache-mode)
 - [Workflow execution protections in GitHub Actions generally available (2026-09-17)](https://github.blog/changelog/2026-09-17-workflow-execution-protections-in-github-actions-generally-available)
@@ -422,3 +427,4 @@ flowchart LR
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | October 2026 | Initial document: workflow execution protections, default `pull_request_target` policy, safer defaults for untrusted triggers, approvals, runner governance |
+| 1.1 | October 2026 | Added runner 2.336.0 requirement for `$/` references and Azure private networking failover; Rule Insights pointer no longer names a sidebar label |

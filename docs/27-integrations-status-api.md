@@ -873,6 +873,8 @@ gh api repos/OWNER/REPO/deployments/DEPLOYMENT_ID/statuses \
   -f description="Deployment in progress..."
 ```
 
+> **Retention:** Since 2026-07-16, GitHub keeps previous deployment statuses for **90 days**. Older statuses are deleted and no longer returned by the REST or GraphQL API, including the list and get deployment status endpoints. The deployment's current status isn't affected, because it is stored on the deployment itself. External tools that reconstruct deployment history from statuses should store it themselves.
+
 ### Environment Tracking
 
 GitHub tracks the **active deployment** for each environment. Key behaviors:
@@ -1180,7 +1182,7 @@ curl -sI -H "Authorization: token <TOKEN>" \
 7. [Using GitHub CLI in Workflows](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/using-github-cli-in-workflows)
 8. [Adding a Workflow Status Badge](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/monitoring-workflows/adding-a-workflow-status-badge)
 9. [REST API — Deployments](https://docs.github.com/en/rest/deployments/deployments)
-10. [REST API — Deployment Statuses](https://docs.github.com/en/rest/deployments/statuses)
+10. [REST API — Deployment Statuses](https://docs.github.com/en/rest/deployments/statuses) - Includes the 90-day data retention for previous statuses
 11. [Building CI Checks with a GitHub App](https://docs.github.com/en/apps/creating-github-apps/writing-code-for-a-github-app/building-ci-checks-with-a-github-app)
 12. [REST API — Check Suites](https://docs.github.com/en/rest/checks/suites)
 13. [REST API — Code Scanning](https://docs.github.com/en/rest/code-scanning/code-scanning)

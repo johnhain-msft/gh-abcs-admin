@@ -382,12 +382,13 @@ While EMU provides significant advantages, it's crucial to understand its constr
 - ❌ GitHub-hosted runners are not available for repositories owned by managed user accounts
 - ⚠️ Can trigger workflows in organizations where they are not members by forking and creating PRs
 
-**6. GitHub Codespaces Restrictions (GitHub.com)**
+**6. GitHub Codespaces Restrictions**
 - ✅ Can create codespaces for organization repositories (if organization pays for Codespaces)
 - ❌ Cannot create codespaces for personal repositories
 - ❌ Cannot create codespaces for repositories outside their organizations
 - ❌ Cannot use GitHub's public templates for Codespaces
 - ❌ Cannot publish a codespace created from a template to a new repository
+- ✅ GHE.com: Codespaces has been generally available in all data residency regions (Australia, EU, Japan and US) since 2026-04-01, for organization- or enterprise-owned codespaces only; user-owned codespaces aren't supported. To use VS Code desktop, set its `Github-enterprise: Uri` and `Github > Codespaces: Auth Provider` settings
 
 ### Operational Considerations
 

@@ -724,6 +724,8 @@ Authorization: Bearer {SCIM_TOKEN}
 }
 ```
 
+> **Note:** Since 2026-09-16, SCIM `/Users` responses include the RFC 7643 `profileUrl` attribute: the absolute URL of the GitHub account linked to the identity. It's omitted while an identity isn't linked to a GitHub user, and `userName` and the other attributes are unchanged, so existing integrations keep working. Read `profileUrl` to match a SCIM record to its GitHub account without extra lookups. The changelog post covers organization and enterprise SCIM responses; as of 2026-10-02 the REST reference documents `profileUrl` only for the organization SCIM endpoints.
+
 **Update User:**
 ```bash
 PATCH /scim/v2/enterprises/{ENTERPRISE}/Users/{id}
@@ -991,7 +993,7 @@ rotation_policy:
 **1. Enterprise SSH Key Requirements:**
 ```bash
 # Enforce SSH certificate authority (advanced)
-# Enterprise → Settings → SSH certificate authorities
+# Enterprise → Settings → Authentication security → SSH Certificate Authorities → New CA
 # Upload CA public key for signed SSH certificates
 ```
 

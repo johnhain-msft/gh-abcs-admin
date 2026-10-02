@@ -197,7 +197,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 1. Navigate to **org settings → Member privileges** — walk through key settings
 2. Create a team → add members → show nested team inheritance
-3. Navigate to a repository → **Settings → Manage access** → add the team with a specific role
+3. Navigate to a repository → **Settings → Collaborators & teams** (in the "Access" section) → add the team with a specific role
 4. Show the **People** tab — filter by role, search for users, show 2FA status
 
 **Discussion Prompts:**
@@ -419,8 +419,8 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 **Demo Script:**
 
 1. Navigate to **org settings → Member privileges → Base permissions** and explain each option
-2. Open a repository → **Settings → Manage access** → show how teams and individuals are granted access
-3. Navigate to **org settings → Roles → Repository roles** → walk through custom role creation
+2. Open a repository → **Settings → Collaborators & teams** (in the "Access" section) → show how teams and individuals are granted access
+3. Navigate to **org settings → Repository roles** (in the "Access" section) → walk through custom role creation
 4. Show how custom roles appear in the repository access UI
 
 **Discussion Prompts:**
@@ -433,7 +433,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 - Q: "Can I restrict who creates repositories?" → A: Yes, go to **org settings → Member privileges → Repository creation** and limit to admins or specific roles.
 - Q: "Do custom roles override team permissions?" → A: Custom roles provide *additional* permissions on top of team-level access; they do not restrict.
-- Q: "How do I audit who has access to a repository?" → A: Use the repository **Settings → Manage access** page or the `repos/{owner}/{repo}/collaborators` API endpoint.
+- Q: "How do I audit who has access to a repository?" → A: Use the repository **Settings → Collaborators & teams** page or the `repos/{owner}/{repo}/collaborators` API endpoint.
 
 **Timing Notes:**
 
@@ -464,7 +464,7 @@ Refer to the [AGENDA.md](AGENDA.md) for the complete schedule with start times.
 
 **Demo Script:**
 
-1. Navigate to a repository → **Settings → Rules → Rulesets**
+1. Navigate to a repository → **Settings → Rulesets** (under "Code, planning, and automation") → **Rulesets**
 2. Create a new branch ruleset targeting `main`
 3. Add rules: require pull request, require approvals (1 reviewer minimum), require status checks
 4. Show bypass actors configuration — add a team or app

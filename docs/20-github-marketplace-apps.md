@@ -9,7 +9,7 @@ GitHub Apps and GitHub Marketplace form a critical part of the GitHub Enterprise
 
 GitHub Apps are the officially recommended integration type, replacing OAuth Apps with a more secure, fine-grained permissions model. They use short-lived installation tokens (1 hour) instead of user-bound OAuth tokens, which stay valid until revoked unless the OAuth app uses expiring tokens (on by default for OAuth apps created since 2026-08-14). GitHub Apps also support built-in centralized webhooks, and their bot accounts do not consume enterprise seats.
 
-The emergence of MCP (Model Context Protocol) and Copilot Extensions represents the newest frontier in GitHub's extensibility model, enabling AI-powered tools to integrate with the GitHub platform under enterprise governance controls.
+AI extensibility runs through MCP (Model Context Protocol) servers, agent plugins that bundle skills with MCP servers (Agent Plugins 1.0, GA 2026-08-12) and partner agent apps, all of which enterprises govern with Copilot policies and enterprise managed settings.
 
 This guide covers the full app lifecycle from an enterprise administrator's perspective: app types, Marketplace mechanics, permission models, internal app development, governance policies, MCP/Copilot extensibility, and webhook-driven architectures.
 
@@ -120,6 +120,8 @@ sequenceDiagram
     App->>Repo: API calls on behalf of user
     Repo-->>App: Data (intersection of app + user permissions)
 ```
+
+To find an installation ID without paging through `GET /app/installations`, an app authenticated with its JWT can call `GET /orgs/{org}/installation`, `GET /repos/{owner}/{repo}/installation`, `GET /users/{username}/installation` or, since 2026-05-13, `GET /enterprises/{enterprise}/installation` for an installation on an enterprise account.
 
 ### Rate Limit Comparison
 
@@ -651,12 +653,20 @@ Enterprise administrators control MCP availability through the **"MCP servers in
 
 | Setting | Effect |
 |---------|--------|
-| **Enabled** | MCP servers can run in Copilot clients for Copilot Business and Enterprise users; restrict which ones with an allowlist (below) |
+| **Enabled everywhere** | MCP servers can run in Copilot clients for Copilot Business and Enterprise users; restrict which ones with an allowlist (below). The organization-level setting is **Enabled** |
 | **Disabled** | MCP servers cannot be used with Copilot in managed surfaces |
 | **Let organizations decide** | Each organization's owners set the policy for their organization |
 | **Unconfigured** | Off until 2026-10-22; from then it follows the **Default policy for new features**, which ships **Enabled** |
 
 **MCP allowlists in enterprise managed settings (GA 2026-08-06):** Enterprise owners can approve or block individual MCP servers by adding `allowedMcpServers` and `deniedMcpServers` to `copilot/managed-settings.json` in the enterprise's `.github-private` repository. Entries match a remote server by URL (`serverUrl`, `*` wildcards allowed), a local server by exact command and arguments (`serverCommand`), or a server by its user-assigned name (`serverName`, a convenience rather than a security control because users can rename servers). A deny match always blocks; when an allowlist exists, unlisted servers are blocked; and a malformed file blocks every server except built-in defaults such as the GitHub MCP server. The 2026-08-06 post lists enforcement in the GitHub Copilot app, Copilot CLI and VS Code. The **MCP servers in Copilot** policy must still allow MCP for any server to run. See [Enterprise managed settings](./29-enterprise-managed-settings.md).
+
+**Registry-based restriction (public preview):** Since 2026-04-16, enterprise and organization owners can instead point Copilot at an internal MCP registry (**MCP Registry URL** on the **MCP** page of AI controls) and set **Restrict MCP access to registry servers** to **Registry only**. GitHub's docs say this isn't the recommended method: it matches servers only by name or ID, and users can bypass it by editing configuration files. Prefer the managed-settings allowlist.
+
+**Agent finder** (since 2026-06-17) lets Copilot discover MCP servers, skills and agents on demand from a registry you choose, either GitHub's curated public catalog or a private registry, and installs nothing automatically. The post says enterprises limit what agents can discover through managed settings; the managed settings reference documents no separate key for it.
+
+### Plugins and Plugin Marketplaces
+
+Agent plugins package skills, MCP server configurations, hooks and custom agents into one installable unit; Agent Plugins 1.0 is the open format (GA 2026-08-12). Enterprises govern plugins in `copilot/managed-settings.json`: `enabledPlugins` installs or blocks plugins for everyone, `extraKnownMarketplaces` adds marketplaces, and `strictKnownMarketplaces` (since 2026-06-25) restricts installs to listed marketplaces. The Awesome Copilot marketplace is available by default, so set `strictKnownMarketplaces` if you need to control where plugins come from, and pair it with the MCP allowlist because plugins can carry MCP servers. The May and June 2026 previews used `.github/copilot/settings.json`, which is still read for backward compatibility. See [Enterprise Managed Settings](./29-enterprise-managed-settings.md#plugins-and-marketplaces).
 
 ### Copilot Extensions in Marketplace
 
@@ -669,20 +679,23 @@ The Copilot extensibility landscape includes integrations available through Mark
 
 These are standard GitHub Apps that complement Copilot, not "Copilot Extensions" in the traditional sense. The extensibility model has shifted toward MCP as the primary mechanism.
 
+**Agent apps** (since 2026-06-02; public preview per the docs) are partner agents distributed as GitHub Apps in Marketplace. After an app is installed and its agent features are enabled, users can assign it an issue, @mention it in a pull request comment or start it from the Agents UI. In an organization owned by an enterprise, an administrator must also enable the **Agent apps** Copilot policy. Sessions run on Copilot cloud agent and consume GitHub AI Credits, and each user authorizes the app through OAuth on first use, so review agent apps through the same app approval process.
+
 ### Copilot Cloud Agent Integrations
 
 Copilot cloud agent supports MCP servers configured at the repository level:
 
 - **GitHub MCP server** and **Playwright MCP server** are configured by default
-- Additional MCP servers can be added via repository configuration
+- Repository administrators add other servers as JSON in repository **Settings → Copilot → MCP servers**, with any secrets stored as Agents secrets prefixed `COPILOT_MCP_`. Since 2026-06-02, Copilot code review uses the same configuration (public preview), so a server added for the agent can also run during reviews
 - Third-party Marketplace apps can assign work to Copilot cloud agent (e.g., "GitHub Copilot for Linear" assigns Linear issues to Copilot cloud agent)
+- To audit this at scale, `GET /repos/{owner}/{repo}/copilot/cloud-agent/configuration` (public preview since 2026-05-18) returns a repository's MCP configuration, enabled tools, Actions workflow approval setting and firewall configuration
 
 ### MCP Security Considerations
 
-**Push Protection:**
+**Secret Scanning in MCP:**
 
-- Push protection secures GitHub MCP server interactions for public repos and repos with GitHub Advanced Security (GHAS — now Secret Protection + Code Security) enabled
-- Blocks secrets from appearing in AI-generated responses
+- Push protection secures GitHub MCP server interactions for public repos and repos with Secret Protection enabled, and blocks secrets from appearing in AI-generated responses
+- Since 2026-05-05 (GA), the GitHub MCP server's secret scanning tools let Copilot CLI, VS Code and other MCP clients scan local changes before commit, for repositories with Secret Protection. They work only with the remote GitHub MCP server, follow your organization's push protection configuration, and return findings to the chat session only: nothing is stored as an alert
 
 **Access Control:**
 
@@ -696,8 +709,8 @@ Copilot cloud agent supports MCP servers configured at the repository level:
 2. Enable for a pilot organization first
 3. Establish an approved MCP server list and enforce it with `allowedMcpServers` and `deniedMcpServers` in enterprise managed settings. GitHub's docs recommend keeping the MCP policy enabled and restricting servers this way, rather than relying on a custom MCP registry, which users can bypass by editing configuration files
 4. Document data flow for each MCP server (what data leaves your environment)
-5. Review MCP server configurations in repository `.github/copilot/` directories
-6. Monitor for unauthorized MCP server additions via code review policies
+5. Review repository MCP configurations in repository **Settings → Copilot → MCP servers** (not files in the repository), or audit them at scale with the cloud agent configuration REST API
+6. Limit repository admin access, because repository administrators change this configuration in settings, where pull request review doesn't see it
 
 ## Webhook-Driven Apps
 
@@ -724,7 +737,7 @@ GitHub Apps receive a **single, centralized webhook** for all repositories in an
 | **Pull Request** | `pull_request`, `pull_request_review`, `pull_request_review_comment` | Code review automation, merge checks |
 | **Issues** | `issues`, `issue_comment`, `label` | Triage bots, SLA tracking |
 | **CI/CD** | `check_run`, `check_suite`, `workflow_run`, `deployment` | Status reporting, deployment gates |
-| **Security** | `code_scanning_alert`, `dependabot_alert`, `secret_scanning_alert` | Security automation, alerting |
+| **Security** | `code_scanning_alert`, `dependabot_alert`, `secret_scanning_alert` | Security automation, alerting. Since 2026-07-15, `secret_scanning_alert` payloads include `secret_category` (`default` for provider and custom patterns, `generic` for generic patterns and AI-detected secrets) for routing |
 | **Organization** | `membership`, `team`, `organization` | User provisioning, team sync |
 
 ### Webhook Payload Verification
@@ -827,7 +840,7 @@ smee --url https://smee.io/YOUR_CHANNEL --target http://localhost:3000/webhooks
 1. [About Creating GitHub Apps](https://docs.github.com/en/apps/creating-github-apps/about-creating-github-apps/about-creating-github-apps) — GitHub App fundamentals and architecture
 2. [Differences Between GitHub Apps and OAuth Apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps) — Comprehensive comparison of app types
 3. [About GitHub Marketplace for Apps](https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview/about-github-marketplace-for-apps) — Marketplace overview and listing types
-4. [About Building Copilot Extensions](https://docs.github.com/en/copilot/building-copilot-extensions/about-building-copilot-extensions) — MCP and Copilot extensibility
+4. [About Model Context Protocol (MCP)](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/context/mcp) — MCP and Copilot extensibility (GitHub App-based Copilot Extensions were disabled on 2025-11-10)
 5. [Migrating OAuth Apps to GitHub Apps](https://docs.github.com/en/apps/creating-github-apps/about-creating-github-apps/migrating-oauth-apps-to-github-apps) — Step-by-step migration guide
 6. [Choosing Permissions for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app) — Fine-grained permissions reference
 7. [About OAuth App Access Restrictions](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-oauth-access-to-your-organizations-data/about-oauth-app-access-restrictions) — Organization-level OAuth controls
@@ -850,3 +863,4 @@ smee --url https://smee.io/YOUR_CHANNEL --target http://localhost:3000/webhooks
 - [06-policy-inheritance.md](./06-policy-inheritance.md) — Policy enforcement and inheritance across enterprise hierarchy
 - [08-security-compliance.md](./08-security-compliance.md) — Security scanning, audit logging, and compliance
 - [12-github-copilot-governance.md](./12-github-copilot-governance.md) — Copilot policies and governance controls
+- [29-enterprise-managed-settings.md](./29-enterprise-managed-settings.md) — Enterprise managed settings: MCP allowlists, plugins and marketplaces
