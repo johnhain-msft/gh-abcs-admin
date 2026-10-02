@@ -139,8 +139,9 @@ npm test -- --skip-links --fail-fast
    rule to some files; optional `unless` (RegExp) ignores a match when its clause matches. A clause is the sentence,
    table cell or semicolon-separated part around the match. A rule about a claim that went stale on a known date
    also gets `since: 'YYYY-MM-DD'`. That turns on the shared corrective filter, which ignores a match when its clause
-   is a question, when the clause dates it ("until" or "before" any date, "since" or "from" a date on or after
-   `since`), or when a history word is attached to it ("was", "no longer", "previously 250", "replaced GPT-4.1 as").
+   is a question, when its table row is a timeline entry (the first cell is a date), when the clause dates it
+   ("until" or "before" any date, "since", "from", "on" or "in" a date on or after `since`), or when a history word is
+   attached to it ("was", "no longer", "previously 250", "replaced GPT-4.1 as", "limit raised to 500").
 2. Add an entry with the same id to `FIXTURES` in `tests/unit/freshness-rules.test.js`: at least one positive fixture
    (the stale sentence) and negative fixtures for the corrected sentence and every known false-positive trap. The
    unit tests fail if a rule has no fixtures. A regex rule catches likely phrasings of a claim, not every possible
@@ -153,8 +154,11 @@ npm test -- --skip-links --fail-fast
 
 A rule sees one clause, so a qualifier in an earlier sentence doesn't count: after a sentence about annual Pro and
 Pro+ plans, "For example, a 1x model draws down 0.9 premium requests." is flagged, and "On annual Pro and Pro+ plans,
-a 1x model draws down 0.9 premium requests." is not. If a correct sentence is flagged, first check that its scope is
-in the same sentence.
+a 1x model draws down 0.9 premium requests." is not. The same holds in tables and lists: a date in a column header
+(`| Setting | Before 2026-06-01 | Since 2026-06-01 |`) or on a parent bullet doesn't reach the cells or bullets below
+it, so repeat the date in the cell or bullet. A row whose first cell is a date (`| 2026-06-10 | … |`) is read as a
+timeline entry and not flagged. If a correct sentence is flagged, first check that its scope is in the same sentence,
+cell or bullet.
 
 ### Adding words to the spelling dictionary
 

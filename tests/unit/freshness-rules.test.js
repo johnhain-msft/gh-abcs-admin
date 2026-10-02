@@ -1071,6 +1071,195 @@ for (const [id, extra] of Object.entries(OUT_OF_SAMPLE)) {
   FIXTURES[id].negative.push(...(extra.negative || []));
 }
 
+// The judge's round-3 adversarial pass (2026-10-02), verbatim. Positives: the 22 stale phrasings it rated likely
+// (S2). Negatives: its cheap false positives and the date-first timeline row (the date in the first cell makes the
+// row history). Left out, by design: dates held in column headers or on a parent line, and its S3 cases.
+const JUDGE_ROUND3 = {
+  'copilot-unconfigured-means-disabled': {
+    positive: ['An **Unconfigured** policy blocks the feature for every member.']
+  },
+  'copilot-mcp-disabled-by-default': {
+    positive: [
+      'Copilot Business ships with MCP turned off.',
+      "Developers can't use MCP servers until an admin enables the policy."
+    ],
+    negative: [
+      'To keep MCP off by default, set the **MCP servers in Copilot** policy to **Disabled**.',
+      'Set **MCP servers in Copilot** to **Disabled** explicitly if MCP must stay off by default.'
+    ]
+  },
+  'ghas-budgets-alert-only': {
+    positive: [
+      "You can't set a hard limit on GHAS spend.",
+      "Budgets can't block GHAS usage because it's license-based."
+    ]
+  },
+  'cost-center-limit': {
+    positive: [
+      'The cap on cost centers is 500.',
+      "There's a limit of 250 on cost centers."
+    ],
+    negative: [
+      '| 2026-06-10 | Cost center limit raised to 500 |',
+      '| 2026-06-10 | Up to 500 cost centers per enterprise |'
+    ]
+  },
+  'copilot-default-model-gpt-4o': {
+    positive: ['If no model is chosen, Copilot falls back to GPT-4.1.']
+  },
+  'ssh-rsa-2048-minimum': {
+    positive: ['GitHub requires RSA keys to be 2048 bits.']
+  },
+  'content-exclusions-not-in-cli': {
+    positive: [
+      "Don't rely on content exclusions in Copilot CLI.",
+      'Content exclusions are ignored by the Copilot CLI.',
+      "Copilot CLI isn't covered by content exclusions."
+    ]
+  },
+  'github-apps-no-enterprise-access': {
+    positive: [
+      "GitHub Apps don't work at the enterprise level.",
+      'GitHub Apps can only be installed on organizations and user accounts.'
+    ],
+    negative: [
+      "A GitHub App can't access an enterprise unless it's installed on the enterprise account.",
+      // Design-time trap for the "can only be installed on organizations" pattern; true per the docs
+      'GitHub Apps with the Enterprise organization installations permission can only be installed on organizations in the owning enterprise.'
+    ]
+  },
+  'oauth-tokens-until-revoked': {
+    positive: [
+      'OAuth tokens are permanent until revoked.',
+      'OAuth tokens stay active until the user revokes them.',
+      "OAuth app access tokens don't have an expiry date."
+    ]
+  },
+  'security-tab-renamed': {
+    positive: [
+      "Click **Security** in the repository's top navigation.",
+      'Under **Security**, open **Secret scanning**.'
+    ]
+  },
+  'copilot-no-retention-absolute': {
+    positive: ['GitHub discards all Copilot prompts right away.']
+  },
+  'code-quality-in-ghas-policy': {
+    positive: [
+      'Code Quality ships with GitHub Advanced Security.',
+      'GHAS covers Code Quality too.'
+    ]
+  },
+  'copilot-premium-requests-billing': {
+    negative: [
+      'Premium requests ended for Copilot Business on 2026-06-01.',
+      'Copilot Business moved from premium requests to GitHub AI Credits on 2026-06-01.'
+    ]
+  },
+  'support-portal-url': {
+    negative: ['Some accounts still use support.github.com during the rollout that began on 2026-09-08.']
+  }
+};
+
+for (const [id, extra] of Object.entries(JUDGE_ROUND3)) {
+  if (!FIXTURES[id]) throw new Error(`JUDGE_ROUND3 names unknown rule ${id}`);
+  FIXTURES[id].positive.push(...(extra.positive || []));
+  FIXTURES[id].negative.push(...(extra.negative || []));
+}
+
+// Second out-of-sample set, aimed at the round-3 vocabulary, run once before tuning: 12 of 12 stale sentences
+// caught, 2 of 24 correct sentences flagged ("sets the policy to Disabled", "Some GitHub Apps …"). Both then fixed.
+const OUT_OF_SAMPLE_2 = {
+  'copilot-unconfigured-means-disabled': {
+    negative: ['A Disabled policy blocks the feature; an Unconfigured one follows the default policy from 2026-10-22.']
+  },
+  'copilot-mcp-disabled-by-default': {
+    positive: [
+      'Copilot Enterprise ships with MCP disabled.',
+      "Users can't use MCP until an org owner turns it on."
+    ],
+    negative: [
+      'Copilot Business ships with MCP enabled by default from 2026-10-22.',
+      "If your enterprise sets the policy to Disabled, developers can't use MCP servers until an admin enables it.",
+      'On 2026-10-22, the MCP servers policy stops being disabled by default.'
+    ]
+  },
+  'ghas-budgets-alert-only': {
+    positive: ['You cannot set a spending limit for Advanced Security.'],
+    negative: [
+      "Before 2026-05-28 you couldn't set a hard limit on GHAS spend.",
+      "Budgets can't block GHAS usage on repositories where GHAS is already enabled.",
+      '| 2026-05-28 | GHAS budgets are alert-only no longer: hard limits added |'
+    ]
+  },
+  'cost-center-limit': {
+    positive: ['The limit for cost centers is 250.'],
+    negative: [
+      'The cap on cost centers is 1,000 per enterprise.',
+      'Before 2026-06-10 there was a limit of 250 on cost centers.'
+    ]
+  },
+  'copilot-default-model-gpt-4o': {
+    positive: ['If no model is selected, Copilot defaults to GPT-4o.'],
+    negative: ['If no model is chosen, Copilot uses GPT-5.3-Codex, the base model.']
+  },
+  'ssh-rsa-2048-minimum': {
+    negative: ['From 2026-10-14, GitHub requires RSA keys to be at least 3072 bits.']
+  },
+  'content-exclusions-not-in-cli': {
+    positive: [
+      'Content exclusions are skipped in the Copilot CLI.',
+      'Copilot CLI is not covered by exclusions.'
+    ],
+    negative: [
+      "Don't rely on content exclusions in agent mode.",
+      'Before 2026-09-02, content exclusions were ignored by the Copilot CLI.',
+      'Copilot CLI is covered by content exclusions since 2026-09-02.'
+    ]
+  },
+  'github-apps-no-enterprise-access': {
+    positive: ['GitHub Apps can only be installed on orgs.'],
+    negative: [
+      "Some GitHub Apps don't work at the enterprise level because they need repository access.",
+      'Before 2026-08-07, GitHub Apps could only be installed on organizations and user accounts.'
+    ]
+  },
+  'oauth-tokens-until-revoked': {
+    positive: ['OAuth tokens remain active until revoked.'],
+    negative: [
+      'OAuth tokens stay active until revoked unless the app opts in to expiring tokens.',
+      "OAuth apps that opted in to expiring tokens don't have long-lived tokens."
+    ]
+  },
+  'security-tab-renamed': {
+    positive: ['Click Security in the top navigation, then Dependabot.'],
+    negative: [
+      'On GHES, click **Security** in the repository navigation.',
+      'In repository settings, under **Security**, open **Advanced Security**.'
+    ]
+  },
+  'copilot-no-retention-absolute': {
+    positive: ['Copilot deletes your prompts immediately.'],
+    negative: ['For code completions, GitHub discards prompts right away.']
+  },
+  'code-quality-in-ghas-policy': {
+    positive: ['Code Quality comes with GHAS.'],
+    negative: [
+      'Code Quality ships with its own license, separate from GHAS.',
+      'GHAS covers secret scanning and code scanning, but not Code Quality.'
+    ]
+  },
+  'copilot-premium-requests-billing': {
+    negative: ['Copilot Business switched from premium requests to GitHub AI Credits in June 2026.']
+  }
+};
+
+for (const [id, extra] of Object.entries(OUT_OF_SAMPLE_2)) {
+  if (!FIXTURES[id]) throw new Error(`OUT_OF_SAMPLE_2 names unknown rule ${id}`);
+  FIXTURES[id].positive.push(...(extra.positive || []));
+  FIXTURES[id].negative.push(...(extra.negative || []));
+}
+
 function normalizeFixture(fixture) {
   return typeof fixture === 'string' ? { file: DEFAULT_FILE, text: fixture } : fixture;
 }
@@ -1224,6 +1413,17 @@ test('isCorrective: until, before or prior to a date marks history', () => {
   assert.equal(corrective('2026-05-28', 'Before 2026-05-28, X applied', 'X applied'), true);
   assert.equal(corrective('2026-06-01', 'X applied until June 2026', 'X applied'), true);
   assert.equal(corrective('2026-10-22', 'Prior to **2026-10-22** X applies', 'X applies'), true);
+});
+
+test('isCorrective: "on" or "in" a date on or after the change date dates an event; an earlier one does not', () => {
+  assert.equal(corrective('2026-06-01', 'Premium requests ended for Copilot Business on 2026-06-01', 'Premium requests'), true);
+  assert.equal(corrective('2026-06-01', 'Premium requests stopped applying to Copilot Business in June 2026', 'Premium requests'), true);
+  assert.equal(corrective('2026-06-01', 'On 2026-05-01, each seat includes 300 premium requests', 'premium requests'), false);
+});
+
+test('isCorrective: a change verb inside the match dates it', () => {
+  assert.equal(corrective('2026-06-26', 'Cost center limit raised to 500', 'Cost center limit raised to 500'), true);
+  assert.equal(corrective('2026-06-26', 'The cost center limit is 500', 'cost center limit is 500'), false);
 });
 
 test('isCorrective: a history word counts only when it is attached to the match', () => {
