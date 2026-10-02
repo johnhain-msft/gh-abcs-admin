@@ -298,6 +298,316 @@ const FIXTURES = {
   }
 };
 
+// Rewordings of each stale claim (judge review, 2026-10-02): a rule must catch the claim, not just the
+// original sentence. Merged into FIXTURES so each rule is tested against both.
+const REWORDINGS = {
+  'copilot-unconfigured-means-disabled': {
+    positive: [
+      'Unconfigured policies are treated as disabled.',
+      'If a policy is left unconfigured, it is disabled.',
+      'An unconfigured policy means the feature is off.',
+      'Unconfigured = off until an admin sets it.',
+      'Policies that are unconfigured default to disabled for every organization.'
+    ],
+    negative: [
+      'Before 2026-10-22, an unconfigured feature policy was treated as disabled.',
+      'Leaving a policy unconfigured is not the same as disabling it.'
+    ]
+  },
+  'copilot-mcp-disabled-by-default': {
+    positive: [
+      'The MCP servers policy is off by default.',
+      'MCP is disabled by default for Copilot Business.',
+      'By default, MCP servers are disabled.'
+    ],
+    negative: [
+      'From 2026-10-22, an Unconfigured MCP servers policy follows the Default policy for new features.'
+    ]
+  },
+  'copilot-premium-requests-billing': {
+    positive: [
+      'Review premium request usage history in the billing UI.',
+      'Annual premium request totals are shown on the usage page.',
+      'Copilot code review consumes premium requests.'
+    ],
+    negative: [
+      'Request-based billing (legacy), for annual Copilot Pro and Pro+ plans: https://docs.github.com/en/copilot/reference/copilot-billing/request-based-billing-legacy/github-copilot-premium-requests',
+      'Budgets that existed for premium requests before 2026-06-01 were converted to AI Credit budgets automatically.'
+    ]
+  },
+  'ghas-budgets-alert-only': {
+    positive: [
+      'GHAS budgets only send alerts; they cannot block usage.',
+      'You cannot cap GHAS spend with a budget.',
+      'Budgets for Advanced Security are notification-only.',
+      "Stop-usage budgets don't work for GHAS."
+    ],
+    negative: [
+      'Since 2026-05-28, an Advanced Security SKU-level budget can block enabling GHAS on more repositories.',
+      'Budgets without that option only notify, with email alerts at 75%, 90% and 100% of the budget.'
+    ]
+  },
+  'cost-center-limit': {
+    positive: [
+      'An enterprise supports 250 cost centers.',
+      'You can create 500 cost centers per enterprise.',
+      'The cost center limit is 250.',
+      'Maximum: 100 cost centers.'
+    ],
+    negative: [
+      'Up to 1,000 cost centers per enterprise (since 2026-06-26), up from 500.',
+      'A cost center can hold up to 25,000 resources.',
+      'Most enterprises use 10–50 cost centers.',
+      'Assign the 500 users in Engineering to one cost center.'
+    ]
+  },
+  'copilot-default-model-gpt-4o': {
+    positive: [
+      'GPT-4o is the default model for Copilot Business.',
+      'Set GPT-4o as the default.',
+      'The base model is GPT-4.1.'
+    ],
+    negative: [
+      'GPT-5.3-Codex replaced GPT-4.1 as the base model on 2026-05-17.'
+    ]
+  },
+  'ssh-rsa-2048-minimum': {
+    positive: [
+      'RSA keys must be at least 2048 bits.',
+      'The minimum RSA key size is 2048.',
+      'GitHub accepts 2048-bit RSA keys.'
+    ],
+    negative: [
+      'RSA keys added from 2026-10-14 must be at least 3072 bits; existing 2048-bit keys keep working.'
+    ]
+  },
+  'checks-retained-400-days': {
+    positive: [
+      'Check runs are retained for 400 days.',
+      'There is a 400-day retention period for checks.'
+    ],
+    negative: [
+      'Before 2026-10-01, check runs were kept for 400+ days.'
+    ]
+  },
+  'content-exclusions-not-in-cli': {
+    positive: [
+      "Content exclusions don't apply to Copilot CLI.",
+      'Copilot CLI ignores content exclusions.',
+      'Exclusions are not enforced in the Copilot CLI.',
+      "Content exclusions aren't supported in Copilot CLI."
+    ],
+    negative: [
+      'Before 2026-09-02, content exclusions did not apply to Copilot CLI.',
+      'Content exclusions are not supported in the Edit and Agent modes of Copilot Chat in VS Code.'
+    ]
+  },
+  'github-apps-no-enterprise-access': {
+    positive: [
+      "GitHub Apps can't access the enterprise object.",
+      'GitHub Apps cannot be installed on the enterprise account.',
+      "Apps don't have access to the enterprise."
+    ],
+    negative: [
+      'Enterprise-installed GitHub Apps cannot receive webhooks.',
+      'Enterprise installations do not grant access to organizations or repositories in the enterprise.',
+      'GitHub Apps can be installed on the enterprise account since 2026-08-07.'
+    ]
+  },
+  'oauth-tokens-until-revoked': {
+    positive: [
+      'OAuth app tokens never expire.',
+      "OAuth tokens don't expire until the user revokes them.",
+      'OAuth access tokens are valid until revoked.'
+    ],
+    negative: [
+      'Unless the app uses expiring tokens, OAuth tokens never expire.',
+      'OAuth apps can opt in to expiring tokens: an 8-hour access token and a 6-month refresh token.'
+    ]
+  },
+  'security-tab-renamed': {
+    positive: [
+      'Open the Security tab of the repository.',
+      'Go to Security → Code scanning alerts.',
+      'Go to **Security** → **Code scanning**.'
+    ],
+    negative: [
+      'Go to the **Security & quality** tab → **Code scanning**.',
+      'Open **Settings** → **Security** → **Code security**.',
+      'Open Settings → Security → Secret scanning.'
+    ]
+  },
+  'copilot-no-retention-absolute': {
+    positive: [
+      "Copilot doesn't retain prompts or suggestions.",
+      'Copilot Business never stores your code.',
+      'No data retention for Business and Enterprise.'
+    ],
+    negative: [
+      'Eligible enterprises can use zero data retention for Claude Fable 5.1.',
+      'Retention is limited, not zero.'
+    ]
+  },
+  'code-quality-in-ghas-policy': {
+    positive: [
+      'Code Quality is part of GitHub Advanced Security.',
+      'Code Quality is included with Code Security.'
+    ],
+    negative: [
+      'GitHub Code Quality is a standalone paid product, complementary to GitHub Advanced Security rather than bundled with it.'
+    ]
+  },
+  'github-spark-retired': {
+    positive: [
+      'GitHub Spark is recommended for prototyping internal apps.',
+      'Enterprise adds GitHub Spark for app prototyping.'
+    ],
+    negative: [
+      'GitHub Spark on github.com was retired: no new users from 2026-08-04, access ended 2026-08-31.'
+    ]
+  }
+};
+
+for (const [id, extra] of Object.entries(REWORDINGS)) {
+  if (!FIXTURES[id]) throw new Error(`REWORDINGS names unknown rule ${id}`);
+  FIXTURES[id].positive.push(...(extra.positive || []));
+  FIXTURES[id].negative.push(...(extra.negative || []));
+}
+
+// The judge's probe sentences (all 26 rewordings and the 6 exception-pattern bypasses, verbatim) plus the
+// false-positive traps it named. Each bypass shows an `unless` filter matching inside an unrelated word.
+const JUDGE_PROBES = {
+  'copilot-unconfigured-means-disabled': {
+    positive: [
+      'If a policy is left Unconfigured, Copilot behaves as if it were Disabled.',
+      'An Unconfigured policy is equivalent to Disabled.',
+      'Unconfigured policies are treated as disabled; review the Default policy for new features later.'
+    ],
+    negative: ['An enterprise policy left **Unconfigured** is not simply **Disabled**.']
+  },
+  'copilot-mcp-disabled-by-default': {
+    positive: [
+      'MCP servers are off by default for Copilot Business and Enterprise.',
+      'The MCP servers in Copilot policy is disabled unless an admin enables it.'
+    ]
+  },
+  'copilot-premium-requests-billing': {
+    positive: [
+      'Download the premium request usage history from the billing page.',
+      'Set an annual budget for Copilot premium requests.'
+    ]
+  },
+  'ghas-budgets-alert-only': {
+    positive: [
+      "GHAS budgets only send alerts; they don't block usage.",
+      "You can't cap GHAS spend with a budget."
+    ]
+  },
+  'cost-center-limit': {
+    positive: [
+      'An enterprise supports 250 cost centers.',
+      'The cost center limit is 250 per enterprise.'
+    ],
+    negative: ['For example, a platform engineering cost center can get $250 per user while everyone else stays on a $40 universal budget.']
+  },
+  'copilot-default-model-gpt-4o': {
+    positive: [
+      'The default Copilot model is GPT-4o.',
+      'GPT-4o is the base model for Copilot Business.'
+    ]
+  },
+  'ssh-rsa-2048-minimum': {
+    positive: [
+      'RSA keys must be at least 2048 bits.',
+      '- **RSA:** minimum 2048 bits, 4096 recommended'
+    ]
+  },
+  'checks-retained-400-days': {
+    positive: [
+      'Workflow runs and statuses are retained for 400 days.',
+      'Check runs are kept for 400 days.'
+    ]
+  },
+  'content-exclusions-not-in-cli': {
+    positive: [
+      "Content exclusions don't apply to Copilot CLI.",
+      'Copilot CLI ignores content exclusions.'
+    ]
+  },
+  'github-apps-no-enterprise-access': {
+    positive: [
+      "GitHub Apps can't access the enterprise object.",
+      'GitHub Apps cannot be installed on an enterprise account.'
+    ]
+  },
+  'oauth-tokens-until-revoked': {
+    positive: [
+      'OAuth tokens never expire.',
+      'OAuth app tokens are valid until revoked.'
+    ]
+  },
+  'security-tab-renamed': {
+    positive: [
+      'Open the repository Security page and select Code scanning.',
+      'Go to **Security** > **Code scanning**.',
+      'On GitHub.com and GHES, open the Security tab to review alerts.'
+    ],
+    negative: [
+      'Open the Security overview page for the organization.',
+      'Add a Security policy page to the repository.',
+      'Enable it from the Advanced Security page in Settings.'
+    ]
+  },
+  'copilot-no-retention-absolute': {
+    positive: [
+      "Copilot Business doesn't retain your code or prompts.",
+      // The judge's #24, made unscoped: true for IDE code completions only, so the scoped form is a negative
+      'Prompts and suggestions are discarded as soon as a suggestion is returned.'
+    ],
+    negative: ['For code completions in the IDE, prompts are discarded as soon as a suggestion is returned.']
+  },
+  'code-quality-in-ghas-policy': {
+    positive: ['Code Quality is part of GitHub Advanced Security.']
+  },
+  'github-spark-retired': {
+    positive: [
+      'Copilot Enterprise includes Spark.',
+      'GitHub Spark is recommended for rapid prototyping on Copilot Enterprise.',
+      '| **GitHub Spark (public preview)** | — | ✓ | intended for prototypes'
+    ],
+    negative: [
+      'Run the job on Apache Spark.',
+      'A bundled AI credits budget covers every AI Credit SKU, including Copilot, Copilot cloud agent and Spark AI credits.'
+    ]
+  }
+};
+
+for (const [id, extra] of Object.entries(JUDGE_PROBES)) {
+  if (!FIXTURES[id]) throw new Error(`JUDGE_PROBES names unknown rule ${id}`);
+  FIXTURES[id].positive.push(...(extra.positive || []));
+  FIXTURES[id].negative.push(...(extra.negative || []));
+}
+
+// Real lines that an over-wide pattern flagged during development: correct content that must stay unflagged.
+// Each one pins a boundary (same sentence only; negated forms are not the claim).
+const REAL_NEGATIVES = {
+  'content-exclusions-not-in-cli': [
+    '> ⚠️ **Important:** Content exclusions are not supported in the Edit and Agent modes of Copilot Chat in IDEs, and they don\'t cover third-party agents. The docs disagree on Copilot cloud agent (the content exclusion availability table doesn\'t list it; the supported-surfaces reference says exclusions apply to it), so test before you rely on it. Since 2026-09-02 exclusions apply in Copilot CLI and the GitHub Copilot app, and since 2026-06-12 Copilot code review skips excluded files.'
+  ],
+  'code-quality-in-ghas-policy': [
+    '| **GitHub Code Quality** (separate product, not part of GHAS) | **Allow for selected organizations** | Billed separately since 2026-07-20; allow it where the cost is budgeted - See note | ☐ |',
+    "Code Quality isn't part of GHAS."
+  ],
+  'ghas-budgets-alert-only': [
+    "GHAS budgets don't stop GHAS on repositories where it's already enabled."
+  ]
+};
+
+for (const [id, lines] of Object.entries(REAL_NEGATIVES)) {
+  if (!FIXTURES[id]) throw new Error(`REAL_NEGATIVES names unknown rule ${id}`);
+  FIXTURES[id].negative.push(...lines);
+}
+
 function normalizeFixture(fixture) {
   return typeof fixture === 'string' ? { file: DEFAULT_FILE, text: fixture } : fixture;
 }
@@ -320,6 +630,16 @@ test('every rule has a unique id, a global regex, a message and a known severity
     assert.ok(rule.pattern instanceof RegExp && rule.pattern.global, `${rule.id}: pattern must be a /g RegExp`);
     assert.ok(rule.message, `${rule.id}: message missing`);
     assert.ok(['warn', 'error'].includes(rule.severity), `${rule.id}: unknown severity ${rule.severity}`);
+  }
+});
+
+test('unless and files filters are non-global RegExps (a /g RegExp makes .test() stateful)', () => {
+  for (const rule of DEPRECATED_PATTERNS) {
+    for (const key of ['unless', 'files']) {
+      if (rule[key] === undefined) continue;
+      assert.ok(rule[key] instanceof RegExp, `${rule.id}: ${key} must be a RegExp`);
+      assert.ok(!rule[key].global && !rule[key].sticky, `${rule.id}: ${key} must not use the g or y flag`);
+    }
   }
 });
 

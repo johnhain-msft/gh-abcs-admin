@@ -139,7 +139,10 @@ npm test -- --skip-links --fail-fast
    rule to some files; optional `unless` (RegExp) ignores a match when its line matches.
 2. Add an entry with the same id to `FIXTURES` in `tests/unit/freshness-rules.test.js`: at least one positive fixture
    (the stale sentence) and negative fixtures for the corrected sentence and every known false-positive trap. The
-   unit tests fail if a rule has no fixtures.
+   unit tests fail if a rule has no fixtures. Guard the claim, not one sentence: add realistic rewordings as positives
+   (contractions such as "don't", synonyms, the number next to its noun), keep matches within one sentence, and keep
+   `unless` filters word-bounded (`\bended\b`, not `ended`) so they can't fire inside another word. `unless` and `files`
+   must not use the `g` flag; the unit tests check this.
 3. Run `npm run test:unit`, then `npm run test:freshness`.
 
 ### Adding words to the spelling dictionary
