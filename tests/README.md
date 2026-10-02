@@ -32,13 +32,13 @@ npm run test:links         # Link validation (slow — makes network requests)
 
 | Suite | Script | What It Validates |
 |-------|--------|-------------------|
-| **Unit Tests** | `test:unit` | The harness itself: shared helpers in `utils.js` behave the same on Windows (CRLF working tree, `\` paths) and Linux. Uses the built-in `node:test`; no extra dependencies |
+| **Unit Tests** | `test:unit` | The harness itself: shared helpers in `utils.js` behave the same on Windows (CRLF working tree, `\` paths) and Linux, and every freshness rule flags its stale fixtures and ignores its corrected and trap fixtures. Uses the built-in `node:test`; no extra dependencies |
 | **Markdown Lint** | `test:lint` | Formatting consistency, heading structure, list style. Config: `.markdownlint.yml` |
 | **Front Matter** | `test:frontmatter` | YAML front matter is valid where present |
 | **Structure** | `test:structure` | Docs have H1 + H2 sections; labs have title, duration, steps, references |
 | **Code Blocks** | `test:codeblocks` | YAML/JSON blocks parse correctly; bash blocks have balanced quotes |
 | **Mermaid** | `test:mermaid` | Diagram type is valid, brackets are balanced, content is non-empty |
-| **Freshness** | `test:freshness` | Flags deprecated GitHub features, outdated action versions, stale URLs |
+| **Freshness** | `test:freshness` | Flags deprecated GitHub features, outdated action versions, stale URLs and stale product claims in Markdown and in the HTML slide decks. `error` rules fail the run; `warn` rules only report |
 | **Spelling** | `test:spell` | Technical terminology. Config: `.cspell.json` with custom dictionary |
 | **VBD Coverage** | `test:vbd-coverage` | Every VBD agenda item has mapped docs/labs; referenced files exist |
 | **Lab Completeness** | `test:lab-completeness` | Labs have title, duration, objectives, references, numbered steps |
@@ -132,6 +132,16 @@ npm test -- --skip-links --fail-fast
 4. Add the suite to `SUITES` array in `tests/run-all.js`
 5. Add the step to `.github/workflows/tests.yml`
 
+### Adding a freshness rule
+
+1. Add the rule to `DEPRECATED_PATTERNS` in `tests/validate-freshness.js`: a unique `id`, a global (`/g`) `pattern`, a
+   `message` and a `severity` (`error` fails the run, `warn` only reports). Optional `files` (path RegExp) limits the
+   rule to some files; optional `unless` (RegExp) ignores a match when its line matches.
+2. Add an entry with the same id to `FIXTURES` in `tests/unit/freshness-rules.test.js`: at least one positive fixture
+   (the stale sentence) and negative fixtures for the corrected sentence and every known false-positive trap. The
+   unit tests fail if a rule has no fixtures.
+3. Run `npm run test:unit`, then `npm run test:freshness`.
+
 ### Adding words to the spelling dictionary
 
 Edit `.cspell.json` → `words` array. Add GitHub-specific terms, product names, and acronyms.
@@ -173,7 +183,8 @@ tests/
 ├── validate-freshness.js   # Deprecated content detection
 ├── validate-links.js       # Link validation wrapper
 ├── unit/
-│   └── utils.test.js       # Unit tests for utils.js (cross-platform paths and line endings)
+│   ├── utils.test.js       # Unit tests for utils.js (cross-platform paths and line endings)
+│   └── freshness-rules.test.js # Positive/negative fixtures for every freshness rule
 ├── README.md               # This file
 └── fixtures/
     ├── vbd-coverage-map.json    # VBD agenda → content mapping
