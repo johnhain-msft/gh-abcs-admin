@@ -15,6 +15,7 @@ npm test -- --skip-links
 npm test
 
 # Run individual test suites
+npm run test:unit          # Unit tests for the test harness (node:test)
 npm run test:lint          # Markdown formatting
 npm run test:frontmatter   # YAML front matter
 npm run test:structure     # Document structure
@@ -31,6 +32,7 @@ npm run test:links         # Link validation (slow — makes network requests)
 
 | Suite | Script | What It Validates |
 |-------|--------|-------------------|
+| **Unit Tests** | `test:unit` | The harness itself: shared helpers in `utils.js` behave the same on Windows (CRLF working tree, `\` paths) and Linux. Uses the built-in `node:test`; no extra dependencies |
 | **Markdown Lint** | `test:lint` | Formatting consistency, heading structure, list style. Config: `.markdownlint.yml` |
 | **Front Matter** | `test:frontmatter` | YAML front matter is valid where present |
 | **Structure** | `test:structure` | Docs have H1 + H2 sections; labs have title, duration, steps, references |
@@ -170,6 +172,8 @@ tests/
 ├── validate-lab-completeness.js # Lab structural completeness
 ├── validate-freshness.js   # Deprecated content detection
 ├── validate-links.js       # Link validation wrapper
+├── unit/
+│   └── utils.test.js       # Unit tests for utils.js (cross-platform paths and line endings)
 ├── README.md               # This file
 └── fixtures/
     ├── vbd-coverage-map.json    # VBD agenda → content mapping
