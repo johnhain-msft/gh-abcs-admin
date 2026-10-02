@@ -96,8 +96,8 @@
       "topic": "GitHub Enterprise site administration",
       "subtopics": ["Enterprise settings", "Policies"],
       "priority": "P0",
-      "docs": ["docs/01-enterprise-hierarchy.md", "docs/06-policy-inheritance.md"],
-      "labs": ["labs/lab06.md", "labs/lab15.md"]
+      "docs": ["docs/01-enterprise-hierarchy.md", "docs/06-policy-inheritance.md", "docs/29-enterprise-managed-settings.md"],
+      "labs": ["labs/lab06.md", "labs/lab15.md", "labs/lab17.md"]
     },
     {
       "id": "2.3",
@@ -114,8 +114,8 @@
       "topic": "Select repository and organization settings",
       "subtopics": ["Org-level configs", "Defaults"],
       "priority": "P0",
-      "docs": ["docs/02-organization-strategies.md", "docs/06-policy-inheritance.md"],
-      "labs": ["labs/lab02.md", "labs/lab04.md"]
+      "docs": ["docs/02-organization-strategies.md", "docs/06-policy-inheritance.md", "docs/30-actions-workflow-execution-protections.md"],
+      "labs": ["labs/lab02.md", "labs/lab04.md", "labs/lab18.md"]
     },
     {
       "id": "2.5",
@@ -123,8 +123,8 @@
       "topic": "Administer users",
       "subtopics": ["User lifecycle", "Invitations", "Roles"],
       "priority": "P0",
-      "docs": ["docs/03-identity-access-management.md", "docs/04-enterprise-managed-users.md", "docs/21-user-administration.md"],
-      "labs": ["labs/lab09.md"]
+      "docs": ["docs/03-identity-access-management.md", "docs/04-enterprise-managed-users.md", "docs/21-user-administration.md", "docs/28-enterprise-teams.md"],
+      "labs": ["labs/lab09.md", "labs/lab16.md"]
     },
     {
       "id": "2.6",
@@ -141,8 +141,8 @@
       "topic": "Organizations and teams",
       "subtopics": ["Nested teams", "IdP sync", "Permissions"],
       "priority": "P0",
-      "docs": ["docs/02-organization-strategies.md", "docs/05-teams-permissions.md"],
-      "labs": ["labs/lab09.md"]
+      "docs": ["docs/02-organization-strategies.md", "docs/05-teams-permissions.md", "docs/28-enterprise-teams.md"],
+      "labs": ["labs/lab09.md", "labs/lab16.md"]
     },
     {
       "id": "2.8",

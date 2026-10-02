@@ -695,5 +695,80 @@
     "minMermaidDiagrams": 0,
     "hasFrontMatter": false,
     "headingCount": 15
+  },
+  "29-enterprise-managed-settings": {
+    "expectedH1": "Enterprise Managed Settings for GitHub Copilot",
+    "expectedH2s": [
+      "Table of Contents",
+      "Overview",
+      "Policies and Managed Settings",
+      "Where the File Lives",
+      "Who and Which Clients It Applies To",
+      "Supported Keys",
+      "Deployment Channels and Precedence",
+      "Enterprise Team Specialization",
+      "Rollout and Change Control",
+      "Troubleshooting",
+      "Rollout Checklist",
+      "Related Documentation",
+      "References"
+    ],
+    "minLines": 430,
+    "minMermaidDiagrams": 2,
+    "hasFrontMatter": false,
+    "headingCount": 32
+  },
+  "30-actions-workflow-execution-protections": {
+    "expectedH1": "GitHub Actions Workflow Execution Protections and Runner Governance",
+    "expectedH2s": [
+      "Table of Contents",
+      "Overview",
+      "Where Actions Policies Live",
+      "Workflow Execution Protections",
+      "The Default pull_request_target Policy",
+      "Evaluate Mode and Policy Insights",
+      "Managing Actions Policies as Code",
+      "How Execution Protections Fit with Other Actions Controls",
+      "Safer Defaults for Untrusted Triggers",
+      "Workflow Runs That Wait for Approval",
+      "Runner Governance",
+      "Retention Scope for Run Evidence",
+      "Rollout Plan",
+      "Admin Checklist",
+      "Related Documentation",
+      "References",
+      "Version History"
+    ],
+    "minLines": 360,
+    "minMermaidDiagrams": 2,
+    "hasFrontMatter": false,
+    "headingCount": 30
+  },
+  "28-enterprise-teams": {
+    "expectedH1": "Enterprise Teams",
+    "expectedH2s": [
+      "Table of Contents",
+      "Overview",
+      "Enterprise Teams vs Organization Teams",
+      "Creating Enterprise Teams",
+      "Membership and Identity Provider Sync",
+      "Assigning Teams to Organizations",
+      "Enterprise Roles",
+      "Copilot Licenses and Model Access",
+      "Team Specialization in Enterprise Managed Settings",
+      "Cost Centers",
+      "Rulesets, Reviews and Mentions",
+      "Automating with the REST API",
+      "Audit Log Events",
+      "Limits and Unsupported Features",
+      "Design Guidance",
+      "Troubleshooting",
+      "Related Documentation",
+      "References"
+    ],
+    "minLines": 315,
+    "minMermaidDiagrams": 1,
+    "hasFrontMatter": false,
+    "headingCount": 24
   }
 }

@@ -285,5 +285,70 @@
     "expectedCodeBlockLangs": [],
     "linkCount": 6,
     "externalLinkCount": 5
+  },
+  "lab17": {
+    "expectedH1": "17 - Enterprise Managed Settings for Copilot",
+    "expectedH2s": [
+      "What You'll Learn",
+      "17.1 Create the governance repository",
+      "17.2 Protect the repository with a ruleset",
+      "17.3 Block bypass mode with managed-settings.json",
+      "17.4 Check the settings with the validator",
+      "17.5 Confirm enforcement in Copilot CLI and VS Code",
+      "17.6 Give an enterprise team an exception",
+      "17.7 Verify your work"
+    ],
+    "minLines": 235,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [],
+    "linkCount": 10,
+    "externalLinkCount": 6
+  },
+  "lab18": {
+    "expectedH1": "18 - Workflow Execution Protections",
+    "expectedH2s": [
+      "What You'll Learn",
+      "18.1 Add a test workflow",
+      "18.2 Create a policy in evaluate mode",
+      "18.3 Trigger a run the policy would block",
+      "18.4 Review Policy insights",
+      "18.5 Decide on enforcement",
+      "18.6 Plan for the default pull_request_target policy",
+      "18.7 Verify your work"
+    ],
+    "minLines": 165,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [
+      "yaml",
+      "text",
+      "bash",
+      "json"
+    ],
+    "linkCount": 6,
+    "externalLinkCount": 5
+  },
+  "lab16": {
+    "expectedH1": "16 - Enterprise Teams",
+    "expectedH2s": [
+      "What You'll Learn",
+      "16.1 Plan an enterprise team",
+      "16.2 Create an enterprise team and assign it to an organization",
+      "16.3 Find and use enterprise teams in your organization",
+      "16.4 Review the controls enterprise teams drive",
+      "16.5 Review enterprise team audit events",
+      "16.6 Clean up",
+      "16.7 Verify your work"
+    ],
+    "minLines": 180,
+    "minMermaidDiagrams": 0,
+    "hasFrontMatter": false,
+    "hasDuration": true,
+    "expectedCodeBlockLangs": [],
+    "linkCount": 8,
+    "externalLinkCount": 6
   }
 }

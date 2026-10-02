@@ -141,7 +141,11 @@
     "octocorp",
     "chargeback",
     "deprovisioned",
-    "GiB"
+    "GiB",
+    "mlkem",
+    "libssh",
+    "secp",
+    "unassignment"
   ],
   "flagWords": [],
   "dictionaries": ["en_US", "en-gb", "softwareTerms", "companies", "typescript", "node", "css", "html", "bash", "powershell"]

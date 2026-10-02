@@ -71,6 +71,9 @@ Complete these after the workshop to deepen your skills.
 | [Lab 11](labs/lab11.md) | GitHub Apps and Marketplace | 15–20 min | 1.8, 2.1 |
 | [Lab 12](labs/lab12.md) | Deployments and Environments | 20–25 min | 2.10 |
 | [Lab 14](labs/lab14.md) | Unhealthy Repos and Git History | 20–25 min | 2.13, 2.14 |
+| [Lab 16](labs/lab16.md) | Enterprise Teams | 20–30 min | 2.5, 2.7 |
+| [Lab 17](labs/lab17.md) | Enterprise Managed Settings for Copilot | 20–30 min | 2.2 |
+| [Lab 18](labs/lab18.md) | Workflow Execution Protections | 20–30 min | 2.4 |
 
 ---
 
@@ -96,6 +99,7 @@ Complete these after the workshop to deepen your skills.
 |---|-------|--------|
 | [05](docs/05-teams-permissions.md) | Teams and Permissions | Team structures, nested teams, permission models |
 | [06](docs/06-policy-inheritance.md) | Policy Enforcement and Inheritance | Enterprise → Org → Repo policy enforcement |
+| [28](docs/28-enterprise-teams.md) | Enterprise Teams | Enterprise-level teams across organizations, IdP sync, cost centers, Copilot access |
 
 ### Repository Governance & Security
 
@@ -104,6 +108,7 @@ Complete these after the workshop to deepen your skills.
 | [07](docs/07-repository-governance.md) | Repository Governance | Rulesets, branch protection, templates |
 | [08](docs/08-security-compliance.md) | Security and Compliance | Secret Protection, Code Security, audit logs |
 | [11](docs/11-security-by-default-policies.md) | Security-by-Default Policies | Comprehensive security settings and recommendations |
+| [30](docs/30-actions-workflow-execution-protections.md) | Actions Workflow Execution Protections and Runner Governance | Actor and event rules, evaluate mode, `pull_request_target` defaults, runner versions |
 
 ### Best Practices & Architecture
 
@@ -117,6 +122,7 @@ Complete these after the workshop to deepen your skills.
 | # | Title | Topics |
 |---|-------|--------|
 | [12](docs/12-github-copilot-governance.md) | GitHub Copilot Governance | Enterprise Copilot policies, content exclusions, license management |
+| [29](docs/29-enterprise-managed-settings.md) | Enterprise Managed Settings for GitHub Copilot | `managed-settings.json`, client enforcement, enterprise team overrides |
 
 ### Implementation & Migration
 
