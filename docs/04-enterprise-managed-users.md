@@ -1633,7 +1633,7 @@ Target Metrics:
 ### Additional Resources
 - [GitHub Enterprise Blog: EMU Announcements](https://github.blog/changelog/label/enterprise/)
 - [GitHub Skills: GitHub Administration](https://skills.github.com/)
-- [GitHub Support: EMU Troubleshooting](https://support.github.com/)
+- [GitHub Support: EMU Troubleshooting](https://help.github.com/) (help.github.com from 2026-09-08; support.github.com works until your account moves)
 - [GitHub Community Forum: EMU Discussions](https://github.community/)
 
 ---

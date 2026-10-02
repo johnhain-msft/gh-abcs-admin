@@ -963,7 +963,8 @@ rotation_policy:
 ### SSH Key Management
 
 **Key Types and Support:**
-- **RSA:** 2048-bit minimum, 4096-bit recommended
+- **RSA:** keys added from 2026-10-14 must be at least 3072 bits (4096-bit recommended)
+- **`ssh-rsa` (SHA-1) signatures:** removed on 2027-01-13, after brownouts on 2026-11-04 and 2026-12-09. Existing RSA keys keep working when the client signs with SHA-2 (`rsa-sha2-256`, `rsa-sha2-512`)
 - **Ed25519:** Preferred (smaller, faster, more secure)
 - **ECDSA:** P-256, P-384, P-521 curves supported
 - **DSA:** Deprecated (insecure, unsupported)

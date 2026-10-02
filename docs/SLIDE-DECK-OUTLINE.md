@@ -133,7 +133,7 @@ This outline provides the structure for creating a slide deck for the GitHub Adm
 
 **Slide 2: Cost Center Fundamentals**
 - Key Visual: Diagram showing enterprise → cost centers → organizations/repositories mapping
-- Speaker Notes: Cost centers group resources for billing allocation. Up to 100 cost centers per enterprise. Resources can be organizations or repositories. Unassigned resources go to the enterprise "default" bucket.
+- Speaker Notes: Cost centers group resources for billing allocation. Up to 1,000 cost centers per enterprise (since 2026-06-26). Resources can be organizations, repositories, users or enterprise teams. Unassigned resources go to the enterprise "default" bucket.
 
 **Slide 3: Allocation Rules and Hierarchy**
 - Key Visual: Multi-tier cost center hierarchy example (Enterprise → BU → Department)
@@ -144,8 +144,8 @@ This outline provides the structure for creating a slide deck for the GitHub Adm
 - Speaker Notes: Budgets can be scoped to enterprise or cost center. Types include alert-only and spending-limit. Set multiple thresholds (50%, 75%, 90%) for progressive notification. Budgets cover Actions, Packages, Copilot, and GHAS.
 
 **Slide 5: Tracking Copilot Costs via Cost Centers**
-- Key Visual: Copilot premium request usage breakdown by cost center
-- Speaker Notes: Copilot premium requests allocate to the cost center of the user's organization. Set Copilot-specific budgets per department. Monitor ROI with per-cost-center usage reports.
+- Key Visual: Copilot AI Credits usage breakdown by cost center
+- Speaker Notes: Since 2026-06-01, Copilot is billed in GitHub AI Credits. AI Credits usage is charged to the user's cost center, or to the organization that granted the user's Copilot license if the user isn't in a cost center. Included usage is pooled across the enterprise; an included usage control caps a cost center at the AI Credits its own licenses fund. Set Copilot-specific budgets per department. Monitor ROI with per-cost-center usage reports.
 
 **Slide 6: Tracking GHAS Costs via Cost Centers**
 - Key Visual: GHAS active committer allocation by cost center

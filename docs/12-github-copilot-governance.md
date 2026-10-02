@@ -56,7 +56,7 @@ GitHub offers multiple Copilot subscription plans tailored for different organiz
 | **Admin Controls** | Organization policies | Enterprise policies + audit logs |
 | **Content Exclusions** | ✓ | ✓ |
 | **IP Indemnification** | ✓ | ✓ |
-| **Data Privacy** | No code retention | No code retention |
+| **Data Privacy** | Limited, documented retention (see [Compliance Considerations](#compliance-considerations)) | Same as Business |
 
 > **Note:** Copilot also offers Free, Pro, and Pro+ tiers for individual developers. Business and Enterprise are the managed, policy-governed tiers covered in this governance guide. Copilot IDE features (code completions, chat, agent mode) are available for GHES users who are licensed through a github.com enterprise account. Cloud-native features such as Copilot code review, cloud agent, and web chat require GitHub Enterprise Cloud.
 
@@ -200,7 +200,7 @@ For enterprise deployments following security-by-default principles, the followi
 | Policy | Security-by-Default Setting | Rationale | Reference |
 |--------|----------------------------|-----------|----------|
 | Suggestions matching public code | **Blocked** | Prevents suggestions identical to public code; reduces IP and licensing risks | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise) |
-| Prompt and suggestion collection | **Blocked** | Maintains data privacy; code is not retained | [GitHub Copilot Trust Center](https://copilot.github.trust.page/) |
+| Prompt and suggestion collection | **Blocked** | Maintains data privacy (retention caveats in [Compliance Considerations](#compliance-considerations)) | [GitHub Copilot Trust Center](https://copilot.github.trust.page/) |
 | User feedback collection | **Allowed** (Optional) | Helps improve Copilot; enable only if participating in product improvement | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise) |
 | Preview features | **Disabled** | Avoid preview features in production; enable only for evaluation | [Managing Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise) |
 
@@ -208,7 +208,8 @@ For enterprise deployments following security-by-default principles, the followi
 
 | Policy | Security-by-Default Setting | Rationale | Reference |
 |--------|----------------------------|-----------|----------|
-| Default model | **GPT-4o** or latest stable | Use stable, well-tested models | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
+| Base model | **GPT-5.3-Codex** (GitHub's base model for Business and Enterprise since 2026-05-17; long-term support until 2027-02-04) | Used when the organization hasn't approved other models; a 12-month LTS model gives internal model reviews a stable target | [Supported AI models](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/ai-models/supported-models) |
+| Default availability for released models | **Disabled** if every model must pass review (the policy ships **Enabled**) | Enforced 2026-08-26 to 2026-09-01: models you haven't configured show **Delegate to Default Policy** and follow this policy. Open-weight models and models outside GitHub's data retention agreement stay off either way | [Default availability of features and models](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/default-availability) |
 | Premium models | **No Policy** | Let organizations decide based on cost/benefit | [GitHub Copilot policies](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/policies) |
 
 ### Configuring Policies Step-by-Step
@@ -252,9 +253,9 @@ Organization policies are subject to enterprise-level constraints—settings enf
 For each policy, organization owners can select:
 - **Enabled**: Available to all organization members with Copilot licenses
 - **Disabled**: Blocked for all organization members
-- **Unconfigured**: Initial placeholder state (treated as disabled until configured)
+- **Unconfigured**: Not yet set. From 2026-10-22, eligible generally available features left **Unconfigured** follow the **Default policy for new features**, which ships **Enabled**, so they turn on unless someone acts. Unconfigured models already follow **Default availability for released models** (enforced 2026-08-26 to 2026-09-01, shown as **Delegate to Default Policy**). Preview features are not covered and stay opt-in. See [Default availability of features and models](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/enterprise/default-availability).
 
-**Best Practice**: Review and explicitly configure all policies rather than leaving them unconfigured. This ensures intentional governance rather than accidental restrictions.
+**Best Practice**: Review and explicitly configure all policies rather than leaving them unconfigured. From 2026-10-22, leaving a policy unconfigured is a decision to accept the default.
 
 ### Preview Features and Feedback
 
@@ -286,12 +287,11 @@ When content is excluded:
 - Inline suggestions are disabled for excluded files
 - Copilot Chat cannot reference excluded content
 
-**Important Limitations**: Content exclusions do not currently apply to:
-- GitHub Copilot CLI
-- Copilot coding agent
-- Agent mode in Copilot Chat
+**Where exclusions apply**: Since 2026-09-02, content exclusions are generally available in Copilot CLI and the GitHub Copilot app (Business and Enterprise). They also apply to Copilot code review on GitHub.com.
 
-> **⚠️ Security Warning**: Because content exclusions do not apply to Copilot coding agent and Agent mode, organizations with sensitive codebases should carefully evaluate enabling these features. Consider disabling them at the enterprise level if content exclusion is critical for compliance.
+**Important Limitations**: Content exclusions are not supported in the **Edit** and **Agent** modes of Copilot Chat in VS Code and other editors, and the docs' availability table does not list Copilot cloud agent. See [Content exclusion for GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/security-governance-and-network-settings/content-exclusion).
+
+> **⚠️ Security Warning**: Because content exclusions don't cover agent mode, and the docs don't list Copilot cloud agent, organizations with sensitive codebases should evaluate those features carefully. Consider disabling them at the enterprise level if content exclusion is critical for compliance.
 
 ### Repository-Level Exclusions
 
@@ -775,7 +775,7 @@ Copilot cloud agent (formerly "Copilot coding agent") is an autonomous AI capabi
 
 Cloud agent can be triggered via GitHub Issues (assign to `@copilot`), the agents panel on GitHub.com, Copilot Chat, GitHub CLI, or integrated tools (Slack, Teams, Jira, Linear, Azure Boards). Organizations can also create **custom agents** — specialized Copilot instances tailored for specific task types (e.g., frontend, documentation, testing).
 
-> **⚠️ Security Consideration**: Copilot cloud agent operates with repository permissions and can create commits, branches, and pull requests. It uses GitHub Actions minutes and Copilot premium requests from monthly allowances. Organizations should carefully evaluate the security implications before enabling.
+> **⚠️ Security Consideration**: Copilot cloud agent operates with repository permissions and can create commits, branches, and pull requests. It consumes GitHub Actions minutes and GitHub AI Credits (Copilot's billing unit since 2026-06-01). Organizations should carefully evaluate the security implications before enabling.
 
 ### Cloud Agent Security Controls
 
@@ -809,7 +809,7 @@ Keep cloud agent disabled when:
 The **Model Context Protocol (MCP)** is the primary extensibility mechanism for Copilot, replacing the earlier "Copilot Extensions" concept. MCP defines how applications share context with LLMs and works across all Copilot surfaces (IDEs, CLI, GitHub.com, cloud agent).
 
 **Key MCP governance controls:**
-- **Enterprise policy:** "MCP servers in Copilot" toggle (AI Controls → MCP) — disabled by default for Business/Enterprise
+- **Enterprise policy:** "MCP servers in Copilot" (AI Controls → MCP). From 2026-10-22, if it is left Unconfigured it follows the **Default policy for new features**, which ships **Enabled**. Set it explicitly if MCP servers need a security review first
 - **Visual Studio admin:** MCP server allowlist — only approved servers can connect
 - **GitHub MCP Server:** Official server that automates code-related tasks and connects third-party tools
 - **GitHub MCP Registry** (public preview): Curated list of partner and community MCP servers at github.com/mcp
@@ -836,9 +836,11 @@ GitHub Enterprise Cloud provides comprehensive audit logging for Copilot activit
 
 ### Compliance Considerations
 
-**Data Privacy**:
-- Copilot Business and Enterprise do not retain prompts or suggestions
-- Code snippets are processed in real-time and discarded
+**Data Privacy**: retention is limited, not zero. Confirm the current schedule in the [GitHub Copilot Trust Center](https://copilot.github.trust.page/). Retention changes to know:
+- Since 2026-07-01, image and PDF attachments (Copilot vision) are retained for about 24 hours
+- Since 2026-07-02 (public preview, Enterprise Managed Users only), enterprise owners can export agent session data (prompts, responses and tool calls) through audit log streaming or the Copilot usage records API
+- Claude Fable 5 and Claude Fable 5.1 require Anthropic data retention by default; eligible enterprises can use zero data retention under a time-bound exemption through the end of 2026
+- When the unified Copilot experience on GitHub.com launches (announced for no earlier than 2026-09-28), chat data is retained for the life of the account instead of 28 days
 - Telemetry can be disabled through privacy policies
 
 **IP Indemnification**:

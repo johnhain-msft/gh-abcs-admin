@@ -312,7 +312,7 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "Common patterns to exclude: `.env` files — these often contain secrets and connection strings. `secrets/**` — any directory called secrets. `*.pem` and `*.key` — certificate and key files. `terraform.tfvars` — Terraform variable files that often contain sensitive infrastructure configuration."
 
-"Two important operational details. First, exclusions take **up to 30 minutes to propagate** to IDE clients. If you add an exclusion, developers won't see the effect immediately. Second — and this is critical — **content exclusions do NOT apply to Copilot CLI, the coding agent, agent mode, or Edit mode**. This is a known gap. If a developer uses Copilot in the terminal or through the coding agent, the exclusion patterns are not enforced. Make sure your security team understands this limitation — if exclusion compliance is critical, disable those features separately."
+"Two important operational details. First, exclusions take **up to 30 minutes to propagate** to IDE clients. If you add an exclusion, developers won't see the effect immediately. Second — and this is critical — coverage is uneven. Since 2026-09-02, exclusions are enforced in **Copilot CLI and the Copilot app**, and they also apply to Copilot code review. But they are **not supported in agent mode or Edit mode** in the IDE, and the docs don't list the cloud agent at all. Make sure your security team understands this limitation — if exclusion compliance is critical, disable those features separately."
 
 "Enterprise-level exclusions apply to ALL users across all organizations. They cannot be overridden at the org level. This is your strongest governance tool for keeping sensitive files out of AI context."
 
@@ -368,7 +368,7 @@ You will also have **Day 1 Supplement slides** (`slides-day1-supplement.html`) o
 
 "You define glob patterns to prevent Copilot from accessing specific files. Let me add a few common patterns: `**/*.env` — this blocks all `.env` files in any directory. `**/secrets/**` — this blocks anything in a secrets directory. `**/config/production/**` — this blocks production configuration files."
 
-"Remember what I said earlier: these exclusions take up to 30 minutes to propagate to IDE clients, and they do NOT apply to Copilot CLI, the coding agent, or agent mode. That's a critical limitation."
+"Remember what I said earlier: these exclusions take up to 30 minutes to propagate to IDE clients. Since 2026-09-02 they cover Copilot CLI and the Copilot app, but not agent mode or Edit mode in the IDE, and the docs don't list the cloud agent. That's a critical limitation."
 
 > **🖥️ DEMO STEP 3: Seat Assignment**
 > Navigate to: **Copilot > Access**

@@ -337,7 +337,7 @@ graph TD
 ```
 
 Organizations enable private vulnerability reporting through repository settings, allowing external researchers to:
-1. Click "Report a vulnerability" in Security tab
+1. Click "Report a vulnerability" in the Security & quality tab
 2. Provide vulnerability details through guided form
 3. Repository maintainers receive notification
 4. Discussion occurs in private draft advisory space
@@ -1046,13 +1046,13 @@ Review the output for:
 
 #### Budget Alerts and Spending Governance
 
-> **Critical distinction**: GHAS budget alerts are **notification-only** — they send email alerts at default thresholds of 75%, 90%, and 100% of the configured budget but **do not block usage**. These thresholds can be customized when creating budgets via the API. Unlike metered products (Actions, Codespaces, Packages), GHAS licensing cannot be capped by a platform-enforced spending limit. Actual cost control requires procedural governance (approval workflows, periodic audits, and enablement policies).
+> **Critical distinction**: Since 2026-05-28, GHAS budgets can be **hard limits in license count**. On an Advanced Security SKU-level budget, enable the option to stop (or limit) usage when the budget limit is reached: once the limit is hit, GHAS can't be enabled on additional repositories until the budget is raised or a new billing cycle starts. Repositories that already have GHAS keep working, and new active committers there are still billed, so spend can exceed the budget. Budgets without that option only notify, with email alerts at 75%, 90% and 100% of the budget. Existing soft budgets can be migrated to the license-based format in-product, and the budget floor is set to at least your current billable license count. Procedural governance (approval workflows, periodic audits, enablement policies) still decides which teams get licenses first.
 
-Set budget alerts to provide early warning:
+Set a GHAS budget before rollout:
 
-1. Navigate to **Enterprise Settings → Billing → Budgets**
-2. Create a budget scoped to GitHub Advanced Security
-3. Set the monthly threshold to your planned spend
+1. Navigate to your enterprise → **Billing & Licensing** → **Budgets and alerts**
+2. Click **New budget** and choose an Advanced Security **SKU-level budget** (for example, GitHub Secret Protection)
+3. Set the license count to your planned seats, and decide whether to stop usage at the limit
 4. Configure notification recipients (billing admins, security leads, finance contacts)
 5. Establish escalation procedures for when alerts fire
 

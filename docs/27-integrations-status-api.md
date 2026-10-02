@@ -40,7 +40,7 @@ flowchart TB
     subgraph "GitHub Pull Request"
         StatusIcon["Status Icons<br/>(Conversation View)"]
         ChecksTab["Checks Tab<br/>(Rich Output)"]
-        SecurityTab["Security Tab<br/>(Code Scanning Alerts)"]
+        SecurityTab["Security & quality tab<br/>(Code Scanning Alerts)"]
         DeployEnv["Environments<br/>(Deployment Tracking)"]
     end
 
@@ -368,9 +368,9 @@ gh api repos/OWNER/REPO/commits/main/check-runs \
 
 **Retention:**
 
-- GitHub retains checks data for **400 days**
-- After 400 + 10 days (archival period), data is permanently deleted
-- Required checks that are archived must be **re-run** before merging
+- From 2026-10-01, checks, workflow runs and statuses follow the **Check, workflow run, status, artifact and log retention** setting (90 days by default; at most 90 days for public repositories). Before 2026-10-01 they were kept for 400+ days regardless of that setting
+- This covers checks and statuses created by GitHub Actions and by third-party apps. Repository retention can't exceed the organization and enterprise caps, and raising the setting doesn't restore data already removed
+- Required checks whose results have been removed by retention must be **re-run** before merging
 
 ## Required Status Checks
 

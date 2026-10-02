@@ -23,13 +23,13 @@ GitHub Apps are the officially recommended way to integrate with GitHub. The doc
 |---------|------------|------------|
 | **Permission Model** | Fine-grained permissions (repository, organization, account levels) | Coarse OAuth scopes (e.g., `repo` grants full access) |
 | **Repository Access** | User chooses specific repositories during installation | Access to all repos user can see |
-| **Authentication** | Installation access tokens (1-hour expiry) + user access tokens | Long-lived OAuth tokens (until revoked) |
+| **Authentication** | Installation access tokens (1-hour expiry) + user access tokens | OAuth tokens stay long-lived unless the app uses expiring tokens (since 2026-08-14: 8-hour access token plus a refresh token valid for 6 months without use; on by default for new OAuth apps) |
 | **Acting As** | Can act independently (bot) OR on behalf of user | Always acts on behalf of a user |
 | **Webhooks** | Built-in, centralized webhook for all repos in installation | Must configure per-repository or per-organization |
 | **Rate Limits** | Scale with number of repos + org users | Fixed 5,000 requests/hour per user |
 | **Enterprise Seats** | App bots do NOT consume a GHEC seat | Machine user accounts DO consume a seat |
 | **Org Policy Scope** | NOT subject to organization OAuth app access restrictions | Subject to OAuth app access restrictions |
-| **Enterprise-Level Access** | Cannot yet access the enterprise object itself | Can access enterprise-level resources |
+| **Enterprise-Level Access** | Can be installed on the enterprise account with enterprise permissions (third-party apps since 2026-08-07; public preview, partial API coverage) | Can access enterprise-level resources through the authorizing user's token |
 
 ### Decision Matrix
 
@@ -39,23 +39,24 @@ Use this matrix to determine which app type fits your integration needs:
 |----------|-----------------|-----------|
 | CI/CD pipeline integration | GitHub App | Fine-grained repo access, no seat cost |
 | Code quality scanning tool | GitHub App | Needs only specific repo permissions |
-| Enterprise-wide reporting dashboard | OAuth App | Needs enterprise-level API access |
+| Enterprise-wide reporting dashboard | GitHub App (enterprise installation) | Enterprise permissions without a person's token; check API coverage first |
 | Bot for automated PR reviews | GitHub App | Acts independently, centralized webhooks |
 | Internal developer tool | GitHub App | Short-lived tokens, scoped access |
-| Enterprise billing management | OAuth App | Requires enterprise object access |
+| Enterprise billing management | GitHub App (enterprise installation) | Enterprise billing permission (since 2026-08-26) covers usage, budgets and cost centers |
 | Issue triaging automation | GitHub App | Repository-scoped, event-driven |
 | Cross-org analytics | GitHub App | Can access org resources without seats |
 
 ### When OAuth Apps Are Still Required
 
-GitHub Apps cannot yet be given permissions against the enterprise object itself. If an integration needs to access enterprise-level resources such as:
+Since 2026-08-07, enterprise owners can install GitHub Apps, including public third-party apps, on the enterprise account itself. An enterprise installation receives only the enterprise permissions the app requests. It gets no access to the enterprise's organizations or repositories (install the app on those separately) and receives no webhooks. Enterprise-installed apps are in public preview, and not every enterprise API supports them yet. The docs list these supported operations:
 
-- Enterprise billing information
-- Enterprise audit log (enterprise-level endpoint)
-- Enterprise member management across all organizations
-- Enterprise settings and policies
+- Creating and listing organizations, managing enterprise users, and calling the enterprise SCIM APIs
+- Creating and managing GitHub App installations in the enterprise's organizations
+- Managing enterprise custom repository properties
+- Enterprise billing: usage reports, budgets and cost centers (enterprise billing permission, since 2026-08-26)
+- Authorizing personal access tokens (classic) and SSH keys for SSO in selected organizations
 
-Then an OAuth App (or a personal access token with appropriate scopes) is still required. GitHub Apps can access enterprise-owned organization and repository resources, but not the enterprise object directly.
+An OAuth App (or a personal access token with appropriate scopes) is still required for enterprise APIs that don't support GitHub Apps yet; for example, the docs list doesn't include the enterprise audit log API. Check [Permissions required for GitHub Apps](https://docs.github.com/en/enterprise-cloud@latest/rest/authentication/permissions-required-for-github-apps) and [Installing a GitHub App on your enterprise](https://docs.github.com/en/enterprise-cloud@latest/apps/using-github-apps/installing-a-github-app-on-your-enterprise) before you choose.
 
 ### Security Advantages of GitHub Apps
 
@@ -625,7 +626,7 @@ Enterprise administrators control MCP availability through the **"MCP servers in
 
 **Key policy details:**
 
-- **Disabled by default** — admins must explicitly enable MCP
+- **Default state:** until 2026-10-22 the policy stays off unless an admin enables it. From 2026-10-22, if it is left Unconfigured, it follows the enterprise's **Default policy for new features**, which ships **Enabled**, so set it explicitly
 - Available at both enterprise and organization levels
 - Only applies to **Copilot Business** and **Copilot Enterprise** subscriptions
 - Does NOT govern Copilot Free, Pro, or Pro+ users

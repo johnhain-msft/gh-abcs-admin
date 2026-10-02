@@ -88,7 +88,9 @@ In this section you will intentionally trigger a push protection block to unders
    git branch -D test/secret-push-protection
    git push origin --delete test/secret-push-protection
    ```
-10. If you bypassed the push, navigate to the **Security** tab → **Secret scanning** in your repository and dismiss or close the resulting alert
+10. If you bypassed the push, open the **Security & quality** tab → **Secret scanning** in your repository and dismiss or close the resulting alert
+
+> **Note:** On github.com the repository, organization and enterprise **Security** tab was renamed **Security & quality** on 2026-04-02. URLs and APIs are unchanged, so older screenshots and bookmarks still work.
 
 ## 7.3 Enable code scanning with CodeQL
 
@@ -110,7 +112,7 @@ Code scanning with CodeQL is part of **GitHub Code Security** ($30/active commit
 
 > **Default vs. Advanced setup:** Default setup is the recommended starting point — it requires zero configuration and automatically updates when GitHub improves its query suites. Advanced setup generates a CodeQL workflow YAML file in your repository, giving you full control over languages, query suites, build commands, and schedule triggers. Use advanced setup when you need to analyze compiled languages with custom build steps, add third-party query packs, or integrate with monorepo configurations.
 
-7. Once the scan completes, go to the **Security** tab → **Code scanning alerts**
+7. Once the scan completes, go to the **Security & quality** tab → **Code scanning alerts**
 8. Review any alerts that were found:
    - Each alert shows the vulnerability type (CWE), severity, file location, and a description of the issue
    - Click into an alert to see the data-flow path from source to sink
@@ -121,7 +123,7 @@ Code scanning with CodeQL is part of **GitHub Code Security** ($30/active commit
 
 Dependabot alerts notify you when your repository depends on a package with a known security vulnerability. The dependency graph (enabled by default) powers this feature.
 
-1. Navigate to the **Security** tab → **Dependabot alerts**
+1. Navigate to the **Security & quality** tab → **Dependabot alerts**
 2. Review the list of alerts — each entry shows:
    - The affected package name and ecosystem (npm, pip, Maven, etc.)
    - The vulnerable version range and the patched version (if available)
@@ -136,7 +138,7 @@ Dependabot alerts notify you when your repository depends on a package with a kn
    - **Dependabot version updates** — automatically open PRs to keep dependencies up to date based on a schedule you define in `.github/dependabot.yml`; these are proactive, not reactive to vulnerabilities
 5. _(Optional)_ Navigate to **Insights** → **Dependency graph** to see the full dependency tree for your repository — this is the data source that powers Dependabot alerts
 
-> **Governance perspective:** For organizations with hundreds of repositories, use the **Security overview** dashboard (**Organization** → **Security** tab) to see aggregated Dependabot alert counts, mean time to remediate (MTTR), and trends across all repositories. This is essential for compliance reporting and executive visibility.
+> **Governance perspective:** For organizations with hundreds of repositories, use the **Security overview** dashboard (**Organization** → **Security & quality** tab) to see aggregated Dependabot alert counts, mean time to remediate (MTTR), and trends across all repositories. This is essential for compliance reporting and executive visibility.
 
 ## 7.5 Configure security auto-triage rules _(if time permits)_
 
@@ -177,15 +179,15 @@ Use this checklist to confirm that all security features are properly configured
 
 2. **Push protection is working:**
    - Confirm that you successfully triggered (and resolved) a push protection block in section 7.2
-   - If you bypassed a secret, confirm the resulting alert is visible under **Security** → **Secret scanning**
+   - If you bypassed a secret, confirm the resulting alert is visible under **Security & quality** → **Secret scanning**
 
 3. **Code scanning is configured:**
-   - Navigate to the **Security** tab → **Code scanning alerts**
+   - Navigate to the **Security & quality** tab → **Code scanning alerts**
    - Confirm that at least one CodeQL analysis has completed (check the **Actions** tab for the CodeQL workflow run)
    - If alerts were found, confirm you can view alert details and see Copilot Autofix suggestions where available
 
 4. **Dependabot alerts are accessible:**
-   - Navigate to the **Security** tab → **Dependabot alerts**
+   - Navigate to the **Security & quality** tab → **Dependabot alerts**
    - Confirm the dependency graph is enabled (**Settings** → **Advanced Security** → **Dependency graph**)
    - Review at least one alert detail (or confirm the alert list loads if no vulnerable dependencies exist)
 
@@ -195,7 +197,7 @@ Use this checklist to confirm that all security features are properly configured
    - Verify the rule criteria match your intended policy
 
 6. **Organization-level review** _(if you have org admin access)_:
-   - Navigate to your **Organization** → **Security** tab → **Security overview**
+   - Navigate to your **Organization** → **Security & quality** tab → **Security overview**
    - Confirm you can see the aggregated security posture across repositories
    - Review the coverage tab to identify repositories that do not yet have security features enabled
 

@@ -84,15 +84,15 @@ References:
    | Characteristic | GitHub App | OAuth App |
    |---|---|---|
    | **Permission model** | Fine-grained, per-resource permissions (e.g., Issues: read-only, Contents: read-write) | Coarse OAuth scopes (e.g., `repo`, `admin:org`) |
-   | **Token lifetime** | Short-lived installation tokens (1-hour expiry), automatically rotated | Long-lived tokens valid until the user revokes them |
+   | **Token lifetime** | Short-lived installation tokens (1-hour expiry), automatically rotated | Long-lived unless the app uses expiring tokens (since 2026-08-14: 8-hour access token plus refresh token; on by default for new OAuth apps) |
    | **Seat consumption** | Does **not** consume a GHEC seat (acts as a bot identity) | Machine-user accounts **do** consume a GHEC seat |
    | **Rate limits** | Scales with the number of repositories and organization members (up to 12,500 requests/hour) | Fixed at 5,000 requests per hour per authenticated user |
    | **Acting identity** | Can act as itself (bot) or on behalf of a user (user-to-server tokens) | Always acts on behalf of the authorizing user |
    | **Webhook delivery** | Receives events at a single, centrally configured endpoint | Relies on OAuth authorization flow; no built-in webhook |
-   | **Enterprise API access** | Cannot yet access the enterprise-level API object directly | Required for enterprise-level API access (e.g., `admin:enterprise` scope) |
+   | **Enterprise API access** | Can be installed on the enterprise with enterprise permissions (public preview; not every enterprise API supports apps yet) | Still needed for enterprise APIs that don't support GitHub Apps (e.g., `admin:enterprise` scope) |
 
 3. Discuss the key decision question: **"When would you still need an OAuth App instead of a GitHub App?"**
-   - The primary remaining use case is **enterprise-level API access**. GitHub Apps currently cannot interact with the enterprise object itself (e.g., managing enterprise members, querying enterprise audit logs). For these operations, an OAuth App or personal access token with the `admin:enterprise` scope is still required.
+   - Since 2026-08-07, GitHub Apps (including third-party apps) can be installed on the enterprise account with enterprise permissions, so enterprise access is no longer an automatic reason to pick an OAuth App. The remaining use case is an enterprise API that doesn't support GitHub Apps yet (enterprise installations are in public preview). Check [Permissions required for GitHub Apps](https://docs.github.com/en/enterprise-cloud@latest/rest/authentication/permissions-required-for-github-apps) first; if the endpoint isn't covered, an OAuth App or a personal access token with the `admin:enterprise` scope is still required.
 4. Discuss the migration path from OAuth Apps to GitHub Apps:
    - Identify existing OAuth App integrations and their scope usage.
    - Map OAuth scopes to the equivalent fine-grained GitHub App permissions.

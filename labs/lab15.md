@@ -40,7 +40,7 @@ References:
 1. Navigate to `https://github.com/enterprises/YOUR-ENTERPRISE` → **Policies**.
 2. The AI controls are organized into three sidebar sections: **Agents**, **Copilot**, and **MCP**.
 3. Enterprise-level policies cascade down to all organizations in the enterprise — an organization cannot enable a capability that the enterprise has disabled.
-4. If the enterprise policy is set to **Unconfigured**, affected org policies default to **Disabled** — this prevents accidental over-permissiveness.
+4. An enterprise policy left **Unconfigured** is not simply **Disabled**. From 2026-10-22, eligible generally available features left Unconfigured follow the enterprise's **Default policy for new features**, which ships **Enabled**. Unconfigured models already follow **Default availability for released models** (shown as **Delegate to Default Policy**). Set every policy you care about explicitly.
 
 </details>
 

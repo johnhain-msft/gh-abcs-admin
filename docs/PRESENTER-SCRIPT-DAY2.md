@@ -529,7 +529,7 @@
 "Let's also look at Dependabot alerts. These are free on all repos. Each alert links to the CVE advisory, shows which dependency is affected, and in many cases Dependabot has already opened a pull request with the fix."
 
 > **🖥️ DEMO STEP 7: Security Overview dashboard**
-> Navigate to: **Organization → Security tab → Overview**, show Risk, Coverage, and Campaigns tabs
+> Navigate to: **Organization → Security & quality tab → Overview**, show Risk, Coverage, and Campaigns tabs
 
 "Finally, let's look at the big picture. At the org level, the Security Overview dashboard gives you the full view. The Risk tab shows which repos have the most critical alerts. The Coverage tab shows which repos have security features enabled — this is where you find gaps. And the Campaigns tab is for coordinated remediation across teams."
 
@@ -606,7 +606,7 @@
 
 "GitHub lets you set **spending limits independently** for each product. You can also set alert-only budgets so you get notified when spending approaches a threshold."
 
-"One thing to be aware of: GHAS is license-based, not metered, so 'stop usage at limit' doesn't apply the same way it does for Actions minutes or Packages storage. Budget alerts are your main control lever."
+"One thing to be aware of: GHAS is license-based, not metered. Since 2026-05-28 you can still give it a **hard budget in license count**: when the limit is reached, GHAS can't be turned on for more repositories until you raise the budget or the next billing cycle starts. It isn't switched off where it's already running, and new committers there still count, so you can still go over. The 75, 90 and 100 percent alerts still fire alongside the hard limit."
 
 > **🖥️ ADVANCE to Day 2 Supplement — Slide 23: Cost Optimization Checklist**
 

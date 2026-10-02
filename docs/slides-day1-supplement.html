@@ -211,7 +211,7 @@ aside.notes { display: none; }
     <tr><td><strong>Business</strong></td><td><strong>$19/user/mo</strong></td><td>Organizations</td><td>Org policies, content exclusions, IP indemnification</td></tr>
     <tr><td><strong>Enterprise</strong></td><td><strong>$39/user/mo</strong></td><td>Large enterprises</td><td>Enterprise policies, audit logs, BYOLLM keys</td></tr>
   </table>
-  <div class="callout info">Both Business &amp; Enterprise include: no code retention, IP indemnification, code review, cloud agent, agent mode, Copilot Spaces, and MCP server policy.</div>
+  <div class="callout info">Both Business &amp; Enterprise include: IP indemnification, code review, cloud agent, agent mode, Copilot Spaces, and MCP server policy.</div>
   <aside class="notes">Business vs Enterprise: Enterprise adds enterprise-wide policy enforcement, enterprise-level audit logs, bring-your-own LLM API keys, and enterprise-wide custom instructions. Both offer unlimited completions, chat, code review, cloud agent, agent mode, and MCP servers. Copilot IDE features work for GHES users licensed via github.com; cloud-native features (code review, cloud agent) require GHEC.</aside>
 </section>
 
@@ -240,7 +240,7 @@ aside.notes { display: none; }
     </div>
   </div>
   <div class="callout warning">⚠️ Security-by-default: Block public code matching, disable cloud agent &amp; MCP servers until reviewed. Delegate agent mode to org owners.</div>
-  <aside class="notes">Each policy has 3 states at org level: Enabled, Disabled, Unconfigured. Unconfigured = disabled until explicitly set. Best practice: explicitly configure ALL policies rather than leaving them unconfigured. Privacy policies: block prompt/suggestion collection to maintain data privacy (code is not retained). Preview features should be disabled in production.</aside>
+  <aside class="notes">Each policy has 3 states at org level: Enabled, Disabled, Unconfigured. Unconfigured is not "off": from 2026-10-22, unconfigured GA features follow the enterprise "Default policy for new features", which ships Enabled, and unconfigured models already follow the default model policy. Best practice: explicitly configure ALL policies rather than leaving them unconfigured. Privacy policies: block prompt/suggestion collection to maintain data privacy (retention is limited, not zero; see docs/12). Preview features should be disabled in production.</aside>
 </section>
 
 <!-- Slide 5: Content Exclusions -->
@@ -271,10 +271,10 @@ aside.notes { display: none; }
         <li>Enterprise exclusions apply to <em>all</em> users regardless of licensing org</li>
         <li>Org exclusions apply only to users licensed through that org</li>
       </ul>
-      <div class="callout warning">⚠️ Exclusions do <strong>NOT</strong> apply to: Copilot CLI, coding agent, or agent mode. Disable those features if exclusion is critical for compliance.</div>
+      <div class="callout warning">⚠️ Since 2026-09-02 exclusions cover Copilot CLI and the Copilot app, but <strong>NOT</strong> agent or Edit mode (cloud agent isn't listed). Disable those if exclusion is critical.</div>
     </div>
   </div>
-  <aside class="notes">After configuring exclusions, wait ~30 min or reload the IDE. To test: open an excluded file — no inline suggestions should appear, and Copilot Chat should not be able to use the file content. Enterprise-level exclusions are the strongest: they apply to ALL Copilot users in the enterprise. The gap with CLI/agent mode/coding agent is a critical security consideration — call it out explicitly.</aside>
+  <aside class="notes">After configuring exclusions, wait ~30 min or reload the IDE. To test: open an excluded file — no inline suggestions should appear, and Copilot Chat should not be able to use the file content. Enterprise-level exclusions are the strongest: they apply to ALL Copilot users in the enterprise. The gap with agent mode, Edit mode and the cloud agent is a critical security consideration — call it out explicitly. Copilot CLI and the Copilot app have respected exclusions since 2026-09-02 (GA).</aside>
 </section>
 
 <!-- Slide 6: Seat Management -->
@@ -510,9 +510,9 @@ aside.notes { display: none; }
     <li><strong>Default bucket</strong> — unassigned resources accumulate in the enterprise default cost center</li>
   </ul>
   <div class="callout info">
-    <strong>Key limits:</strong> Up to <strong>250 cost centers</strong> per enterprise, each supporting up to <strong>25,000 resources</strong>.
+    <strong>Key limits:</strong> Up to <strong>1,000 cost centers</strong> per enterprise (since 2026-06-26), each supporting up to <strong>25,000 resources</strong>.
   </div>
-  <aside class="notes">Cost centers solve a fundamental enterprise problem: who pays for what? Without them, all GitHub spending lands on a single invoice with no departmental attribution. Finance teams need this for internal chargeback, budget accountability, and spend forecasting. The 250/25K limits are generous — most enterprises use 10–50 cost centers. Any resource not explicitly assigned goes to the default cost center, so always assign resources proactively.</aside>
+  <aside class="notes">Cost centers solve a fundamental enterprise problem: who pays for what? Without them, all GitHub spending lands on a single invoice with no departmental attribution. Finance teams need this for internal chargeback, budget accountability, and spend forecasting. The 1,000/25K limits are generous — most enterprises use 10–50 cost centers. Any resource not explicitly assigned goes to the default cost center, so always assign resources proactively.</aside>
 </section>
 
 <!-- Slide 16: Cost Center Design Patterns -->
@@ -553,11 +553,11 @@ aside.notes { display: none; }
     <tr><td>Codespaces</td><td>Usage-based</td><td>Repo/org where codespace is created</td></tr>
     <tr><td>Secret Protection (GHAS)</td><td>License-based</td><td>User's assigned cost center</td></tr>
     <tr><td>Code Security (GHAS)</td><td>License-based</td><td>User's assigned cost center</td></tr>
-    <tr><td>Copilot Premium Requests</td><td>Usage-based</td><td>User's assigned cost center*</td></tr>
+    <tr><td>Copilot AI Credits</td><td>Usage-based</td><td>User's assigned cost center*</td></tr>
   </table>
-  <p style="font-size:0.85rem; color:#8b949e; margin-top:0.5rem;">* Copilot Premium Requests are user-level consumption (premium models, agent mode) billed to the user's cost center, unlike other usage-based products which are attributed to the repo/org where the work runs.</p>
+  <p style="font-size:0.85rem; color:#8b949e; margin-top:0.5rem;">* Since 2026-06-01 Copilot bills in GitHub AI Credits, charged to the user's cost center (or the org that granted the license), unlike usage-based products, which follow the repo/org where the work runs.</p>
   <div class="callout warning">⚠️ Understanding allocation rules is critical — misattribution is the #1 source of chargeback disputes.</div>
-  <aside class="notes">This is the key slide. License-based costs follow the user — whoever the seat is assigned to, their cost center gets charged. This includes GHAS (Secret Protection and Code Security), which are license-based products allocated per user, the same way Copilot and GHEC seats work — each active committer is billed to one cost center based on their user assignment. Usage-based costs follow the resource — the org or repo where the compute happens determines the cost center. The exception is Copilot Premium Requests, which are usage-based but tied to the individual user's cost center since they represent per-user consumption. Walk through a concrete example: "Dev in Engineering cost center runs Actions in a Marketing repo — Actions cost goes to Marketing, Copilot seat and GHAS license costs stay with Engineering."</aside>
+  <aside class="notes">This is the key slide. License-based costs follow the user — whoever the seat is assigned to, their cost center gets charged. This includes GHAS (Secret Protection and Code Security), which are license-based products allocated per user, the same way Copilot and GHEC seats work — each active committer is billed to one cost center based on their user assignment. Usage-based costs follow the resource — the org or repo where the compute happens determines the cost center. The exception is Copilot AI Credits (the billing unit since 2026-06-01), which are usage-based but tied to the individual user's cost center since they represent per-user consumption. Walk through a concrete example: "Dev in Engineering cost center runs Actions in a Marketing repo — Actions cost goes to Marketing, Copilot seat and GHAS license costs stay with Engineering."</aside>
 </section>
 
 <!-- Slide 18: Tracking Copilot & GHAS Costs -->
@@ -569,9 +569,9 @@ aside.notes { display: none; }
       <h3>Copilot Tracking</h3>
       <ul>
         <li>Seat count per cost center in billing dashboard</li>
-        <li>Premium request consumption per cost center</li>
+        <li>AI Credits consumption per cost center</li>
         <li>Usage metrics: completions, chat, agent mode</li>
-        <li>Set <strong>budget alerts</strong> on premium request spend</li>
+        <li>Set <strong>AI Credits budgets</strong> per cost center or per user</li>
       </ul>
       <h3>GHAS Tracking</h3>
       <ul>
@@ -585,7 +585,7 @@ aside.notes { display: none; }
       <table>
         <tr><th>Type</th><th>Behavior</th></tr>
         <tr><td>Alert-only</td><td>Notify at threshold; usage continues</td></tr>
-        <tr><td>Stop-usage</td><td>Block further usage at threshold <em>(metered products only — not GHAS)</em></td></tr>
+        <tr><td>Stop-usage</td><td>Block further usage at threshold <em>(GHAS: blocks new enablement, since 2026-05-28)</em></td></tr>
       </table>
       <div class="callout warning">⚠️ Set budgets <strong>before</strong> rollout — retroactive budget enforcement does not refund overages.</div>
       <h3>Setup Order</h3>
@@ -597,7 +597,7 @@ aside.notes { display: none; }
       </ul>
     </div>
   </div>
-  <aside class="notes">Emphasize the setup order — budgets should be configured BEFORE enabling Copilot or GHAS, not after. Alert-only budgets are good for visibility. Stop-usage budgets enforce hard caps but ONLY for metered products (Actions, Packages, Codespaces). GHAS and Copilot seat licenses are alert-only — stop-usage does not apply to license-based products. Start with alert-only at 80% of expected spend. Budget alerts apply at enterprise or cost center scope.</aside>
+  <aside class="notes">Emphasize the setup order — budgets should be configured BEFORE enabling Copilot or GHAS, not after. Alert-only budgets are good for visibility. Stop-usage budgets enforce hard caps on metered products (Actions, Packages, Codespaces) and on Copilot AI Credits. Since 2026-05-28 GHAS budgets can also be hard limits in license count: at the limit GHAS can't be enabled on more repositories, but it stays on (and keeps billing new committers) where it's already enabled. Start with alert-only at 80% of expected spend. Budget alerts apply at enterprise or cost center scope.</aside>
 </section>
 
 <!-- Slide 19: Azure Billing Integration -->

@@ -14,7 +14,7 @@ Quick-reference guide for GitHub Enterprise Cloud administrators. Keep this card
 | GitHub Status | `https://www.githubstatus.com/` |
 | GitHub Changelog | `https://github.blog/changelog/` |
 | GitHub Advisory Database | `https://github.com/advisories` |
-| GitHub Support | `https://support.github.com/` |
+| GitHub Support | `https://help.github.com/` (from 2026-09-08; `support.github.com` until your account moves) |
 
 ### Security
 
