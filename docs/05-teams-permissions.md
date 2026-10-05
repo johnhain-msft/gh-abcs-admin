@@ -56,6 +56,10 @@ Secret Team:
   - Child Teams: Must be secret
 ```
 
+### Enterprise Teams
+
+Everything above describes **organization teams**. Since 2026-06-04, enterprise owners can also create **enterprise teams**: defined once at the enterprise account (slug prefix `ent:`), assigned to many organizations, and usable for organization access, enterprise roles, Copilot Business licenses, cost centers, ruleset bypass and review requests. With Enterprise Managed Users, an IdP group can drive their membership through SCIM. Enterprise teams don't support nesting, secret visibility, team maintainers or CODEOWNERS, so keep organization teams for those. Since 2026-08-03, enterprise teams can also receive their own values for overridable Copilot enterprise managed settings. See [28-enterprise-teams.md](28-enterprise-teams.md) and [Lab 16](../labs/lab16.md).
+
 ## Nested Teams and Hierarchy
 
 Nested teams enable sophisticated organizational structures that mirror company hierarchies while providing powerful permission inheritance mechanisms.
@@ -189,6 +193,8 @@ Parent: Secret Team
 ## Team Synchronization with Identity Provider
 
 Team sync enables automatic team membership management through IdP groups, ensuring consistency between corporate identity systems and GitHub access.
+
+> **Note:** This section covers organization teams. Enterprise teams can also take their membership from an IdP group, but only with Enterprise Managed Users; see [Membership and Identity Provider Sync](28-enterprise-teams.md#membership-and-identity-provider-sync).
 
 ### Team Sync Architecture
 
@@ -333,6 +339,7 @@ graph TD
 - Dismiss pull request reviews
 - Lock conversations
 - Hide duplicate comments
+- Create issues in repositories whose Issues setting is **Collaborators only** (since 2026-08-03; before that, only users with write access could)
 
 **Write Permission:**
 - All Triage permissions
@@ -380,7 +387,7 @@ graph TD
 - Limit interactions for users
 - Hide comments organization-wide
 - Lock conversations
-- Manage organization interaction limits
+- Manage organization interaction limits, including (since 2026-08-06) a pull request limit: the maximum number of open, non-draft pull requests a user without write access can have in each public repository of the organization
 
 **Billing Manager:**
 - View billing information
@@ -932,6 +939,8 @@ Code Owner Review Behavior:
   - Code Owner review replaces generic review requirement
   - Multiple owners = multiple approvals needed (if specified)
 ```
+
+> **Note:** Since 2026-07-07, repository rulesets offer the same dismissal control as **Restrict dismissals** above: in the **Require a pull request before merging** rule, select **Restrict who can dismiss reviews** and choose the users, teams or GitHub Apps that can dismiss reviews. It can be set in the UI, the REST API or GraphQL. GitHub recommends rulesets for protecting branches.
 
 **Example Enforcement:**
 
@@ -1546,6 +1555,7 @@ curl https://api.github.com/scim/v2/organizations/ORG/Users \
 - [Enterprise Managed Users (EMU)](./04-enterprise-managed-users.md) - Centralized identity management and team provisioning
 - [Identity and Access Management](./03-identity-access-management.md) - SAML SSO, SCIM provisioning, and authentication
 - [Repository Governance](./07-repository-governance.md) - Branch protection, required reviews, and security policies
+- [Enterprise Teams](./28-enterprise-teams.md) - Teams defined at the enterprise and assigned across organizations
 
 ### API References
 
@@ -1570,6 +1580,6 @@ curl https://api.github.com/scim/v2/organizations/ORG/Users \
 ---
 
 **Document Version:** 1.0  
-**Last Updated:** 2024-01-15  
+**Last Updated:** 2026-10-02  
 **Target Audience:** Enterprise administrators, security teams, compliance officers  
 **Skill Level:** L400 (Expert)

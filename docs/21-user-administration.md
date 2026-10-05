@@ -16,7 +16,7 @@ The choice of model affects how users are provisioned, how dormancy is tracked, 
 
 Dormant user management is a critical cost-optimization and security function. GitHub considers a user dormant if they have not performed any qualifying activity within the past 30 days. Enterprise owners can download a dormant users report from the Compliance tab and use it to identify candidates for license reclamation. Understanding what counts — and critically, what does not count — as qualifying activity is essential for accurate dormancy assessment.
 
-Credential governance rounds out the user administration story. Enterprise owners can enforce PAT lifetime policies, restrict access by token type, require approval workflows for fine-grained PATs, manage SSH certificate authorities, and audit authorized credentials per user through the SAML identity panel.
+Credential governance rounds out the user administration story. Enterprise owners can enforce PAT lifetime policies, restrict access by token type, require approval workflows for fine-grained PATs, manage SSH certificate authorities, audit authorized credentials per user through the SAML identity panel, export an enterprise-wide credential inventory, and revoke or (with EMU) delete credentials in bulk during an incident.
 
 ## User Lifecycle
 
@@ -142,6 +142,8 @@ GitHub Enterprise Cloud defines a hierarchy of enterprise-level roles that contr
 | **User (member)** | No administrative access by default; includes org members and unaffiliated users | Only in orgs where they are a member |
 | **Guest collaborator** | EMU only — provisioned by IdP with limited access; cannot see internal repos except in assigned orgs | Limited to explicitly assigned orgs |
 
+> **Note:** Open source license compliance (public preview since 2026-06-30, for GitHub Enterprise Cloud enterprises with GitHub Code Security licenses) adds a predefined **Enterprise Open Source License Manager** role; the changelog post calls it Enterprise Open Source License Policy Manager. Enterprise owners assign it to users or teams under **People** → **Enterprise roles** → **Role assignments** → **Assign role**. Holders review and approve requests for license and package exceptions to the enterprise license policy, and receive request notifications. As of 2026-10-02, the enterprise roles overview page doesn't list this role.
+
 > **⚠️ Critical Detail:** Enterprise owners do **not** automatically have access to organization content. They must join an organization to access its repositories, issues, and other resources. This is one of the most common misconceptions in GitHub Enterprise Cloud administration.
 
 ### Custom Enterprise Roles
@@ -155,6 +157,8 @@ Enterprise owners can create custom roles to delegate specific administrative re
 - View and manage security configurations
 - Manage GitHub App registrations
 - Manage audit log and compliance settings
+- **View enterprise credentials** — export the enterprise credential inventory (since 2026-09-21)
+- **Manage enterprise credentials** — revoke SSO authorizations and, with EMU, delete user credentials in bulk (since 2026-06-24); the REST reference names this permission `write_enterprise_credentials`
 
 **Best practices for custom roles:**
 - Follow the principle of least privilege
@@ -170,7 +174,7 @@ Within each organization, users can hold specific roles that control their acces
 |------|-------------|
 | **Organization owner** | Complete administrative access to the organization |
 | **Organization member** | Default non-admin role; can create repos and projects |
-| **Moderator** | Can block/unblock non-member contributors, set interaction limits, hide comments |
+| **Moderator** | Can block/unblock non-member contributors, set interaction limits (including, since 2026-08-06, an organization-wide limit on open pull requests per user without write access), hide comments |
 | **Billing manager** | Manages organization billing settings |
 | **Security manager** | View security alerts and manage security settings across the org |
 | **GitHub App manager** | Manage GitHub App registrations for the organization |
@@ -689,6 +693,12 @@ Fine-grained personal access tokens support an approval workflow that gives orga
 
 Enterprise owners can manage SSH access through certificate authorities and key policies:
 
+**SSH key requirements (GitHub.com and GHE.com):**
+- From 2026-10-14, new RSA SSH keys must be at least 3072 bits; existing RSA keys keep working if the client signs with SHA-2 (`rsa-sha2-256` or `rsa-sha2-512`)
+- The SHA-1 `ssh-rsa` signature type and the `diffie-hellman-group-exchange-sha256` key exchange are removed on 2027-01-13, after brownouts on 2026-11-04 and 2026-12-09
+- Ed25519 is the recommended key type; Ed25519 and ECDSA keys are unaffected. Only SSH remotes are affected, not `https://` remotes
+- On GitHub Enterprise Server these changes arrive in 3.25 (the post-quantum `mlkem768x25519-sha256` key exchange in 3.24)
+
 **SSH Certificate Authorities (CAs):**
 - Enterprise owners add SSH CAs under **Settings → Authentication security**
 - When an SSH CA is added, members can use SSH certificates issued by the CA to access organization repos
@@ -699,15 +709,21 @@ Enterprise owners can manage SSH access through certificate authorities and key 
 
 **SSH CA configuration:**
 
-```bash
-# Upload an SSH CA public key via the API
-gh api \
-  --method POST \
-  /enterprises/YOUR-ENTERPRISE/audit-log/ssh-certificates \
-  -f key="$(cat ca_key.pub)"
+docs.github.com documents no REST API for SSH certificate authorities, so manage them in the UI:
 
-# List existing SSH CAs
-gh api /enterprises/YOUR-ENTERPRISE/audit-log/ssh-certificates
+1. In the enterprise, go to **Settings** → **Authentication security**.
+2. To the right of "SSH Certificate Authorities", click **New CA**, paste the CA's public key under "Key", and click **Add CA**.
+3. Optionally, select **Require SSH Certificates** and click **Save**. The requirement doesn't apply to authorized GitHub Apps, deploy keys, or GitHub Actions and Codespaces.
+4. With Enterprise Managed Users, select **Access User Owned Repository** to let the certificates reach repositories owned by managed users.
+
+A CA can be uploaded to only one organization or enterprise account on GitHub. To audit CA changes, query the enterprise audit log API for the `ssh_certificate_authority` events (`create`, `destroy`); the requirement toggles are logged as `ssh_certificate_requirement.enable` and `ssh_certificate_requirement.disable`:
+
+```bash
+# List SSH CA additions and deletions from the enterprise audit log
+gh api \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2026-03-10" \
+  "/enterprises/YOUR-ENTERPRISE/audit-log?phrase=action:ssh_certificate_authority"
 ```
 
 ### SAML Credential Audit
@@ -725,6 +741,31 @@ Enterprise owners can view and manage authorized credentials for each user throu
 - Revocation removes the SAML authorization — it does **not** delete the underlying token or key
 - The user must re-authenticate via SAML SSO to use the credential again
 - For EMU hard-deprovisioning, PATs, SSH keys, and GPG keys are **deleted** (not just revoked)
+
+#### Credential Inventory
+
+Since 2026-09-21, enterprise owners and members with the **View enterprise credentials** permission can export every credential that can access the enterprise: SSH keys, classic and fine-grained PATs, OAuth app tokens, GitHub App user tokens and GitHub App installations. Go to **Settings** → **Authentication security** and, next to "Overview", click **Export CSV**, or use the token inventory REST API (`GET /enterprises/{enterprise}/credentials`, `POST /enterprises/{enterprise}/credentials/exports`). The export is read-only and never includes token values; it gives owner, scopes or permissions, creation, last-use and expiry dates and authorizing organizations, and its `hashed_token` column matches the audit log's `hashed_token` field.
+
+#### Incident Response: Bulk Revocation and Deletion
+
+Enterprise owners and members with the **Manage enterprise credentials** permission can contain a compromise from **Settings** → **Authentication security** → "Danger zone", or through the enterprise credential authorizations REST API:
+
+| Action | Scope options | Availability |
+|--------|---------------|--------------|
+| **Revoke SSO authorizations** | A specific user (since 2026-06-24), all users, or one credential type (since 2026-08-18), alone or combined with a user | Enterprises with SAML SSO or EMU |
+| **Delete keys and tokens** | The same scopes; deletes credentials even without an SSO authorization | EMU only |
+
+- Both actions cover user SSH keys, OAuth app user tokens, GitHub App user tokens and classic and fine-grained PATs. GitHub App installation tokens, deploy keys and `GITHUB_TOKEN` are not affected.
+- Credentials whose SSO authorization is revoked this way can't be re-authorized for those organizations; users create and authorize new credentials.
+- Each action writes audit events (`org_credential_authorization.revoke`, `org_credential_authorization.deauthorize`, `personal_access_token.access_revoked`, and for deletion `oauth_access.destroy` and `personal_access_token.destroy`) and emails the affected users.
+- Organization owners have the same actions for their organization in the UI and the organization REST API (since 2026-08-18).
+- Members can revoke all their own SSO authorizations, or, in EMU enterprises, delete all their keys and tokens, from **Settings** → **Credentials** (since 2026-06-24).
+
+> **⚠️ Warning:** Bulk actions break automation that uses the affected credentials and can take a long time to recover from. Prefer the narrowest scope that contains the incident: one user, then one credential type, then everyone.
+
+#### Automating SSO Authorization with a GitHub App
+
+Since 2026-09-16, enterprises with enterprise-level SSO can let an enterprise-installed GitHub App authorize an existing classic PAT or verified user SSH key for up to 50 organizations per request, instead of each developer authorizing it per organization. Turn on **Allow GitHub Apps to authorize credentials** under "Credentials" in **Settings** → **Authentication security**. The app needs write access to the **Enterprise credentials** permission and must call `POST /enterprises/{enterprise}/credential-authorizations` with an enterprise installation access token. The request identifies the credential by token ID or SSH key fingerprint, never the secret, and the credential owner must be a member of every target organization. Treat such an app as a privileged identity.
 
 ### 2FA Enforcement
 
@@ -744,6 +785,10 @@ Enterprise owners can require two-factor authentication (2FA) for all users:
 - Communicate the requirement and provide setup instructions
 - Use the secure methods option to prevent SMS-based 2FA (vulnerable to SIM-swapping)
 - Monitor 2FA compliance through the enterprise security dashboard
+
+### Proof of Presence
+
+Since 2026-09-24, in public preview, enterprise owners can require members to re-authenticate with the IdP, or re-authenticate and complete MFA, before high-impact actions that trigger sudo mode, such as creating a personal access token or editing webhooks. Configure it with the **Proof of presence** dropdown in **Settings** → **Authentication security**. After a successful challenge the member can continue for two hours in that browser session. The preview supports Microsoft Entra ID; the changelog post scopes it to EMU enterprises, while the docs also list prerequisites for enterprises with personal accounts, so confirm eligibility first. See [Proof of Presence for High-Impact Actions](03-identity-access-management.md#proof-of-presence-for-high-impact-actions).
 
 ## EMU User Management
 
@@ -917,6 +962,10 @@ Follow these best practices for effective EMU user management:
 16. [User Offboarding](https://docs.github.com/en/enterprise-cloud@latest/admin/concepts/identity-and-access-management/user-offboarding) — Offboarding procedures for both enterprise models
 17. [Adding Outside Collaborators to Repositories](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-user-access-to-your-organizations-repositories/managing-outside-collaborators/adding-outside-collaborators-to-repositories-in-your-organization) — Outside collaborator management
 18. [Viewing and Managing SAML Access](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-accounts-and-repositories/managing-users-in-your-enterprise/viewing-and-managing-a-users-saml-access-to-your-enterprise) — SAML identity panel and credential audit
+19. [Reviewing Credentials in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/respond-to-incidents/reviewing-credentials-in-your-enterprise) — Credential inventory export and CSV fields
+20. [Revoking Authorizations or Deleting Credentials in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/managing-iam/respond-to-incidents/revoke-authorizations-or-tokens) — Bulk and per-type revocation and deletion
+21. [Authorizing Credentials for SSO with a GitHub App](https://docs.github.com/en/enterprise-cloud@latest/authentication/authenticating-with-single-sign-on/authorizing-credentials-for-single-sign-on-with-a-github-app) — Enterprise-delegated SSO authorization
+22. [Configuring Proof of Presence](https://docs.github.com/en/enterprise-cloud@latest/admin/configuring-settings/hardening-security-for-your-enterprise/configuring-proof-of-presence) — IdP re-authentication before high-impact actions (public preview)
 
 ### Related Workshop Documents
 

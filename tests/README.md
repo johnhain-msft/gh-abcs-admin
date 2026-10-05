@@ -15,6 +15,7 @@ npm test -- --skip-links
 npm test
 
 # Run individual test suites
+npm run test:unit          # Unit tests for the test harness (node:test)
 npm run test:lint          # Markdown formatting
 npm run test:frontmatter   # YAML front matter
 npm run test:structure     # Document structure
@@ -31,12 +32,13 @@ npm run test:links         # Link validation (slow — makes network requests)
 
 | Suite | Script | What It Validates |
 |-------|--------|-------------------|
+| **Unit Tests** | `test:unit` | The harness itself: shared helpers in `utils.js` behave the same on Windows (CRLF working tree, `\` paths) and Linux, and every freshness rule flags its stale fixtures and ignores its corrected and trap fixtures. Uses the built-in `node:test`; no extra dependencies |
 | **Markdown Lint** | `test:lint` | Formatting consistency, heading structure, list style. Config: `.markdownlint.yml` |
 | **Front Matter** | `test:frontmatter` | YAML front matter is valid where present |
 | **Structure** | `test:structure` | Docs have H1 + H2 sections; labs have title, duration, steps, references |
 | **Code Blocks** | `test:codeblocks` | YAML/JSON blocks parse correctly; bash blocks have balanced quotes |
 | **Mermaid** | `test:mermaid` | Diagram type is valid, brackets are balanced, content is non-empty |
-| **Freshness** | `test:freshness` | Flags deprecated GitHub features, outdated action versions, stale URLs |
+| **Freshness** | `test:freshness` | Flags deprecated GitHub features, outdated action versions, stale URLs and stale product claims in Markdown and in the HTML slide decks. `error` rules fail the run; `warn` rules only report |
 | **Spelling** | `test:spell` | Technical terminology. Config: `.cspell.json` with custom dictionary |
 | **VBD Coverage** | `test:vbd-coverage` | Every VBD agenda item has mapped docs/labs; referenced files exist |
 | **Lab Completeness** | `test:lab-completeness` | Labs have title, duration, objectives, references, numbered steps |
@@ -130,6 +132,34 @@ npm test -- --skip-links --fail-fast
 4. Add the suite to `SUITES` array in `tests/run-all.js`
 5. Add the step to `.github/workflows/tests.yml`
 
+### Adding a freshness rule
+
+1. Add the rule to `DEPRECATED_PATTERNS` in `tests/validate-freshness.js`: a unique `id`, a global (`/g`) `pattern`, a
+   `message` and a `severity` (`error` fails the run, `warn` only reports). Optional `files` (path RegExp) limits the
+   rule to some files; optional `unless` (RegExp) ignores a match when its clause matches. A clause is the sentence,
+   table cell or semicolon-separated part around the match. A rule about a claim that went stale on a known date
+   also gets `since: 'YYYY-MM-DD'`. That turns on the shared corrective filter, which ignores a match when its clause
+   is a question, when its table row is a timeline entry (the first cell is a date), when the clause dates it
+   ("until" or "before" any date, "since", "from", "on" or "in" a date on or after `since`), or when a history word is
+   attached to it ("was", "no longer", "previously 250", "replaced GPT-4.1 as", "limit raised to 500").
+2. Add an entry with the same id to `FIXTURES` in `tests/unit/freshness-rules.test.js`: at least one positive fixture
+   (the stale sentence) and negative fixtures for the corrected sentence and every known false-positive trap. The
+   unit tests fail if a rule has no fixtures. A regex rule catches likely phrasings of a claim, not every possible
+   one, so add realistic rewordings as positives (contractions such as "don't", synonyms, table rows, the number
+   next to its noun) and correct sentences on the same topic as negatives, especially corrective wording such as
+   "From 2026-10-22, X is no longer Y". Build windows from the `S` and `T` blocks so a match stays inside one clause,
+   and keep `unless` filters word-bounded (`\bended\b`, not `ended`) so they can't fire inside another word.
+   `unless` and `files` must not use the `g` flag; the unit tests check this.
+3. Run `npm run test:unit`, then `npm run test:freshness`.
+
+A rule sees one clause, so a qualifier in an earlier sentence doesn't count: after a sentence about annual Pro and
+Pro+ plans, "For example, a 1x model draws down 0.9 premium requests." is flagged, and "On annual Pro and Pro+ plans,
+a 1x model draws down 0.9 premium requests." is not. The same holds in tables and lists: a date in a column header
+(`| Setting | Before 2026-06-01 | Since 2026-06-01 |`) or on a parent bullet doesn't reach the cells or bullets below
+it, so repeat the date in the cell or bullet. A row whose first cell is a date (`| 2026-06-10 | … |`) is read as a
+timeline entry and not flagged. If a correct sentence is flagged, first check that its scope is in the same sentence,
+cell or bullet.
+
 ### Adding words to the spelling dictionary
 
 Edit `.cspell.json` → `words` array. Add GitHub-specific terms, product names, and acronyms.
@@ -170,6 +200,9 @@ tests/
 ├── validate-lab-completeness.js # Lab structural completeness
 ├── validate-freshness.js   # Deprecated content detection
 ├── validate-links.js       # Link validation wrapper
+├── unit/
+│   ├── utils.test.js       # Unit tests for utils.js (cross-platform paths and line endings)
+│   └── freshness-rules.test.js # Positive/negative fixtures for every freshness rule
 ├── README.md               # This file
 └── fixtures/
     ├── vbd-coverage-map.json    # VBD agenda → content mapping

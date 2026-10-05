@@ -581,7 +581,7 @@ git push --force --mirror origin
 
 **6. Contact GitHub Support for cache invalidation**
 
-Submit a request via the [GitHub Support portal](https://support.github.com) with:
+Submit a request via the [GitHub support portal](https://help.github.com) (help.github.com, rolling out from 2026-09-08; support.github.com works until your account moves) with:
 
 - Repository owner and name
 - Number of affected pull requests

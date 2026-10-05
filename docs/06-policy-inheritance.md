@@ -177,12 +177,16 @@ GitHub Actions represents a significant policy domain due to its ability to exec
 
 Controls what Actions workflows can do by default within repositories:
 
-- **Runner execution:** Which types of runners (GitHub-hosted, self-hosted) can be used
+- **Runner execution:** Which types of runners (GitHub-hosted, self-hosted) can be used. Since 2026-06-25 (GitHub Team and GitHub Enterprise plans), the standard GitHub-hosted runner labels such as `ubuntu-latest` can be disabled at the enterprise or organization level ("Standard hosted runners"), so jobs must run through runner groups, which can also hold macOS runners
 - **Workflow permissions:** Default token permissions for `GITHUB_TOKEN` (read-only vs write)
 - **Fork pull request workflows:** Whether workflows trigger for pull requests from forks
 - **Approval requirements:** Requiring approval before workflows run from new contributors
 
 Token permission defaults are particularly important—setting enterprise-wide read-only defaults prevents workflows from unintentionally modifying repository content or performing privileged operations without explicit permission elevation.
+
+**Workflow Execution Protections**
+
+The settings above govern what a workflow run can use, not who or what can start it. Since 2026-09-17 (public preview from 2026-06-18), workflow execution protections fill that gap: allowlists of who (actor rules) and which events (event rules) may trigger workflows, configured in the separate **Policies** section of the Actions settings at enterprise, organization and repository level. Like rulesets, they layer from the enterprise down, support **Evaluate** mode with **Policy insights**, and can be managed through the REST API. A default policy blocks `pull_request_target` in public repositories that have no applicable event policy; GitHub enforces it from 2026-11-02. See [GitHub Actions Workflow Execution Protections and Runner Governance](30-actions-workflow-execution-protections.md).
 
 **Actions and Reusable Workflows**
 
@@ -251,6 +255,8 @@ Self-hosted runners introduce significant security considerations because they e
 - Ephemeral runner requirements for public repositories
 - Required labels and environment segregation
 
+GitHub also enforces runner software versions on github.com. A runner needs version `2.329.0` or later to register, and must install each runner release within 30 days of publication to keep receiving jobs. Full enforcement began on 2026-07-31 for GitHub Enterprise Cloud with data residency and on 2026-09-29 for GitHub Enterprise Cloud (the 2026-06-12 announcement said 2026-09-25; a 2026-09-28 post moved it). GitHub Enterprise Server isn't affected. Keep auto-update on, or rebuild runner images at least every 30 days. Since 2026-09-03, the runner version end-of-life schedule endpoints (`GET /enterprises/{enterprise}/actions/runners/deprecations/{version}`, with organization and repository equivalents) return the registration and runtime deprecation dates for a runner version, so fleet owners can alert before a version falls out of support; see [Runner Governance](30-actions-workflow-execution-protections.md#runner-governance).
+
 ### GitHub Copilot Policies
 
 For enterprises with GitHub Copilot Business or Enterprise licenses, policy controls govern AI assistance capabilities:
@@ -279,6 +285,10 @@ Enterprise policies can specify repositories or file patterns to exclude from Co
 - Organization-wide exclusions
 
 Content exclusions prevent Copilot from learning from or suggesting code patterns from sensitive repositories, such as those containing proprietary algorithms, security implementations, or regulated data.
+
+**Model Access by Enterprise Team (Public Preview)**
+
+Model access is the one Copilot policy that can skip the organization level. Since 2026-07-31, in public preview, enterprises with Copilot Business or Copilot Enterprise can turn on **Enterprise teams mode** (enterprise **AI controls** → **Copilot**). Organization-level model settings then stop applying: the enterprise sets each model's baseline, models set to **Delegate to Enterprise Teams/Apps** are enabled per team on the team's **Default models** tab, and a user gets a model if any of their enterprise teams enables it. A model disabled at the enterprise can't be enabled for a team. While the feature is in preview, the enterprise can roll back to its previous policy state. See [Enterprise Teams](28-enterprise-teams.md) and [GitHub Copilot Governance](12-github-copilot-governance.md).
 
 ### GitHub Pages Policies
 
@@ -334,6 +344,8 @@ Projects support several field types for structured tracking:
 
 Fields are defined per-project and are not shared across projects. Organizations should establish naming conventions to maintain consistency (e.g., always using "Status" and "Priority" with the same option values across team projects).
 
+**Organization issue fields:** Since 2026-07-02 (generally available; public preview from 2026-05-21), organizations can also define **issue fields**: typed metadata (single select, text, number or date) that appears on issues in every repository of the organization and can be added to project views. Every organization starts with four default fields (Priority, Effort, Start date, Target date), which can be edited or deleted. Organization owners manage them in **Settings** → "Planning" → **Issue fields**, pin each field to issue types, and choose who can see a field's values on issues in public repositories (**Organization only**, the default, or **Public**). Limits are 25 issue fields per organization, 100 options per single-select field, 10 pinned fields per issue type, and 50 fields per project, including issue fields. For metadata such as priority or effort that every team tracks the same way, an issue field replaces per-project copies and label schemes.
+
 #### Built-in Workflows (Automations)
 
 Projects include configurable automation workflows accessible via the **Workflows** tab:
@@ -348,7 +360,7 @@ Workflows are configured per-project and do not cascade from org-level settings.
 #### Governance Recommendations
 
 - Use **org-level projects** for cross-team or leadership visibility into work streams
-- **Standardize field definitions** across projects using documented naming conventions to enable consistent reporting
+- **Standardize field definitions** across projects using documented naming conventions to enable consistent reporting; define organization issue fields for metadata that every team tracks the same way
 - Enterprise admins should **set a policy on who can create org-level projects** to prevent sprawl and ensure projects align with organizational structure
 - Consider creating **project templates** (by duplicating a well-configured project) to ensure consistent structure, fields, and workflows across teams
 - Regularly audit project membership to ensure access aligns with current team composition, especially for private projects containing sensitive planning data
@@ -1000,6 +1012,9 @@ Allowed Actions:
 │   ├── github/codeql-action/*
 │   └── [enterprise-org]/*
 └── Block actions from untrusted sources
+
+Actions Policies (Policies section, separate from General):
+└── Workflow execution protections: start in Evaluate, review Policy insights, then set Active
 ```
 
 ### GitHub Copilot Policies
@@ -1168,6 +1183,8 @@ Understanding policy inheritance requires familiarity with the broader GitHub En
 
 - **[Security and Compliance](08-security-compliance.md):** Security feature policies, compliance frameworks, and audit logging that enable policy enforcement validation and compliance demonstration.
 
+- **[GitHub Actions Workflow Execution Protections and Runner Governance](30-actions-workflow-execution-protections.md):** Actions policies that control who and what can start workflows, the default `pull_request_target` policy, and self-hosted runner version enforcement.
+
 ### Architecture and Best Practices
 
 - **[Best Practices and Well-Architected Framework](09-best-practices-waf.md):** Policy design patterns aligned with GitHub WAF principles. How to architect policy frameworks that scale across large enterprises.
@@ -1187,11 +1204,14 @@ Understanding policy inheritance requires familiarity with the broader GitHub En
 - [Enforcing GitHub Actions Policies](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-github-actions-in-your-enterprise) - Actions policy configuration and inheritance
 - [Managing GitHub Actions Settings](https://docs.github.com/en/enterprise-cloud@latest/admin/enforcing-policies/enforcing-policies-for-your-enterprise/enforcing-policies-for-github-actions-in-your-enterprise) - Enterprise Actions management
 - [Security Hardening for GitHub Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions) - Actions security best practices
+- [About Actions Policies](https://docs.github.com/en/enterprise-cloud@latest/actions/concepts/about-actions-policies) - Workflow execution protections (actor and event rules)
+- [Self-Hosted Runners Reference](https://docs.github.com/en/enterprise-cloud@latest/actions/reference/runners/self-hosted-runners) - Runner update requirements
 
 **Organization Settings**
 - [Managing Organization Settings](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-organization-settings) - Organization-level policy configuration
 - [Managing Security Settings for Your Organization](https://docs.github.com/en/enterprise-cloud@latest/organizations/keeping-your-organization-secure/managing-security-settings-for-your-organization) - Organization security policies
 - [Organization Base Permissions](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-user-access-to-your-organizations-repositories/managing-repository-roles/setting-base-permissions-for-an-organization) - Default access controls
+- [Managing Issue Fields in Your Organization](https://docs.github.com/en/enterprise-cloud@latest/issues/tracking-your-work-with-issues/using-issues/managing-issue-fields-in-your-organization) - Organization-level issue metadata, visibility and limits
 
 **Audit and Compliance**
 - [Reviewing Audit Logs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/about-the-audit-log-for-your-enterprise) - Audit log structure and querying
@@ -1201,6 +1221,7 @@ Understanding policy inheritance requires familiarity with the broader GitHub En
 **GitHub Copilot Policies**
 - [Managing GitHub Copilot in Your Organization](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise) - Enterprise Copilot configuration
 - [Configuring Content Exclusions](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-copilot-for-your-enterprise/managing-policies-and-features-for-copilot-in-your-enterprise) - Content exclusion patterns
+- [Managing Availability of Models in Your Enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-enterprise/manage-availability-of-default-models) - Enterprise teams mode for model access (public preview)
 
 **Security Features**
 - [GitHub Advanced Security](https://docs.github.com/en/enterprise-cloud@latest/get-started/learning-about-github/about-github-advanced-security) - GHAS overview, Secret Protection and Code Security features and licensing

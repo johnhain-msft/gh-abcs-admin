@@ -16,6 +16,22 @@ const SKIP_FILES = [
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB guard
 
 /**
+ * Convert CRLF line endings to LF. With core.autocrlf=true (the Windows default) the working
+ * tree has CRLF files while the repository and CI have LF; validators split on '\n'.
+ */
+function normalizeNewlines(content) {
+  return content.replace(/\r\n/g, '\n');
+}
+
+/**
+ * Convert a path to forward-slash form. glob returns backslash paths on Windows, while
+ * SKIP_FILES, fixtures and suppressions are keyed by forward-slash paths.
+ */
+function toPosixPath(p) {
+  return p.replace(/\\/g, '/');
+}
+
+/**
  * Resolve a path relative to the repo root.
  */
 function rootPath(...segments) {
@@ -23,23 +39,25 @@ function rootPath(...segments) {
 }
 
 /**
- * Read a file relative to the repo root. Returns string content.
- * Skips files exceeding MAX_FILE_SIZE.
+ * Read a file relative to the repo root (absolute paths are also accepted).
+ * Returns string content. Skips files exceeding MAX_FILE_SIZE.
  */
 function readFile(relPath) {
-  const abs = rootPath(relPath);
+  const abs = path.resolve(ROOT, relPath);
   const stats = fs.statSync(abs);
   if (stats.size > MAX_FILE_SIZE) {
     throw new Error(`File too large (${(stats.size / 1024 / 1024).toFixed(1)} MB > 10 MB limit)`);
   }
-  return fs.readFileSync(abs, 'utf-8');
+  return normalizeNewlines(fs.readFileSync(abs, 'utf-8'));
 }
 
 /**
  * Find markdown files matching a glob pattern relative to repo root.
+ * Returns forward-slash relative paths on every platform.
  */
 async function findMarkdownFiles(pattern) {
-  return glob(pattern, { cwd: ROOT, absolute: false });
+  const files = await glob(pattern, { cwd: ROOT, absolute: false });
+  return files.map(toPosixPath);
 }
 
 /**
@@ -207,6 +225,8 @@ class Reporter {
 module.exports = {
   ROOT,
   SKIP_FILES,
+  normalizeNewlines,
+  toPosixPath,
   rootPath,
   readFile,
   findMarkdownFiles,

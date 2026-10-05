@@ -371,6 +371,7 @@ action:workflows
 > 📚 **References**:
 > - [Searching the Audit Log](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/searching-the-audit-log-for-your-enterprise)
 > - [Audit Log Events for Enterprise](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/audit-log-events-for-your-enterprise)
+> - See [Workflow Execution Protections](30-actions-workflow-execution-protections.md) for the Actions policies (GA 2026-09-17) that control who and which events can start workflows
 
 ---
 
@@ -458,17 +459,20 @@ Repository rulesets are the modern replacement for branch protection rules, offe
 |------------|------------------|----------|
 | Scope | Single repo | Org-wide or repo-level |
 | Targeting | Branch patterns | Branch, tag, and push patterns |
-| Bypass actors | Not configurable | Teams, roles, apps, deploy keys |
+| Bypass actors | Not configurable | Roles, teams (including enterprise teams), apps, deploy keys; individual users on repository rulesets (since 2026-05-07) |
 | Evaluate mode | ❌ | ✅ Test before enforcing |
 | Layering | One rule set per branch | Multiple rulesets stack |
 | API management | Limited | Full CRUD + import/export |
 
-**Migration guidance:** Start by enabling rulesets in **evaluate mode** alongside existing branch protection. Monitor the rule insights dashboard for 1-2 weeks, then disable branch protection and switch rulesets to active enforcement.
+**Migration guidance:** For a single repository, since 2026-08-11 you can convert a rule in place: **Settings → Branches**, then **Convert to ruleset** next to the rule. GitHub maps required reviews, status checks and push restrictions into equivalent ruleset rules; "Require conversation resolution before merging" doesn't map one-to-one, because in rulesets it belongs to the pull request rule. Choose **Evaluate** for a first migration, then delete the original rule once you've tested. For policy across many repositories, start organization rulesets in **evaluate mode** alongside existing branch protection. Monitor the rule insights dashboard for 1-2 weeks, then disable branch protection and switch rulesets to active enforcement.
+
+**Copilot pull requests:** Rulesets also have **Require an additional approval for unattributed Copilot pull requests** (public preview; on by default for new and existing rulesets, per the docs). When Copilot opens a pull request under its own app identity instead of for a person, for example from a Microsoft Teams or Slack thread (since 2026-08-21), the pull request needs one more approval than the ruleset sets. It has no effect when the ruleset requires zero approvals.
 
 > 📚 **References**:
 > - See [Repository Governance](07-repository-governance.md) for detailed configuration
 > - [Lab 06: Advanced Rulesets](../labs/lab06.md) for hands-on practice
 > - [GitHub Docs: Rulesets](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets)
+> - [GitHub Docs: Converting branch protections to rulesets](https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/converting-branch-protections-to-rulesets)
 
 ---
 
@@ -483,12 +487,14 @@ How do we set up custom secret scanning patterns for our organization?
 Custom patterns let you detect organization-specific secrets (internal API keys, tokens, connection strings) beyond GitHub's 200+ built-in partner patterns.
 
 **Steps to configure:**
-1. Navigate to **Organization Settings → Code security → Secret scanning**
+1. In the organization's **Settings**, open **Advanced Security → Global settings** in the "Security" section of the sidebar
 2. Under "Custom patterns," click **New pattern**
 3. Define the pattern using Hyperscan regex syntax
 4. Add optional `before` and `after` context patterns to reduce false positives
-5. Run a **dry run** on selected repos to validate matches before enabling
-6. Enable the pattern org-wide once validated
+5. Click **Save and dry run** on up to 10 selected repositories, or all of them, to validate matches before publishing
+6. Click **Publish pattern** once validated
+
+**Automation:** Since 2026-07-13 the REST API can list, create, update and delete custom patterns at repository, organization and enterprise level, so you can keep patterns in code and apply them to many organizations. Dry runs and publishing still happen in the UI.
 
 **Best practices:**
 - Start with high-confidence patterns (e.g., known internal token prefixes)
@@ -499,6 +505,7 @@ Custom patterns let you detect organization-specific secrets (internal API keys,
 > 📚 **References**:
 > - See [Security & Compliance](08-security-compliance.md) for security configuration
 > - [GitHub Docs: Custom Patterns](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/using-advanced-secret-scanning-and-push-protection-features/custom-patterns/defining-custom-patterns-for-secret-scanning)
+> - [GitHub Docs: REST API endpoints for custom patterns](https://docs.github.com/en/enterprise-cloud@latest/rest/secret-scanning/custom-patterns)
 
 ---
 
@@ -514,16 +521,17 @@ What's the difference between CodeQL default setup and advanced setup?
 |--------|--------------|----------------|
 | Configuration | One-click enable | Custom workflow YAML |
 | Languages | Auto-detected | Explicitly specified |
-| Query suites | `security-extended` | Any suite including custom queries |
+| Query suites | Default or Extended; extra queries via a config file (since 2026-08-04) | Any suite including custom queries |
 | Schedule | GitHub-managed | Custom cron schedule |
 | Build steps | Auto-detected | Manual build commands |
 | Monorepo support | Limited | Full control |
 
-**Recommendation:** Use **default setup** for most repositories — it covers 95% of use cases with zero maintenance. Switch to **advanced setup** when you need custom queries, specific build steps, or monorepo support.
+**Recommendation:** Use **default setup** for most repositories — it covers 95% of use cases with zero maintenance. Since 2026-08-04 you can customize it without a workflow file: set the `github-codeql-config-file` repository property to a CodeQL configuration file, and default setup merges it with its own configuration to add queries, exclude paths or set threat models. Organization owners can set the property for every repository and decide whether repositories may override it; test a value on one repository first. Switch to **advanced setup** when you need specific build steps or monorepo support.
 
 > 📚 **References**:
 > - See [Security By Default Policies](11-security-by-default-policies.md) for org-wide enablement
 > - [GitHub Docs: CodeQL](https://docs.github.com/en/enterprise-cloud@latest/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning)
+> - [GitHub Docs: Repository properties for code scanning](https://docs.github.com/en/enterprise-cloud@latest/code-security/concepts/code-scanning/repository-properties)
 
 ---
 
@@ -535,24 +543,25 @@ How do we handle push protection bypass requests?
 
 ### Answer
 
-When a developer's push is blocked by secret scanning push protection, they can request a bypass. The workflow is:
+When a developer's push is blocked by secret scanning push protection, they can bypass it or request a bypass, depending on your settings:
 
 1. **Developer pushes** → push is blocked with the detected secret type
-2. **Developer selects a reason** — false positive, used in tests, or will fix later
-3. **Bypass request is created** (if delegated bypass is enabled)
-4. **Designated reviewers** receive a notification to approve or deny
+2. **Without delegated bypass**, anyone with write access can bypass by selecting a reason — false positive, used in tests, or will fix later
+3. **With delegated bypass**, contributors without bypass privileges submit a **bypass request** instead
+4. **Designated reviewers** receive a notification to approve or deny; push protection bypass requests expire after 7 days, and since 2026-04-08 the request emails show the expiry period
 5. **If approved**, the developer can push; the event is logged in the audit log
 
 **Configuring delegated bypass:**
-- Organization Settings → Code security → Push protection → **Enable delegated bypass**
-- Assign bypass reviewer teams (recommend: security team or senior engineers)
-- All bypass decisions are captured in the audit log (`secret_scanning_push_protection.bypass_created`)
+- Organization **Settings → Advanced Security → Configurations**: edit a custom security configuration, set "Push protection" **Bypass privileges** to **Specific actors**, then save the configuration and apply it to repositories
+- Assign bypass reviewer teams (recommend: security team or senior engineers); mark an actor **Exempt** only for trusted automation such as migration bots, because exempt actors skip push protection entirely
+- Bypasses and request decisions are captured in the audit log (`secret_scanning_push_protection.bypass` and `secret_scanning_push_protection_request.*`, for example `.approve` and `.deny`)
 
-**Metrics to monitor:** Track bypass request rates, approval rates, and reasons in the security overview dashboard. High bypass rates may indicate overly broad custom patterns.
+**Metrics to monitor:** Track bypass request rates, approval rates, and reasons in the security overview dashboard. Since 2026-05-26 you can sort request lists (Newest, Oldest, Recently updated, Least recently updated) at repository, organization and enterprise level, and the secret scanning alerts REST API accepts `is_bypassed=true` for reports on bypassed secrets. High bypass rates may indicate overly broad custom patterns.
 
 > 📚 **References**:
 > - See [Lab 07: Secret Scanning & Push Protection](../labs/lab07.md) for hands-on practice
-> - [GitHub Docs: Push Protection](https://docs.github.com/en/enterprise-cloud@latest/code-security/secret-scanning/using-advanced-secret-scanning-and-push-protection-features/push-protection-for-repositories-and-organizations)
+> - [GitHub Docs: Push Protection](https://docs.github.com/en/enterprise-cloud@latest/code-security/concepts/secret-security/push-protection)
+> - [GitHub Docs: Enabling delegated bypass for push protection](https://docs.github.com/en/enterprise-cloud@latest/code-security/how-tos/secure-your-secrets/manage-bypass-requests/enable-delegated-bypass)
 
 ---
 
@@ -569,8 +578,10 @@ Copilot governance operates at three levels with a cascading policy model:
 **Enterprise level** → Sets the ceiling for all orgs:
 - Enable/disable Copilot entirely
 - Control: code completions, chat, CLI, pull request summaries, agent mode
+- Agents and sessions: Copilot cloud agent, third-party agents (Anthropic Claude and OpenAI Codex, public preview), Copilot Memory (public preview, off by default) and **Store local sessions in the Cloud** (Unconfigured allows neither session sync nor remote control)
 - Privacy: telemetry opt-out, prompt/suggestion retention
-- Models: allow/restrict premium models, bring-your-own API keys
+- Models: per-model availability, **Default availability for released models** (enforced 2026-08-26 to 2026-09-01) and bring-your-own-key policies; open-weight models such as Kimi K2.7 Code and Kimi K3 are off by default
+- **Default policy for new features**: from 2026-10-22, generally available features left Unconfigured follow it; it ships Enabled, and previews stay opt-in
 
 **Organization level** → Can further restrict (never expand beyond enterprise):
 - Feature toggles inherit from enterprise defaults
@@ -578,7 +589,8 @@ Copilot governance operates at three levels with a cascading policy model:
 - Seat assignment and management
 
 **Key controls for admins:**
-- **Content exclusions** prevent Copilot from accessing sensitive files (doesn't apply to agent mode — note this limitation)
+- **Content exclusions** prevent Copilot from accessing sensitive files (since 2026-09-02 also in Copilot CLI and the Copilot app; not in Edit or Agent mode, and the docs disagree on Copilot cloud agent, so test it)
+- **Enterprise managed settings** (since 2026-07-01) control how Copilot clients behave, such as bypass mode and MCP server allowlists; see [Enterprise Managed Settings](29-enterprise-managed-settings.md)
 - **Seat management API** enables automated provisioning/deprovisioning
 - **Copilot metrics API** provides usage data for ROI tracking
 - **Audit log events** (`copilot.*`) track policy changes and usage
@@ -632,7 +644,7 @@ Should we use GitHub-hosted or self-hosted runners?
 
 | Factor | GitHub-Hosted | Self-Hosted |
 |--------|--------------|-------------|
-| Maintenance | Zero — managed by GitHub | You manage OS, updates, security |
+| Maintenance | Zero — managed by GitHub | You manage OS, updates, security and the runner version (see below) |
 | Clean environment | Fresh VM every job | Persistent — requires cleanup |
 | Network access | Public internet only (unless VNET) | Access to internal resources |
 | Cost | Per-minute billing | Your infrastructure costs |
@@ -641,8 +653,11 @@ Should we use GitHub-hosted or self-hosted runners?
 
 **Recommendation:** Start with **GitHub-hosted runners** for most workloads. Use **larger runners** (available in GHEC) for builds needing more CPU/RAM. Use **self-hosted** only when you need: private network access, specialized hardware, regulatory data residency, or cost optimization at very high scale. Consider **Azure VNET injection** for GitHub-hosted runners needing private network access.
 
+**Runner versions:** GitHub enforces self-hosted runner versions on github.com. A runner needs version `2.329.0` or later to register, and must install each new runner release within 30 days of its publication to keep receiving jobs. Full enforcement began on 2026-07-31 for GitHub Enterprise Cloud with data residency and on 2026-09-29 for GitHub Enterprise Cloud (moved from the 2026-09-25 date first announced). Keep auto-update on, or rebuild runner images at least every 30 days. GitHub Enterprise Server isn't affected.
+
 > 📚 **References**:
 > - See [Reference Architecture](10-reference-architecture.md) for runner architecture patterns
+> - See [Runner Governance](30-actions-workflow-execution-protections.md#runner-governance) for version enforcement and other runner controls
 
 ---
 
@@ -657,7 +672,7 @@ How do we set up OIDC federation for Azure deployments from GitHub Actions?
 OIDC eliminates long-lived secrets by exchanging short-lived GitHub tokens for Azure credentials:
 
 1. **In Azure:** Create an App Registration → Certificates & secrets → Federated credentials
-2. **Configure subject claims:** `repo:org/repo:ref:refs/heads/main` or `repo:org/repo:environment:production`
+2. **Configure subject claims:** `repo:org/repo:ref:refs/heads/main` or `repo:org/repo:environment:production`. Repositories created, renamed or transferred after 2026-07-15, and repositories that opt in, send immutable owner and repository IDs instead, for example `repo:org@OWNER-ID/repo@REPO-ID:environment:production`. Match the format each repository sends (github.com only; GHES isn't affected).
 3. **In GitHub:** Add `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` as secrets
 4. **In workflow YAML:**
 ```yaml
@@ -676,6 +691,7 @@ steps:
 
 > 📚 **References**:
 > - See [Deployment Strategies](23-deployment-strategies.md) for environment configuration
+> - [GitHub Docs: Immutable subject claims](https://docs.github.com/en/enterprise-cloud@latest/actions/reference/security/oidc#immutable-subject-claims)
 > - [Lab 12: Deployment Environments](../labs/lab12.md)
 
 ---
@@ -751,7 +767,8 @@ GHEC supports streaming enterprise audit logs to these destinations:
 | Datadog | HTTP | Low |
 | Google Cloud Storage | GCS API | Medium |
 | Splunk | HEC | Low |
-| Custom HTTPS endpoint | Webhook | Low |
+
+There's no generic HTTPS destination. Microsoft Purview is also a destination (public preview since 2026-07-02), but only for Copilot agent session events.
 
 **Setup:** Enterprise Settings → Audit log → Log streaming → Set up a stream → Select destination.
 
@@ -819,6 +836,7 @@ Team sync automatically manages GitHub team membership based on IdP group assign
 - Use nested teams in GitHub to mirror IdP group hierarchy
 - Monitor sync status via the audit log (`team.sync_completed` events)
 - For EMU: team sync is managed at the enterprise level via SCIM groups
+- Since 2026-06-04, enterprise teams, defined once and assigned to many organizations, can also take their membership from an IdP group, with Enterprise Managed Users only; see [Enterprise Teams](28-enterprise-teams.md#membership-and-identity-provider-sync)
 
 > 📚 **References**:
 > - See [Identity & Access Management](03-identity-access-management.md) for full IdP integration
@@ -836,7 +854,7 @@ How do we create custom repository roles for our organization?
 
 Custom roles let you define fine-grained permissions beyond the 5 built-in roles (Read, Triage, Write, Maintain, Admin):
 
-**Setup:** Organization Settings → Roles → New role → Select a base role → Add/remove individual permissions.
+**Setup:** Organization **Settings** → **Repository roles** (in the "Access" section) → **Create a Role** → choose a role to inherit → add individual permissions.
 
 **Example custom roles:**
 | Role Name | Base | Added Permissions | Use Case |
@@ -845,7 +863,7 @@ Custom roles let you define fine-grained permissions beyond the 5 built-in roles
 | Release Manager | Write | Edit repo rules, manage deploy keys | CI/CD team deployment access |
 | Compliance Auditor | Read | View audit log, download SBOM | Compliance team oversight |
 
-**Limits:** Up to 5 custom roles per organization (GHEC). Custom roles inherit all permissions from the base role.
+**Limits:** Up to 20 custom repository roles per organization (GitHub Enterprise Server before 3.19 allows 5). Custom roles inherit all permissions from the base role.
 
 > 📚 **References**:
 > - [Lab 09: Teams & Custom Roles](../labs/lab09.md) for hands-on practice
@@ -898,5 +916,5 @@ If you have additional questions from workshop sessions, please add them followi
 
 ---
 
-*Last Updated: January 2026*
+*Last Updated: 2026-10-02*
 *Workshop: GitHub Admin - Enterprise*

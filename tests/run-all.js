@@ -12,6 +12,7 @@ const ROOT = path.resolve(__dirname, '..');
 
 // Test suites in execution order (fast checks first, slow checks last)
 const SUITES = [
+  { name: 'Unit Tests', cmd: 'npm run test:unit --silent', required: true },
   { name: 'Markdown Lint', cmd: 'npm run test:lint --silent', required: true },
   { name: 'Front Matter', cmd: 'npm run test:frontmatter --silent', required: true },
   { name: 'Structure', cmd: 'npm run test:structure --silent', required: true },

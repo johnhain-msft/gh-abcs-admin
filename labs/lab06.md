@@ -10,6 +10,7 @@ References:
 - [Available rules for rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets)
 - [Ruleset recipes](https://github.com/github/ruleset-recipes)
 - [Managing rulesets for a repository](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/managing-rulesets-for-a-repository)
+- [Converting branch protections to rulesets](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/converting-branch-protections-to-rulesets)
 - [About protected tags](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/configuring-tag-protection-rules)
 
 ## What You'll Learn
@@ -24,9 +25,9 @@ In Lab 03, you created a basic branch ruleset scoped to a single repository. Org
 
 1. Navigate to your **organization** page on GitHub.com
 2. Click **Settings** in the organization navigation bar
-3. In the left sidebar under **"Code, planning, and automation"**, click **Rules**, then click **Rulesets**
+3. In the left sidebar under **"Code, planning, and automation"**, click **Repository**, then click **Rulesets**
 
-> **Troubleshooting:** If you don't see the **Rules** option in the sidebar, verify you have organization **Owner** permissions. Members and non-admin roles cannot create org-level rulesets.
+> **Troubleshooting:** If you don't see **Rulesets** under **Repository** in the sidebar, verify you have organization **Owner** permissions. Members and non-admin roles cannot create org-level rulesets.
 4. Click **New ruleset**, then select **New branch ruleset**
 5. Set the **Ruleset name** to `YOUR-HANDLE-org-branch-standards` (replace `YOUR-HANDLE` with your GitHub username to avoid naming conflicts in a shared workshop org)
 6. Set **Enforcement status** to **Evaluate** — this is a GHEC-only feature that lets you dry-run the ruleset against real traffic without blocking anyone. You will see results in Rule Insights.
@@ -55,6 +56,7 @@ Tag rulesets protect your release tags from accidental or unauthorized changes. 
     - Search for and select the **"Maintain"** role — this grants release managers the ability to bypass the tag rules
     - Leave the bypass mode as **"Always"**
     - Click **Add Selected**
+    - _(Optional, enterprise)_ Since 2026-06-04, the same dialog lists enterprise teams, so a break-glass team defined once at the enterprise can bypass rulesets in every organization. See [Enterprise Teams](../docs/28-enterprise-teams.md)
 8. In the **"Tag protections"** section, enable the following:
     - ✅ **Restrict creations** — only bypass actors (Maintain role) can create matching tags
     - ✅ **Restrict updates** — prevents force-updating or moving existing tags
@@ -158,11 +160,12 @@ In Lab 03 you learned that rulesets are the modern replacement for branch protec
 | Audit trail | Limited | **Rule Insights** with full evaluation history |
 | Import / Export | Not supported | JSON export / import |
 
-4. Navigate to **Settings > Rules > Rulesets** in the repository. Note that any repo-level rulesets you created in Lab 03 appear here alongside the org-level rulesets inherited from section 6.1.
+4. Navigate to **Settings > Rulesets** in the repository (under "Code, planning, and automation", click **Rulesets**, then **Rulesets**). Note that any repo-level rulesets you created in Lab 03 appear here alongside the org-level rulesets inherited from section 6.1.
 5. Key decision point: **When should you migrate from branch protection to rulesets?**
     - Migrate if you need org-wide enforcement, evaluate mode, layering, or tag rulesets
     - Keep legacy rules if you rely on features not yet in rulesets (check [available rules](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets) for the latest list)
     - Both coexist safely — the most restrictive combination of all rules applies
+    - Since 2026-08-11, you can migrate one repository's rule in place: in **Settings > Branches**, click **Convert to ruleset** next to the rule. GitHub generates equivalent rulesets (required reviews, status checks, push restrictions), lets you choose **Active** or **Evaluate**, and marks the old rule as safe to delete once rulesets fully cover it. "Require conversation resolution before merging" doesn't map one-to-one, because in rulesets it is part of the pull request rule
 
 > **Note: Coexistence** — You do not need to delete branch protection rules before creating rulesets. Both are evaluated on every push and PR. However, having both active can cause confusion for contributors who may not know which rule is blocking them. For clarity, consider consolidating into rulesets over time.
 
@@ -173,11 +176,11 @@ Use this checklist to confirm everything is configured correctly.
 1. Navigate to **Organization Settings > Repository > Rulesets** and verify:
     - [ ] `YOUR-HANDLE-org-branch-standards` ruleset exists with status **Active** (you changed it from Evaluate in 6.3)
     - [ ] `YOUR-HANDLE-release-tag-protection` tag ruleset exists with status **Active**
-2. To view **Rule Insights** (April 2026 redesign): open the `YOUR-HANDLE-org-branch-standards` ruleset, then click its **Insights** tab. Verify:
+2. To view **Rule Insights** for the organization, go to **Organization Settings > Repository > Rule insights** and filter by the `YOUR-HANDLE-org-branch-standards` ruleset. (The **Dashboard** entry in the same menu, generally available since 2026-08-25, charts evaluations and top bypassers across all repositories and exports to CSV.) Verify:
     - [ ] You see evaluation entries from when `YOUR-HANDLE-org-branch-standards` was in **Evaluate** mode (section 6.3, step 2)
     - [ ] You see enforcement entries from after you switched to **Active** mode
     - [ ] Tag ruleset events appear if you tested tag creation
-3. Navigate to any targeted repository's **Settings > Rules > Rulesets**:
+3. Navigate to any targeted repository's **Settings > Rulesets**:
     - [ ] The org-level `YOUR-HANDLE-org-branch-standards` ruleset appears alongside any repo-level rulesets from Lab 03
     - [ ] The tag ruleset `YOUR-HANDLE-release-tag-protection` appears in the list
 4. Confirm bypass behavior:

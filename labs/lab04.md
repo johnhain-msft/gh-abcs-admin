@@ -24,6 +24,8 @@ References:
 
 > **Note:** If you do not see the `Set up templates` button, ensure that Issues are enabled for your repository under **Settings > General > Features**.
 
+> **Governance note:** The same `Features > Issues` section controls who can open issues. Since 2026-06-29, a repository admin can choose **Collaborators only** in the dropdown under **Issues** ("Creation allowed by"). People without at least the triage role then can't create issues from any entry point, including comments, discussions, projects and Copilot; since 2026-08-03, the triage role is included. Leave the setting as it is for this lab.
+
 3. Select a template from the list
 4. Review the template by clicking on `Preview and edit`
 5. Edit the issue if needed to add your changes

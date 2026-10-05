@@ -215,7 +215,9 @@ Required headers:
 |--------|-------|---------|
 | `Authorization` | `Bearer <token>` | Authentication |
 | `Accept` | `application/vnd.github+json` | Response format |
-| `X-GitHub-Api-Version` | `2022-11-28` | API version pinning |
+| `X-GitHub-Api-Version` | `2022-11-28` | API version pinning (see note below) |
+
+> **API versions:** REST API version `2026-03-10` was released on 2026-03-10 and includes breaking changes. Version `2022-11-28`, used in this guide's examples, stays supported until 2028-03-10, and requests that omit the header default to it. Before moving a script to `2026-03-10`, read that version's breaking changes and test the script; after a version's end-of-support date, requests that specify it get `410 Gone`. See [API Versions](https://docs.github.com/en/enterprise-cloud@latest/rest/about-the-rest-api/api-versions).
 
 ### CRUD Operations
 
@@ -1083,6 +1085,8 @@ resource "github_repository_ruleset" "main_protection" {
   }
 }
 ```
+
+> **Review dismissals in rulesets:** Since 2026-07-07, the **Require a pull request before merging** rule in repository rulesets can **Restrict who can dismiss reviews** to chosen users, teams and GitHub Apps, configurable in the UI, REST API and GraphQL API. That covers what `restrict_dismissals` does in the branch protection example above. Check that your Terraform provider version exposes the setting before you move this control from branch protection to rulesets.
 
 ### State Management
 

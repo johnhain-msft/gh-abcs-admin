@@ -46,6 +46,8 @@ Expected output (version may vary):
 gh version 2.x.x (20xx-xx-xx)
 ```
 
+> **Note:** Since v2.91.0 (2026-04-22), GitHub CLI sends pseudonymous usage telemetry by default; it doesn't collect it when the target is GitHub Enterprise Server. On managed or shared workshop machines, set `GH_TELEMETRY=false` or `DO_NOT_TRACK=true`, or run `gh config set telemetry disabled` to opt out. Set `GH_TELEMETRY=log` to print what would be sent instead of sending it. Environment variables take precedence over the config value, and extensions handle their own telemetry. See [GitHub CLI telemetry](https://docs.github.com/en/github-cli/github-cli/github-cli-telemetry).
+
 ```bash
 gh auth status
 ```

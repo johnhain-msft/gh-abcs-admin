@@ -5,9 +5,10 @@
   "description": "GitHub Enterprise Cloud Admin Training — VBD Workshop",
   "scripts": {
     "test": "node tests/run-all.js",
-    "test:lint": "markdownlint-cli2 'docs/**/*.md' 'labs/**/*.md' 'README.md' '#docs/PLAN.md' '#docs/initial-prompt.md' '#docs/final-prompt-plan.md' '#docs/_research/**'",
+    "test:unit": "node --test tests/unit/utils.test.js tests/unit/freshness-rules.test.js",
+    "test:lint": "markdownlint-cli2 \"docs/**/*.md\" \"labs/**/*.md\" \"README.md\" \"#docs/PLAN.md\" \"#docs/initial-prompt.md\" \"#docs/final-prompt-plan.md\" \"#docs/_research/**\"",
     "test:links": "node tests/validate-links.js",
-    "test:spell": "cspell lint --no-progress 'docs/**/*.md' 'labs/**/*.md' 'README.md'",
+    "test:spell": "cspell lint --no-progress \"docs/**/*.md\" \"labs/**/*.md\" \"README.md\"",
     "test:structure": "node tests/validate-structure.js",
     "test:frontmatter": "node tests/validate-frontmatter.js",
     "test:codeblocks": "node tests/validate-codeblocks.js",

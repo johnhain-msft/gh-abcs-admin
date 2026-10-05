@@ -111,6 +111,7 @@ jobs:
    - The `environment: production` key triggers **all protection rules** configured on the `production` environment (required reviewers, wait timer, branch policy).
    - The `environment: staging` key links the staging job to the `staging` environment, but since it has no protection rules, it runs immediately.
    - The `workflow_dispatch` trigger allows you to manually run this workflow from the **Actions** tab without pushing a commit.
+   - Both jobs use `runs-on: ubuntu-latest`. From 2026-10-19 to 2026-11-19 that label moves gradually from Ubuntu 24.04 to Ubuntu 26.04, and some preinstalled tools change. This lab only runs `echo`, but for real deployment jobs, test on `ubuntu-26.04` or pin `ubuntu-24.04` until you have.
 6. Set the commit message to `Add deployment workflow` and commit directly to the `main` branch.
 7. Because the workflow triggers on `push` to `main`, committing this file will immediately start a workflow run.
 
@@ -166,6 +167,7 @@ Use this checklist to confirm you have completed all exercises in this lab:
 - **OIDC federation:** How would you replace the `echo` commands in this workflow with real cloud deployments using [OIDC-based authentication](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/about-security-hardening-with-openid-connect)? OIDC eliminates the need to store long-lived cloud credentials as secrets.
 - **Custom protection rules:** What custom deployment protection rule would benefit your organization? Examples include requiring an approved change-management ticket, validating that a security scan passed, or checking a feature-flag service before rollout.
 - **Admin bypass:** In what scenarios would you disable admin bypass on a production environment? Consider compliance frameworks (SOC 2, FedRAMP) that require consistent enforcement of approval processes.
+- **Who can start a deployment:** Required reviewers gate the production job, but anyone with write access can still start this workflow with `workflow_dispatch`. How would a workflow execution protection that limits `deploy.yml` to a release team complement the environment gate? Try it in [Lab 18](lab18.md).
 - **Branch policies:** How would you extend deployment branch policies to support release branches (e.g., `release/*`) alongside `main`?
 
 > **Note:** For real-world cloud deployments, always use **OIDC federation** to authenticate to your cloud provider (AWS, Azure, GCP) instead of storing long-lived credentials as secrets. OIDC provides short-lived, automatically rotated tokens scoped to specific environments and repositories, significantly reducing the blast radius of a credential compromise. See [About security hardening with OpenID Connect](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/about-security-hardening-with-openid-connect) for setup guides specific to each cloud provider.

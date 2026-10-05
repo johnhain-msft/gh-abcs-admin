@@ -133,7 +133,7 @@ This outline provides the structure for creating a slide deck for the GitHub Adm
 
 **Slide 2: Cost Center Fundamentals**
 - Key Visual: Diagram showing enterprise → cost centers → organizations/repositories mapping
-- Speaker Notes: Cost centers group resources for billing allocation. Up to 100 cost centers per enterprise. Resources can be organizations or repositories. Unassigned resources go to the enterprise "default" bucket.
+- Speaker Notes: Cost centers group resources for billing allocation. Up to 1,000 cost centers per enterprise (since 2026-06-26). Resources can be organizations, repositories, users or enterprise teams. Usage from unassigned resources shows as "Enterprise Only" when you group usage by cost center.
 
 **Slide 3: Allocation Rules and Hierarchy**
 - Key Visual: Multi-tier cost center hierarchy example (Enterprise → BU → Department)
@@ -141,15 +141,15 @@ This outline provides the structure for creating a slide deck for the GitHub Adm
 
 **Slide 4: Budgets and Alerts**
 - Key Visual: Budget configuration flow (scope → type → threshold → notification)
-- Speaker Notes: Budgets can be scoped to enterprise or cost center. Types include alert-only and spending-limit. Set multiple thresholds (50%, 75%, 90%) for progressive notification. Budgets cover Actions, Packages, Copilot, and GHAS.
+- Speaker Notes: Budgets can be scoped to the enterprise, an organization, a cost center or a repository, and for Copilot's GitHub AI Credits also to users (universal, cost center user-level, individual; most specific wins). Threshold alerts are opt-in per budget and fire at 75%, 90% and 100%. Metered products (Actions, Packages, Copilot AI Credits) can stop usage at the limit; since 2026-05-28, GHAS budgets can be hard limits in license count; Copilot seat budgets only alert.
 
 **Slide 5: Tracking Copilot Costs via Cost Centers**
-- Key Visual: Copilot premium request usage breakdown by cost center
-- Speaker Notes: Copilot premium requests allocate to the cost center of the user's organization. Set Copilot-specific budgets per department. Monitor ROI with per-cost-center usage reports.
+- Key Visual: Copilot AI Credits usage breakdown by cost center
+- Speaker Notes: Since 2026-06-01, Copilot is billed in GitHub AI Credits. AI Credits usage is charged to the user's cost center, or to the organization that granted the user's Copilot license if the user isn't in a cost center. Included usage is pooled across the enterprise; an included usage control caps a cost center at the AI Credits its own licenses fund. Set Copilot-specific budgets per department. Monitor ROI with per-cost-center usage reports.
 
 **Slide 6: Tracking GHAS Costs via Cost Centers**
 - Key Visual: GHAS active committer allocation by cost center
-- Speaker Notes: GHAS costs allocate based on where security features are enabled. Active committers are counted per organization. Use cost centers to identify which business units drive GHAS spending.
+- Speaker Notes: GHAS is license-based and follows the user: each unique active committer's license is charged to their cost center (direct user assignment first, then enterprise team membership since 2026-06-25), otherwise to the cost center containing their oldest organization. Use cost centers to identify which business units drive GHAS spending.
 
 **Slide 7: Real-World Chargeback Scenarios**
 - Key Visual: Three-scenario comparison table (fully decentralized, hybrid, regulated vs. non-regulated)
@@ -157,7 +157,7 @@ This outline provides the structure for creating a slide deck for the GitHub Adm
 
 **Slide 8: Cost Center Best Practices**
 - Key Visual: Best practices checklist (naming conventions, assignment strategy, budget thresholds, review cadence)
-- Speaker Notes: Use consistent naming conventions (e.g., `dept-engineering`). Assign all orgs to cost centers — don't leave resources in the default bucket. Review cost center reports monthly. Automate chargeback reporting with the Billing API.
+- Speaker Notes: Use consistent naming conventions (e.g., `dept-engineering`). Assign all orgs to cost centers — don't leave resources unassigned. Review cost center reports monthly. Automate chargeback reporting with the Billing API.
 
 ---
 
@@ -281,7 +281,7 @@ This outline provides the structure for creating a slide deck for the GitHub Adm
 
 **Slide 2: Understanding the GHAS Cost Model**
 - Key Visual: Cost breakdown diagram (Secret Protection $19/committer + Code Security $30/committer, per active committer billing)
-- Speaker Notes: GHAS is billed per active committer across a 90-day trailing window. A committer active in multiple repos is counted once per org. Costs scale with the number of unique contributors, not repos.
+- Speaker Notes: GHAS is billed per active committer across a 90-day trailing window. A committer active in multiple repos is counted once across the organization or enterprise. Costs scale with the number of unique contributors, not repos.
 
 **Slide 3: Active Committer Optimization**
 - Key Visual: 90-day trailing window diagram showing how committer counts change over time

@@ -7,12 +7,12 @@ In this lab you will configure and review GitHub Copilot policies, manage seat a
 > **Environment note:** This lab is written for **organization-level** access. All hands-on steps work with an org admin account — no enterprise account is needed. Enterprise-level policy views are included in collapsible sections for participants who have enterprise access.
 
 References:
-- [Managing Copilot policies for your organization](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-github-copilot-in-your-organization/managing-policies-for-copilot-in-your-organization)
-- [Configuring content exclusions for GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-github-copilot-in-your-organization/configuring-content-exclusions-for-github-copilot)
-- [Managing GitHub Copilot access in your organization](https://docs.github.com/en/enterprise-cloud@latest/copilot/managing-copilot/managing-github-copilot-in-your-organization/granting-access-to-copilot-for-members-of-your-organization)
+- [Managing Copilot policies for your organization](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-organization/manage-policies)
+- [Configuring content exclusions for GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/configure-content-exclusion/exclude-content-from-copilot)
+- [Managing GitHub Copilot access in your organization](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/administer-copilot/manage-for-organization/manage-access/grant-access)
 - [Reviewing audit logs for Copilot events](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/audit-log-events-for-your-enterprise)
-- [Using the Copilot usage metrics API](https://docs.github.com/en/enterprise-cloud@latest/rest/copilot/copilot-metrics)
-- [About GitHub Copilot Enterprise](https://docs.github.com/en/enterprise-cloud@latest/copilot/about-github-copilot/subscription-plans-for-github-copilot)
+- [Using the Copilot usage metrics API](https://docs.github.com/en/enterprise-cloud@latest/rest/copilot/copilot-usage-metrics)
+- [Plans for GitHub Copilot](https://docs.github.com/en/enterprise-cloud@latest/copilot/get-started/plans)
 
 ## What You'll Learn
 
@@ -23,30 +23,38 @@ References:
 ## 15.1 Review Copilot organization policies
 
 1. Navigate to your organization on GitHub.com and click **Settings** in the top navigation bar.
-2. In the left sidebar, under **Code, planning, and automation**, click **Copilot**. This opens the Copilot policy configuration page for your organization.
+2. In the left sidebar, under **Code, planning, and automation**, click **Copilot**, then **Policies**. This opens the Copilot policy configuration page for your organization.
 
 > **Troubleshooting:** If the **Copilot** option doesn't appear in the left sidebar, verify your organization has a GitHub Copilot Business or Enterprise subscription assigned. Without an active license, the Copilot configuration page may not be visible. Contact your enterprise owner to verify license allocation. See the [Instructor Guide](../docs/INSTRUCTOR-GUIDE.md) for additional help.
 
-3. Review the **Access** policy at the top of the page. This controls whether Copilot is **Enabled** or **Disabled** for organization members. Note the current setting.
+3. Review the **Access** setting (**Copilot** → **Access**). This controls whether Copilot is **Enabled** or **Disabled** for organization members. Note the current setting, then return to **Policies**.
 4. Review the **Suggestions matching public code** policy. When set to **Blocked**, Copilot suppresses code suggestions that closely match publicly available code on GitHub. This is an important IP compliance control.
-5. Review the **Copilot cloud agent** policy (this is the cloud-based coding agent, formerly called "coding agent"). When enabled, members can use Copilot to work on issues and pull requests directly on GitHub.com.
-6. Review the **Copilot code review** policy. When enabled, members can request AI-powered code reviews on pull requests.
+5. Review the **Copilot cloud agent** policy (formerly "Copilot coding agent"). When enabled, members can use Copilot to work on issues and pull requests directly on GitHub.com. Since 2026-04-03, organization owners can also govern the agent for every repository:
+   - **Copilot** → **Internet access**: the agent firewall (**Enable firewall**, **Recommended allowlist**, **Allow repository custom rules** and the **Organization custom allowlist**). By default, each repository decides.
+   - **Copilot** → **Cloud agent**: the default **Runner type**, and whether repositories may customize it. If the enterprise allows third-party agents (public preview), the **Partner agents** section of this page lets you allow Anthropic Claude and OpenAI Codex; each one you allow installs a GitHub App.
+6. Review the **Copilot code review** policy. When enabled, members can request AI-powered code reviews on pull requests. Since 2026-06-01, each review also uses GitHub Actions minutes on private repositories. Open **Copilot** → **Code review** to see the review effort level and the **Approvals** setting, which decides whether Copilot approvals count toward merge requirements (public preview since 2026-09-01). Since 2026-07-17, code review has its own section on the **Internet access** page; its default runner is set under **Copilot** → **Runner type**.
 7. Review the **Agent mode (IDE)** policy. This controls whether members can use agentic coding capabilities within their IDE (e.g., VS Code, JetBrains).
-8. Navigate to the **MCP** section in the left sidebar (under the AI controls area). Review the MCP server policy settings — this controls whether organization members can connect Copilot to external Model Context Protocol servers.
+8. Review the **GitHub Copilot app** policy. Since 2026-07-27, the desktop app has its own policy, separate from **Copilot CLI**; the enterprise default is **Enabled everywhere**.
+9. On the same **Policies** page, review **MCP servers in Copilot**. This controls whether organization members can connect Copilot to external Model Context Protocol servers. Which servers may run is a separate control: since 2026-08-06, enterprise owners can approve or block individual servers with `allowedMcpServers` and `deniedMcpServers` in enterprise managed settings.
+
+> **Tip:** Policies decide which Copilot features users get. Since 2026-07-01, enterprise managed settings (`copilot/managed-settings.json` in the enterprise's `.github-private` repository) decide how Copilot clients behave, for example blocking bypass ("yolo") mode or limiting MCP servers. [Lab 17](lab17.md) covers them.
 
 <details>
 <summary>🏛️ Enterprise Path — view enterprise-wide Copilot policies (requires enterprise owner access)</summary>
 
-1. Navigate to `https://github.com/enterprises/YOUR-ENTERPRISE` → **Policies**.
-2. The AI controls are organized into three sidebar sections: **Agents**, **Copilot**, and **MCP**.
+1. Navigate to `https://github.com/enterprises/YOUR-ENTERPRISE` and click **AI controls** at the top of the page.
+2. The sidebar has three pages: **Agents**, **Copilot**, and **MCP**.
+   - **Copilot**: under "Features & clients", click **Configure features & clients** for feature and client policies, including **GitHub Copilot app** (since 2026-07-27). **Configure models** sets each model to **Enabled**, **Disabled** or a delegate state, and **Targeted model rules** (public preview since 2026-05-26) allow specific models for selected organizations. The **Default policy for new features** is on this page too.
+   - **Agents**: under "Available agents", **Copilot Cloud Agent** offers **Enabled for selected organizations** (since 2026-04-15) besides enabling it everywhere, disabling it everywhere or letting organizations decide, so you can run a pilot. The policies for third-party agents (Anthropic Claude and OpenAI Codex, public preview) are on this page too. It also shows the organization that holds the enterprise managed settings (see [Lab 17](lab17.md)).
+   - **MCP**: the **MCP servers in Copilot** policy.
 3. Enterprise-level policies cascade down to all organizations in the enterprise — an organization cannot enable a capability that the enterprise has disabled.
-4. If the enterprise policy is set to **Unconfigured**, affected org policies default to **Disabled** — this prevents accidental over-permissiveness.
+4. An enterprise policy left **Unconfigured** is not simply **Disabled**. From 2026-10-22, eligible generally available features left Unconfigured follow the enterprise's **Default policy for new features**, which ships **Enabled**. Unconfigured models already follow **Default availability for released models** (shown as **Delegate to Default Policy**). Set every policy you care about explicitly.
 
 </details>
 
 > **Note:** If your workshop organization does not have a Copilot Business or Enterprise license, you can still navigate to the **Settings → Copilot** page to review the available policy options. The UI will display the configuration controls even without an active subscription, though changes will not take effect until a license is assigned.
 
-9. Discuss with your table: GitHub offers several Copilot plans — **Free**, **Pro** ($10/user/mo), **Pro+** ($39/user/mo), **Business** ($19/user/mo), and **Enterprise** ($39/user/mo). Verified students and teachers receive free access to Pro-tier features through GitHub Education. Enterprise adds enterprise-wide policy controls, knowledge bases, and custom model support. Copilot IDE features (completions, chat, agent mode) work for GHES users licensed via github.com, but github.com-native features — cloud agent, pull request code review, and web-based Copilot chat — require GHEC.
+10. Discuss with your table: GitHub offers several Copilot plans — **Free**, **Student**, **Pro** ($10/user/mo), **Pro+** ($39/user/mo), **Max** ($100/user/mo), **Business** ($19/user/mo), and **Enterprise** ($39/user/mo). Since 2026-06-01, every plan bills in GitHub AI Credits: Business includes 1,900 and Enterprise 3,900 AI Credits per user per month, pooled across the billing entity. Verified students get Copilot Student free, and verified teachers and maintainers of popular open source projects may get Copilot Pro free. Enterprise adds a larger AI Credits pool; policy controls, audit logs, content exclusions and custom models come with both plans. Copilot IDE features (completions, chat, agent mode) work for GHES users licensed via github.com, but github.com-native features — cloud agent, pull request code review, and web-based Copilot chat — require GHEC.
 
 ## 15.2 Configure content exclusions
 
@@ -66,6 +74,8 @@ References:
 6. Understand what content exclusions do and do not do:
    - **Do:** Suppress Copilot code completions and chat responses for files matching the specified patterns. When a developer opens an excluded file in their IDE, Copilot will not generate inline suggestions.
    - **Do:** Prevent Copilot from using excluded file content as context for suggestions in *other* files. Excluded content is not sent to the Copilot service.
+   - **Do:** Apply in Copilot CLI and the GitHub Copilot app (generally available since 2026-09-02, Business and Enterprise), and in Copilot code review, which since 2026-06-12 doesn't review excluded files.
+   - **Do not:** Cover the **Edit** and **Agent** modes of Copilot Chat in VS Code and other editors, or third-party agents.
    - **Do not:** Affect files that are already not tracked by Git (e.g., `.gitignore`-excluded files). For files that are in the repository, content exclusions are the primary governance mechanism.
    - **Limitation:** Content exclusions may take **up to 30 minutes** to propagate to IDE clients.
 7. Discuss when to apply content exclusions:
@@ -75,7 +85,7 @@ References:
    - Production configuration that should not be accidentally duplicated
 8. Note that content exclusions can also be configured at the **enterprise level** — enterprise exclusions apply across all organizations and cannot be overridden at the org level.
 
-> **Tip:** Content exclusions are one layer of a defense-in-depth approach. Combine them with **Custom Instructions** (natural-language files like `.github/copilot-instructions.md` that guide Copilot responses) and **Copilot Spaces** (curated collections of repos, code, PRs, and issues that provide shared context to Copilot) for comprehensive governance of Copilot behavior.
+> **Tip:** Content exclusions are one layer of a defense-in-depth approach. Combine them with **Custom Instructions** (natural-language guidance such as a repository's `.github/copilot-instructions.md`, or organization custom instructions under **Settings** → **Copilot** → **Custom instructions**, generally available since 2026-04-02 for Copilot Chat on GitHub.com, Copilot code review and Copilot cloud agent) and **Copilot Spaces** (curated collections of repos, code, PRs, and issues that provide shared context to Copilot) for comprehensive governance of Copilot behavior.
 
 ## 15.3 Manage seat assignments
 
@@ -87,7 +97,8 @@ References:
 3. If your organization is set to **Enabled for selected members**, click **Add members** or **Add teams** to assign a Copilot seat. Search for a team or individual and select them.
 4. Review the seat usage summary displayed on the page — this shows the total number of seats assigned, seats in use, and seats available under your license.
 5. Discuss cost management considerations:
-   - Copilot Business costs **$19/user/month** and Copilot Enterprise costs **$39/user/month**. For a 500-person organization, this translates to $9,500–$19,500/month.
+   - Copilot Business costs **$19/user/month** and Copilot Enterprise costs **$39/user/month**. For a 500-person organization, this translates to $9,500–$19,500/month in seat charges, plus any AI Credits used beyond the pooled allowance if paid usage is allowed.
+   - If the organization pays by credit card or PayPal, each new seat must be paid for before the user gets access (since 2026-09-03), and from 2026-10-01 assigned seats are charged upfront at the start of each billing cycle.
    - Use the **Enabled for selected members** policy to control costs during an initial rollout — start with pilot teams and expand based on adoption data.
    - GitHub supports **automatic seat reclamation**: if enabled, GitHub will automatically revoke seats from users who have not used Copilot in **30 or more days**. This prevents paying for unused seats.
 6. To view seat assignment details programmatically, use the `gh` CLI:
@@ -109,6 +120,10 @@ References:
    ```
 
    > **Note:** The legacy `/copilot/metrics` endpoint was removed April 2026. The new API returns a download link to an NDJSON report. The command above fetches and parses it in one step. On macOS, replace `date -d yesterday` with `date -v-1d`.
+   >
+   > Since 2026-04-10, the top-level totals in these reports, including `code_generation_activity_count` and `code_acceptance_activity_count`, count Copilot CLI activity as well as IDE activity; CLI appears as `copilot_cli` in the feature breakdowns. Since 2026-05-20, the download link points to `copilot-reports.github.com`. Behind a firewall or proxy, allowlist it; the fallback hosts are in the [Copilot allowlist reference](https://docs.github.com/en/enterprise-cloud@latest/copilot/reference/copilot-allowlist-reference).
+   >
+   > Compare `daily_active_users` across dates with care. Since 2026-07-28 it also counts users active only in the GitHub Copilot app, and enterprise reports have counted users that only server-side telemetry confirms since 2026-06-15. The per-user reports (`users-1-day`, `users-28-day`) add `ai_credits_used` (since 2026-06-19), which the 2026-07-02 accuracy fixes raised for previously missed usage. Since 2026-09-11, the reports also include `daily_active_vscode_agent_users` for the VS Code Agents window.
 
 ## 15.4 Review Copilot audit events
 
@@ -141,22 +156,24 @@ References:
 
 For enterprise-level audit log access, navigate to `https://github.com/enterprises/YOUR-ENTERPRISE` → **Settings** → **Audit log** and use the same `action:copilot` filter. The enterprise audit log aggregates Copilot events from all organizations, giving you a single-pane view of policy changes and seat management across the enterprise.
 
+Audit log events don't include prompts or responses. If your enterprise uses Enterprise Managed Users, enterprise owners can export agent session data (prompts, responses and tool calls) from cloud agents, Copilot CLI and IDEs (public preview since 2026-07-02): turn on the Copilot usage records streaming and API policies on the AI Controls **Copilot** page, then use audit log streaming or `GET /enterprises/YOUR-ENTERPRISE/copilot/usage-records`.
+
 </details>
 
 6. Discuss how to use audit log data for Copilot governance:
    - Track policy changes over time to maintain a compliance trail.
    - Monitor seat assignment churn to identify teams that are adopting or abandoning Copilot.
-   - Correlate code review events (`copilot.cfr_create`) with PR merge rates to measure Copilot's impact on code quality.
-8. For more detailed telemetry beyond the audit log, use the **Copilot usage metrics API**. This API provides aggregated data on suggestion acceptance rates, active users, and language-level breakdowns — useful for measuring ROI and reporting to leadership.
+   - Correlate code review events (`copilot.cfr_create`) with PR merge rates to measure Copilot's impact on code quality. The usage metrics API also reports this directly: `pull_requests.total_merged_reviewed_by_copilot` and `pull_requests.median_minutes_to_merge_copilot_reviewed` (since 2026-04-08), and `copilot_suggestions_by_comment_type`, which counts code review suggestions and applied suggestions per comment type such as `security` (since 2026-05-08).
+7. For more detailed telemetry beyond the audit log, use the **Copilot usage metrics API**. This API provides aggregated data on suggestion acceptance rates, active users, and language-level breakdowns — useful for measuring ROI and reporting to leadership. Enterprise owners can also open **Insights** → **Copilot impact**: since 2026-08-07, its "Potential return on investment" section compares cost per developer, based on AI Credits consumption, and pull requests per month across adoption phases.
 
 ## 15.5 Verify your work
 
-1. Confirm you have reviewed the Copilot policy settings at the organization level (Section 15.1). You should be able to describe the current state of each policy: access, public code matching, cloud agent, code review, agent mode, and MCP servers.
+1. Confirm you have reviewed the Copilot policy settings at the organization level (Section 15.1). You should be able to describe the current state of each policy: access, public code matching, cloud agent (including its firewall and runner settings), code review, agent mode, the GitHub Copilot app, and MCP servers.
 2. Confirm you have added at least one content exclusion rule (Section 15.2). Navigate to **Organization Settings** → **Copilot** → **Content exclusion** and verify that your rule (e.g., `**/*.env`) appears in the list.
 3. Confirm you have reviewed seat assignment settings (Section 15.3). You should be able to describe whether the organization uses "all members", "selected members", or "disabled" — and explain the cost implications of each.
 4. Confirm you have explored the audit log for Copilot events (Section 15.4). You should be able to filter the audit log by `action:copilot` and identify at least two event types.
 5. Discuss with your table: **"What content exclusion rules would you set for your organization?"** Consider environment files, secrets, proprietary code, and compliance-sensitive paths.
-6. Discuss with your table: **"How would you measure Copilot ROI using the usage metrics API?"** Consider tracking adoption rates, suggestion acceptance rates, and correlating with developer productivity metrics.
+6. Discuss with your table: **"How would you measure Copilot ROI using the usage metrics API?"** Consider tracking adoption rates and AI adoption phases (`ai_adoption_phase`, since 2026-05-29), pull requests merged per phase (`total_pull_requests_merged`, since 2026-06-26), AI Credits per user (`ai_credits_used`, since 2026-06-19), suggestion acceptance rates, and the impact dashboard's return on investment section, and correlating them with developer productivity metrics.
 7. Discuss with your table: **"How would you design a Copilot rollout plan?"** Consider starting with pilot teams, using selected-member seat assignment, enabling automatic seat reclamation, and establishing content exclusion rules before enabling Copilot broadly.
 
-> **Note:** GitHub Copilot is evolving rapidly — new features, policy controls, and governance options are released frequently. Review your organization's Copilot policies on a regular cadence (at least quarterly) to ensure they align with your security, compliance, and cost management requirements. Check the [GitHub Copilot changelog](https://github.blog/changelog/label/copilot/) for the latest updates.
+> **Note:** GitHub Copilot is evolving rapidly — new features, policy controls, and governance options are released frequently. Review your organization's Copilot policies on a regular cadence (at least quarterly) to ensure they align with your security, compliance, and cost management requirements. From 2026-10-22, eligible generally available features left **Unconfigured** follow the enterprise's **Default policy for new features**, which ships **Enabled**, so new features can turn on between reviews. Check the [GitHub Copilot changelog](https://github.blog/changelog/label/copilot/) for the latest updates.

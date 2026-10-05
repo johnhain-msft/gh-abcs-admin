@@ -1,7 +1,7 @@
 # 🎙️ Presenter Script — Day 2: Repository, Security, API & Advanced Topics
 
 > **Total Duration:** 180 minutes (3 hours)
-> **Labs Demoed:** 11 (Labs 1–7, 11–14) — combined with Day 1's 4 demos, all 15 labs are covered across both days
+> **Labs Demoed:** 11 (Labs 1–7, 11–14) — combined with Day 1's 4 demos, Labs 1–15 are covered across both days; Labs 16–18 are self-paced extensions
 > **Slide Sources:**
 >
 > - **Main PowerPoint** — Slides 46–71 (open on projector/shared screen)
@@ -66,7 +66,7 @@
 
 "Today we're shifting focus from the organizational level down to the **repository level**. We're going to cover repository governance — how you control what happens inside your repos. We'll do a deep dive into rulesets, which are the modern replacement for branch protection rules. We'll look at GitHub's security scanning features. And then we'll get into the API, automation, and how to manage GitHub at scale with scripts and tooling."
 
-"We have eleven labs to demo today — combined with yesterday's four, that covers all fifteen labs across the workshop. I'll be doing live demos of each one so we can discuss the steps together as a group. By the end of today, you should feel confident understanding how to configure repository settings, protecting branches with rulesets, enabling security scanning across your org, and automating admin tasks with the GitHub API and CLI."
+"We have eleven labs to demo today — combined with yesterday's four, that covers Labs 1 to 15. Labs 16 to 18 are self-paced extensions you can work through after the workshop. I'll be doing live demos of each one so we can discuss the steps together as a group. By the end of today, you should feel confident understanding how to configure repository settings, protecting branches with rulesets, enabling security scanning across your org, and automating admin tasks with the GitHub API and CLI."
 
 "Any questions before we dive in? Great — let's get started."
 
@@ -92,7 +92,7 @@
 
 "This is what a repository landing page looks like. Let me walk you through what's here."
 
-"At the top you have the navigation tabs — Code, Issues, Pull requests, Actions, Projects, Wiki, Security, Settings. An important thing to know as an admin: **the tabs a user sees depend on their permissions**. Only repository admins see the Settings tab. If someone tells you they can't find Settings, check their access level."
+"At the top you have the navigation tabs — Code, Issues, Pull requests, Actions, Projects, Wiki, Security & quality, Settings. An important thing to know as an admin: **the tabs a user sees depend on their permissions**. Only repository admins see the Settings tab. If someone tells you they can't find Settings, check their access level."
 
 "The main area shows the file listing, and below that, the README renders automatically. That README is your repo's front door — it's the first thing people see."
 
@@ -122,7 +122,7 @@
 
 "One more important point — always prefer **team-based access** over adding individual users directly to repos. Teams scale; individual assignments don't. When someone leaves a team, their access updates automatically."
 
-"Now, a key navigation update: when you go to Settings, look for **Rules → Rulesets**, not Settings → Branches. The Branches page shows the legacy branch protection rules. Rulesets are the modern path, and that's what we're going to focus on after this demo."
+"Now, a key navigation update: when you go to Settings, look under 'Code, planning, and automation' for **Rulesets**, not Settings → Branches. The Branches page shows the legacy branch protection rules. Rulesets are the modern path, and that's what we're going to focus on after this demo."
 
 ---
 
@@ -206,7 +206,7 @@
 
 "**Targets:** Branch protection only covers branches. Rulesets can protect **branches, tags, and push targets**."
 
-"**Bypass:** With branch protection, admins automatically override. With rulesets, you define **granular bypass actors** — specific teams, apps, or roles — and even then, there are two bypass modes."
+"**Bypass:** With branch protection, admins automatically override. With rulesets, you define **granular bypass actors** — specific roles, teams, apps, or, on repository rulesets since 2026-05-07, individual users — and even then, there are two bypass modes."
 
 > **🖥️ ADVANCE to Day 2 Supplement — Slide 3: Ruleset Anatomy**
 
@@ -226,7 +226,7 @@
 
 "This is one of the biggest advantages of rulesets over branch protection."
 
-"**Organization rulesets** are defined once by an org owner and cascade down to all repositories — or to a subset of repos targeted by name pattern or custom properties. Only org owners can create these. They're ideal for enforcing baseline governance across your entire org."
+"**Organization rulesets** are defined once by an org owner and cascade down to all repositories — or to a subset of repos targeted by name pattern or custom properties. Since 2026-04-14 you can also target by deployment context: the `deployable:true` and `deployed:true` filters pick repositories that have an active storage or deployment record on your linked artifacts page. Only org owners can create these. They're ideal for enforcing baseline governance across your entire org."
 
 "**Repository rulesets** are scoped to a single repo. Repo admins can create them. They stack on top of any org rulesets that apply."
 
@@ -240,6 +240,8 @@
 
 "**Required reviews** — set a minimum number of reviewers. You can also configure: dismiss stale reviews when new commits are pushed, and require CODEOWNERS review, which means the designated code owners for the affected files must approve."
 
+"There's a Copilot-specific option here too: **Require an additional approval for unattributed Copilot pull requests**. It's in public preview, and the docs say it's on by default for new and existing rulesets. When Copilot opens a pull request under its own app identity — for example, someone asked it from a Teams or Slack thread, which works since 2026-08-21 — that pull request needs one more human approval than the rule asks for. If your rule requires zero approvals, it has no effect."
+
 "**Required status checks** — your CI/CD pipeline must pass before merging. You specify checks by name, and naming matters — it has to match exactly what your workflow reports."
 
 "**Require signed commits** — enforce commit signature verification."
@@ -252,11 +254,13 @@
 
 "Bypass actors are how you handle legitimate exceptions — like a CI bot that needs to push directly, or a release team that needs to merge without waiting for reviews."
 
-"There are two bypass modes. **Always** means the actor bypasses both direct push restrictions and PR merge rules. **Pull-requests only** means the actor is still blocked from direct pushing but can bypass PR review requirements when merging."
+"There are two bypass modes. **Always** means the actor bypasses both direct push restrictions and PR merge rules. **Pull-requests only** means the actor is still blocked from direct pushing but can bypass PR review requirements when merging. The REST API accepts a third value, `exempt`: the rules don't run for that actor at all, and no bypass audit entry is created. So if you see exempt actors in a ruleset's JSON, review them — they're the one bypass you won't find in Rule Insights."
 
-"Who can you set as bypass actors? Repo admins, org admins, specific teams, GitHub Apps, and deploy keys."
+"Who can you set as bypass actors? Repo admins, org admins, specific teams — including enterprise teams since 2026-06-04 — GitHub Apps, and deploy keys. And since 2026-05-07, a repository ruleset can also list individual users, so you no longer need a one-person team just to let one service account bypass."
 
-"And here's what makes this auditable: **every single bypass is logged in Rule Insights**. So you can always go back and see who bypassed what rule and when."
+"A related change from the same date: a repository admin can rename a branch that org or enterprise rulesets protect, as long as the new name stays inside every ruleset that applied to the old one. Org and enterprise owners control that with a branch-rename setting."
+
+"And here's what makes this auditable: **every Always or Pull-requests-only bypass is logged in Rule Insights**. So you can always go back and see who bypassed what rule and when."
 
 > **🖥️ ADVANCE to Day 2 Supplement — Slide 7: Tag Rulesets**
 
@@ -276,7 +280,7 @@
 
 > **💡 DISCUSSION PROMPT**
 > Ask: "Quick show of hands — how many of you are currently using branch protection rules? And how many have already migrated to rulesets?"
-> Note: If most are on legacy, emphasize that migration is manual but worthwhile. If some are on rulesets, ask what they like about them.
+> Note: If most are on legacy, point out that since 2026-08-11 a repository's rule can be migrated in place: **Settings → Branches → Convert to ruleset**, starting in **Evaluate** for a first migration. Org-wide policy still means building organization rulesets. If some are on rulesets, ask what they like about them.
 
 ---
 
@@ -284,7 +288,7 @@
 
 ### 📋 Stage Direction
 - This is a LIVE DEMO — you are driving, attendees watch your screen
-- Have your lab repository open in the browser at **Settings → Rules → Rulesets**
+- Have your lab repository open in the browser at **Settings → Rulesets → Rulesets** (under "Code, planning, and automation"; on some screens the menu is labeled **Rules**)
 - Keep terminal and browser both accessible
 
 ### 🎤 Script
@@ -294,9 +298,9 @@
 "This is Lab 3 — Repository Rulesets. We're going to create a branch ruleset from scratch, configure the key rules, and test the enforcement."
 
 > **🖥️ DEMO STEP 1: Navigate to Rulesets**
-> Navigate to: **Repository → Settings → Rules → Rulesets → New branch ruleset**
+> Navigate to: **Repository → Settings → Rulesets → Rulesets → New ruleset → New branch ruleset**
 
-"Here in the repo settings, under Rules, we have Rulesets. I'll click 'New branch ruleset' to create one. Notice we could also create a tag ruleset from here — we'll do that in Lab 6."
+"Here in the repo settings, under 'Code, planning, and automation', I open Rulesets and pick Rulesets. I'll click 'New ruleset', then 'New branch ruleset'. Notice we could also create a tag ruleset from here — we'll do that in Lab 6."
 
 > **🖥️ DEMO STEP 2: Name and target the ruleset**
 > Name it `default-branch-protection`, set target to Default branch
@@ -319,9 +323,9 @@
 "Now let's test this. I'll try to push a commit directly to main from the terminal. Watch what happens — there's the error. GitHub is blocking the push because our ruleset requires a pull request. That's exactly what we want."
 
 > **🖥️ DEMO STEP 6: Show Rule Insights**
-> Navigate to: **Settings → Rules → Rule Insights**
+> Navigate to: **Settings → Rulesets → Insights** (the same menu as step 1; on some screens it's labeled **Rules**)
 
-"And here in Rule Insights, we can see the enforcement event we just triggered. It shows the rule that was evaluated, the result, the actor, and the timestamp. This is your audit trail for all ruleset enforcement."
+"And here in Rule Insights, we can see the enforcement event we just triggered. It shows the rule that was evaluated, the result, the actor, and the timestamp. This is your audit trail for all ruleset enforcement. The charts at the top are the rule insights dashboard, generally available since 2026-08-25: successes, failures and bypasses over time, and the most active bypassers, with an export to CSV."
 
 "That's Lab 3. The key takeaway is that rulesets give you granular, auditable control over your branches. Any questions before we move to the advanced rulesets demo?"
 
@@ -367,9 +371,9 @@
 "Now let's protect our tags. I'll create a new ruleset — this time selecting 'Tag ruleset.' I'll target the pattern `v*` to catch all version tags. For the rules, I'll restrict who can create tags, block updates to existing tags, and block deletion. This prevents anyone from rewriting or removing your release markers."
 
 > **🖥️ DEMO STEP 6: Show Rule Insights dashboard**
-> Navigate to Rule Insights to show the evaluation results
+> Navigate to: **Organization Settings → Repository → Rule insights** to show the evaluation results, then **Dashboard** in the same menu
 
-"Let's check Rule Insights. Even in Evaluate mode, every evaluation is logged here. You can see what would have been blocked, which rule triggered, and who was the actor. This dashboard is your go-to for understanding the impact of a new policy before you enforce it."
+"Let's check Rule Insights. Even in Evaluate mode, every evaluation is logged here. You can see what would have been blocked, which rule triggered, and who was the actor. And the organization **Dashboard**, generally available since 2026-08-25, charts evaluations and top bypassers across all repositories and exports to CSV. This dashboard is your go-to for understanding the impact of a new policy before you enforce it."
 
 > **🖥️ DEMO STEP 7 (Optional): Export and import ruleset JSON**
 > Show the export ruleset button and the import UI
@@ -393,7 +397,7 @@
 
 "We've covered a lot of ground in the first hour — repository governance, templates, and a deep dive into rulesets with two live demos. Let's take a **10-minute break**. Stretch, grab a coffee, check your messages."
 
-"When we come back, we're going to shift to **security** — secret scanning, code scanning, push protection, and how to manage the cost of GitHub Advanced Security. See you back here at **[state the clock time]**."
+"When we come back, we're going to shift to **security** — secret scanning, code scanning, push protection, and how to manage the cost of GitHub Secret Protection and GitHub Code Security. See you back here at **[state the clock time]**."
 
 ---
 
@@ -421,7 +425,7 @@
 
 "GitHub offers two paid security products, and it's important to understand the distinction."
 
-"**Secret Protection** — at **19 dollars per active committer per month** — gives you secret scanning with over 200 partner patterns, push protection to block secrets before they land in your repo, custom patterns for your own proprietary secrets, and AI-powered detection for generic credentials."
+"**Secret Protection** — at **19 dollars per active committer per month** — gives you secret scanning with over 200 partner patterns, push protection to block secrets before they land in your repo, custom patterns for your own proprietary secrets, and **AI-detected secrets**, which uses AI to find passwords and other secrets that don't follow a fixed format. Until 2026-07-10 that feature was called Copilot secret scanning; only the name changed."
 
 "**Code Security** — at **30 dollars per active committer per month** — includes CodeQL for static analysis, Copilot Autofix for AI-generated remediation, Dependabot for dependency management, dependency review for pull requests, license compliance checks, and security campaigns for coordinated remediation."
 
@@ -519,17 +523,19 @@
 "Next, let's enable code scanning. I'll turn on CodeQL with the default setup — this is the zero-configuration option. GitHub automatically detects the languages in the repo and sets up the analysis. Let me switch to the Actions tab — you can see the CodeQL workflow is now running. The first analysis takes a few minutes."
 
 > **🖥️ DEMO STEP 5: Review code scanning alerts**
-> Navigate to: **Security → Code scanning alerts**, review alerts and show Copilot Autofix
+> Navigate to: **Security & quality → Code scanning**, review alerts and show Copilot Autofix (or **Assign to Copilot**)
 
-"While that's running, let me show you what code scanning alerts look like once they're generated. Here under Security, Code scanning alerts. Each alert shows the vulnerability type, severity, file location, and — this is powerful — **Copilot Autofix** can generate a suggested fix. You can review the fix and merge it directly from the alert."
+"While that's running, let me show you what code scanning alerts look like once they're generated. Here under Security & quality, Code scanning. Each alert shows the vulnerability type, severity, file location, and — this is powerful — **Copilot Autofix** can generate a suggested fix. You can review the fix and merge it directly from the alert. Copilot Autofix comes with Code Security and doesn't use GitHub AI Credits, Copilot's billing unit."
+
+"If Copilot cloud agent is available in the repository, you'll see **Assign to Copilot** instead. That's agentic autofix, in public preview since 2026-07-10: Copilot explores the codebase, re-runs CodeQL to check its fix, and opens a draft pull request. Each run is a cloud agent session, so it uses AI Credits and Actions minutes — budget for it. The enterprise Copilot Autofix policy turns off both kinds."
 
 > **🖥️ DEMO STEP 6: Review Dependabot alerts**
-> Navigate to: **Security → Dependabot alerts**, show advisory detail
+> Navigate to: **Security & quality → Dependabot alerts**, show advisory detail
 
 "Let's also look at Dependabot alerts. These are free on all repos. Each alert links to the CVE advisory, shows which dependency is affected, and in many cases Dependabot has already opened a pull request with the fix."
 
 > **🖥️ DEMO STEP 7: Security Overview dashboard**
-> Navigate to: **Organization → Security tab → Overview**, show Risk, Coverage, and Campaigns tabs
+> Navigate to: **Organization → Security & quality tab → Overview**, show Risk, Coverage, and Campaigns tabs
 
 "Finally, let's look at the big picture. At the org level, the Security Overview dashboard gives you the full view. The Risk tab shows which repos have the most critical alerts. The Coverage tab shows which repos have security features enabled — this is where you find gaps. And the Campaigns tab is for coordinated remediation across teams."
 
@@ -562,7 +568,7 @@
 
 "Let's break down the numbers. Secret Protection is 19 dollars per committer per month. Code Security is 30 dollars. If you enable both, that's 49 dollars per committer per month, or **588 dollars per committer per year**."
 
-"The key term here is **active committer** — someone who has made at least one commit in the last 90 days to a repo where that feature is enabled. If a developer is active in 10 repos, they're counted **once** per org, not 10 times. That's important for cost modeling."
+"The key term here is **active committer** — someone who has made at least one commit in the last 90 days to a repo where that feature is enabled. If a developer is active in 10 repos, they're counted **once** across your organization or enterprise, not 10 times. That's important for cost modeling."
 
 "At scale, this adds up. A hundred committers is roughly 59,000 dollars a year for both products. That's why a strategy matters."
 
@@ -606,7 +612,7 @@
 
 "GitHub lets you set **spending limits independently** for each product. You can also set alert-only budgets so you get notified when spending approaches a threshold."
 
-"One thing to be aware of: GHAS is license-based, not metered, so 'stop usage at limit' doesn't apply the same way it does for Actions minutes or Packages storage. Budget alerts are your main control lever."
+"One thing to be aware of: GHAS is license-based, not metered. Since 2026-05-28 you can still give it a **hard budget in license count**: when the limit is reached, GHAS can't be turned on for more repositories until you raise the budget or the next billing cycle starts. It isn't switched off where it's already running, and new committers there still count, so you can still go over. The 75, 90 and 100 percent alerts still fire alongside the hard limit."
 
 > **🖥️ ADVANCE to Day 2 Supplement — Slide 23: Cost Optimization Checklist**
 
@@ -667,9 +673,11 @@
 
 "**GitHub Apps** — generate tokens prefixed with `ghs_` for server-to-server or `ghu_` for user-to-server. These are the **recommended** method for automation and integrations. They have fine-grained permissions, don't consume a license seat, and act as their own identity."
 
+"One change to know about on Enterprise Cloud: since 2026-04-27, GitHub has been rolling out a stateless format for installation tokens. They still start with `ghs_`, but each one is a JWT of about 520 characters, and the length varies. So treat tokens as opaque strings: no length checks, no regexes like `ghs_` plus 36 characters, and make sure any column that stores tokens holds at least 520 characters. While you test, a temporary `X-GitHub-Stateless-S2S-Token` header on the create-installation-token call forces the stateless or the classic format. Enterprise Server isn't affected."
+
 "**OAuth Apps** — tokens prefixed with `gho_`. These impersonate the authenticating user. Used when you need to act on behalf of a user."
 
-"**GITHUB_TOKEN** — prefixed with `ghs_`. Automatically available inside GitHub Actions workflows. Scoped to the repository where the workflow runs."
+"**GITHUB_TOKEN** — prefixed with `ghs_`. Automatically available inside GitHub Actions workflows. Scoped to the repository where the workflow runs. It's an installation token too, so it was among the first to get the stateless format."
 
 "As of **March 2025**, fine-grained PATs are generally available and recommended over classic PATs."
 
@@ -853,7 +861,7 @@
 
 > **🖥️ ADVANCE to PPT Slide 64: Actions Policies**
 
-"As an admin, you control **which Actions are allowed** at the enterprise, org, and repo level. You can allow all actions, restrict to local actions only, or select specific actions from verified creators."
+"As an admin, you control **which Actions are allowed** at the enterprise, org, and repo level. You can allow all actions, restrict to local actions only, or select specific actions from verified creators. Who and which events can *start* a workflow is a separate control: since 2026-09-17, workflow execution protections have their own **Policies** section in the Actions settings. Doc 30 and self-paced Lab 18 cover them."
 
 "You also control artifact retention periods, whether fork pull requests can run workflows, and the default **GITHUB_TOKEN permissions**. Since February 2023, the default for new repos and orgs is **read-only**. That's a security improvement — workflows need to explicitly request write permissions."
 
@@ -1207,7 +1215,7 @@
 
 > **🖥️ Main PowerPoint — Slide 70: Q&A**
 
-"Before I share next steps, let me pause for any questions. We covered a lot today — repository governance, rulesets, security scanning, push protection, GHAS cost optimization, the API and authentication methods, Actions, automation, and more. We went through eleven live demos together, bringing our total across both days to all fifteen labs."
+"Before I share next steps, let me pause for any questions. We covered a lot today — repository governance, rulesets, security scanning, push protection, GHAS cost optimization, the API and authentication methods, Actions, automation, and more. We went through eleven live demos together, bringing our total across both days to fifteen labs, and Labs 16 to 18 are there for you as self-paced extensions."
 
 "Any questions about anything we covered today or yesterday?"
 

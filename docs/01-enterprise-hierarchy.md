@@ -84,6 +84,7 @@ The enterprise account represents the apex of the hierarchy and serves as the ad
 - **Policies:** Top-level policy inheritance and enforcement
 - **Visibility:** Aggregate insights and reporting across the enterprise
 - **Identity:** Enterprise-level SSO configuration and authentication requirements
+- **Enterprise teams:** Since 2026-06-04, groups of users defined once at the enterprise and assigned to organizations, enterprise roles, Copilot Business licenses, cost centers and ruleset bypass lists, with IdP-driven membership for Enterprise Managed Users. They sit beside organization teams rather than replacing them; see [28-enterprise-teams.md](28-enterprise-teams.md) and [Lab 16](../labs/lab16.md)
 
 ### Organization Level
 
@@ -673,13 +674,14 @@ GitHub Codespaces provides cloud-based development environments that enterprise 
 
 **Dev Container Governance:** Standardize development environments using `devcontainer.json` files in repository templates. This ensures all Codespaces include required tools, extensions, and configurations.
 
-> **Note:** Codespaces are not available with Enterprise Managed Users (EMU) enterprises. EMU users must use local development environments or GitHub.dev for lightweight editing.
+> **Note:** With Enterprise Managed Users, managed user accounts can only create codespaces owned by the enterprise: codespaces for repositories owned by their organization, or forks of those repositories, when the organization pays for GitHub Codespaces. They can't create codespaces for their personal repositories, for repositories outside their organizations or from GitHub's public templates, and can't publish a codespace created from a template to a new repository. See [04-enterprise-managed-users.md](04-enterprise-managed-users.md#technical-limitations). On GHE.com (GitHub Enterprise Cloud with data residency), GitHub Codespaces has been generally available in every data residency region (Australia, EU, Japan and US) since 2026-04-01. There, codespaces must be organization- or enterprise-owned, because user-owned codespaces aren't supported for data residency accounts.
 
 **Codespaces Secrets Governance:**
-- **Organization secrets** — org owners can create Codespaces secrets shared across all or selected repos. Navigate to **Org Settings → Codespaces → Secrets**.
-- **Repository secrets** — repo admins can create secrets scoped to Codespaces in that repo. Navigate to **Repo Settings → Codespaces → Secrets**.
-- **User secrets** — individual developers manage personal Codespaces secrets in **GitHub Settings → Codespaces → Secrets**. These are _not_ visible to org admins.
+- **Organization secrets** — org owners can create Codespaces secrets and give all repositories, only private repositories, or selected repositories access. Navigate to the organization's **Settings** → **Secrets and variables** → **Codespaces** (in the "Security" section of the sidebar).
+- **Repository secrets** — repo admins can create secrets scoped to Codespaces in that repo. Navigate to the repository's **Settings** → **Secrets and variables** → **Codespaces**.
+- **User secrets** — individual developers manage personal Codespaces secrets in their personal **Settings** → **Codespaces**, under "Codespaces secrets", and choose which repositories can use each one. These are _not_ visible to org admins.
 - **Governance recommendation:** Use org-level secrets for shared credentials (database URLs, API keys). Restrict repo-level secrets to repo-specific values. Educate developers that user-level secrets bypass org governance.
+- **Agents secrets are separate:** Since 2026-05-08, Copilot cloud agent has its own **Agents** secrets and variables type beside Actions, Codespaces and Dependabot. Organization owners can share them with all, private or selected repositories (**Settings** → **Secrets and variables** → **Agents**), and repository admins can set repository-level values. Secrets in a repository's former `copilot` environment were migrated to the repository-level Agents type.
 
 **Codespaces Audit Log Events:**
 - Key audit events: `codespaces.create`, `codespaces.delete`, `codespaces.export`, `codespaces.update_settings`

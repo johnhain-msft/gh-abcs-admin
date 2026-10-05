@@ -7,9 +7,9 @@
 
 GitHub Apps and GitHub Marketplace form a critical part of the GitHub Enterprise Cloud (GHEC) ecosystem, enabling organizations to extend GitHub's functionality through vetted integrations. For enterprise administrators, the primary concerns are governance and security: controlling which apps can be installed, who can install them, what permissions they receive, and auditing all app-related activity.
 
-GitHub Apps are the officially recommended integration type, replacing OAuth Apps with a more secure, fine-grained permissions model. They use short-lived installation tokens instead of long-lived OAuth tokens, support built-in centralized webhooks, and their bot accounts do not consume enterprise seats.
+GitHub Apps are the officially recommended integration type, replacing OAuth Apps with a more secure, fine-grained permissions model. They use short-lived installation tokens (1 hour) instead of user-bound OAuth tokens, which stay valid until revoked unless the OAuth app uses expiring tokens (on by default for OAuth apps created since 2026-08-14). GitHub Apps also support built-in centralized webhooks, and their bot accounts do not consume enterprise seats.
 
-The emergence of MCP (Model Context Protocol) and Copilot Extensions represents the newest frontier in GitHub's extensibility model, enabling AI-powered tools to integrate with the GitHub platform under enterprise governance controls.
+AI extensibility runs through MCP (Model Context Protocol) servers, agent plugins that bundle skills with MCP servers (Agent Plugins 1.0, GA 2026-08-12) and partner agent apps, all of which enterprises govern with Copilot policies and enterprise managed settings.
 
 This guide covers the full app lifecycle from an enterprise administrator's perspective: app types, Marketplace mechanics, permission models, internal app development, governance policies, MCP/Copilot extensibility, and webhook-driven architectures.
 
@@ -23,13 +23,13 @@ GitHub Apps are the officially recommended way to integrate with GitHub. The doc
 |---------|------------|------------|
 | **Permission Model** | Fine-grained permissions (repository, organization, account levels) | Coarse OAuth scopes (e.g., `repo` grants full access) |
 | **Repository Access** | User chooses specific repositories during installation | Access to all repos user can see |
-| **Authentication** | Installation access tokens (1-hour expiry) + user access tokens | Long-lived OAuth tokens (until revoked) |
+| **Authentication** | Installation access tokens (1-hour expiry) + user access tokens | OAuth tokens stay long-lived unless the app uses expiring tokens (since 2026-08-14: 8-hour access token plus a refresh token valid for 6 months without use; on by default for new OAuth apps) |
 | **Acting As** | Can act independently (bot) OR on behalf of user | Always acts on behalf of a user |
 | **Webhooks** | Built-in, centralized webhook for all repos in installation | Must configure per-repository or per-organization |
 | **Rate Limits** | Scale with number of repos + org users | Fixed 5,000 requests/hour per user |
 | **Enterprise Seats** | App bots do NOT consume a GHEC seat | Machine user accounts DO consume a seat |
 | **Org Policy Scope** | NOT subject to organization OAuth app access restrictions | Subject to OAuth app access restrictions |
-| **Enterprise-Level Access** | Cannot yet access the enterprise object itself | Can access enterprise-level resources |
+| **Enterprise-Level Access** | Can be installed on the enterprise account with enterprise permissions (third-party apps since 2026-08-07; public preview, partial API coverage) | Can access enterprise-level resources through the authorizing user's token |
 
 ### Decision Matrix
 
@@ -39,29 +39,34 @@ Use this matrix to determine which app type fits your integration needs:
 |----------|-----------------|-----------|
 | CI/CD pipeline integration | GitHub App | Fine-grained repo access, no seat cost |
 | Code quality scanning tool | GitHub App | Needs only specific repo permissions |
-| Enterprise-wide reporting dashboard | OAuth App | Needs enterprise-level API access |
+| Enterprise-wide reporting dashboard | GitHub App (enterprise installation) | Enterprise permissions without a person's token; check API coverage first |
 | Bot for automated PR reviews | GitHub App | Acts independently, centralized webhooks |
 | Internal developer tool | GitHub App | Short-lived tokens, scoped access |
-| Enterprise billing management | OAuth App | Requires enterprise object access |
+| Enterprise billing management | GitHub App (enterprise installation) | Enterprise billing permission (since 2026-08-26) covers usage, budgets and cost centers |
 | Issue triaging automation | GitHub App | Repository-scoped, event-driven |
 | Cross-org analytics | GitHub App | Can access org resources without seats |
 
 ### When OAuth Apps Are Still Required
 
-GitHub Apps cannot yet be given permissions against the enterprise object itself. If an integration needs to access enterprise-level resources such as:
+Since 2026-08-07, enterprise owners can install GitHub Apps, including public third-party apps, on the enterprise account itself. An enterprise installation receives only the enterprise permissions the app requests. It gets no access to the enterprise's organizations or repositories (install the app on those separately) and receives no webhooks. Enterprise-installed apps are in public preview, and not every enterprise API supports them yet. The docs list these supported operations:
 
-- Enterprise billing information
-- Enterprise audit log (enterprise-level endpoint)
-- Enterprise member management across all organizations
-- Enterprise settings and policies
+- Creating and listing organizations, managing enterprise users, and calling the enterprise SCIM APIs
+- Creating and managing GitHub App installations in the enterprise's organizations
+- Managing enterprise custom repository properties
+- Enterprise billing: usage reports, budgets and cost centers (enterprise billing permission, since 2026-08-26)
+- Authorizing personal access tokens (classic) and SSH keys for SSO in selected organizations
 
-Then an OAuth App (or a personal access token with appropriate scopes) is still required. GitHub Apps can access enterprise-owned organization and repository resources, but not the enterprise object directly.
+An OAuth App (or a personal access token with appropriate scopes) is still required for enterprise APIs that don't support GitHub Apps yet; for example, the docs list doesn't include the enterprise audit log API. Check [Permissions required for GitHub Apps](https://docs.github.com/en/enterprise-cloud@latest/rest/authentication/permissions-required-for-github-apps) and [Installing a GitHub App on your enterprise](https://docs.github.com/en/enterprise-cloud@latest/apps/using-github-apps/installing-a-github-app-on-your-enterprise) before you choose.
 
 ### Security Advantages of GitHub Apps
 
 **Short-Lived Tokens:**
 
-GitHub App installation tokens expire after one hour, significantly reducing the blast radius of a token leak compared to OAuth tokens that persist until explicitly revoked.
+GitHub App installation tokens expire after one hour, significantly reducing the blast radius of a token leak compared to OAuth tokens, which persist until explicitly revoked unless the OAuth app uses expiring tokens (an 8-hour access token plus a refresh token valid for 6 months; on by default for OAuth apps created since 2026-08-14).
+
+**Installation Token Format:**
+
+Since 2026-04-27, GitHub has rolled out a stateless format for newly issued installation tokens in stages: Actions `GITHUB_TOKEN` and first-party integrations first, then all GitHub App installation tokens from mid-May to late June 2026. Tokens keep the `ghs_` prefix but carry a JWT (`ghs_APPID_JWT`), are about 520 characters long and vary in length. Treat them as opaque strings: remove fixed-length checks and regexes such as `ghs_[A-Za-z0-9]{36}`, and make sure token storage holds at least 520 characters. For testing, the temporary `X-GitHub-Stateless-S2S-Token` request header (`enabled` or `disabled`) on `POST /app/installations/{installation_id}/access_tokens` forces either format; GitHub will stop honoring it at a date it announces separately. The change applies to GitHub Enterprise Cloud, including data residency; GitHub Enterprise Server isn't affected.
 
 **Principle of Least Privilege:**
 
@@ -115,6 +120,8 @@ sequenceDiagram
     App->>Repo: API calls on behalf of user
     Repo-->>App: Data (intersection of app + user permissions)
 ```
+
+To find an installation ID without paging through `GET /app/installations`, an app authenticated with its JWT can call `GET /orgs/{org}/installation`, `GET /repos/{owner}/{repo}/installation`, `GET /users/{username}/installation` or, since 2026-05-13, `GET /enterprises/{enterprise}/installation` for an installation on an enterprise account.
 
 ### Rate Limit Comparison
 
@@ -200,12 +207,12 @@ The app installation process follows a structured workflow:
 1. **Discovery:** User finds the app on Marketplace, a third-party site, or via direct URL (`https://github.com/apps/APP_NAME/installations/new`)
 2. **Permission Review:** GitHub displays the exact permissions the app requests before installation
 3. **Repository Selection:** User selects which repositories the app can access (all repositories or specific repositories)
-4. **Installation:** App is installed at the organization or personal account level
+4. **Installation:** App is installed at the organization or personal account level, or, for apps with enterprise permissions, on the enterprise account (see [When OAuth Apps Are Still Required](#when-oauth-apps-are-still-required))
 5. **Authorization (if needed):** If the app acts on behalf of users, each user must separately authorize the app
 
 ### Fine-Grained Permissions Model
 
-GitHub Apps use a three-tier permissions model:
+GitHub Apps have four types of permissions: repository, organization, enterprise and account:
 
 #### Repository Permissions
 
@@ -230,6 +237,14 @@ Access to organization-level resources:
 - **Administration** — manage organization settings
 - **Custom repository roles** — manage custom roles
 - **Custom organization roles** — manage org-level roles
+
+#### Enterprise Permissions
+
+Access to manage an enterprise, used only when the app is installed on the enterprise account. Since 2026-08-07, any user or organization can create a GitHub App with enterprise permissions; to be installed on an enterprise, the app must be public or internal. Enterprise owners see and grant only the enterprise permissions the app requests. Examples:
+
+- The enterprise billing permission — read, or read and write, the enterprise billing REST API: usage, budgets and cost centers (since 2026-08-26)
+- **Enterprise credentials** — with write access, authorize existing personal access tokens (classic) and SSH keys for SSO across organizations (since 2026-09-16)
+- **Enterprise organization installations** and **Enterprise organization installation repositories** — manage app installations across the enterprise's organizations; apps that request these can only be installed on the enterprise that owns them
 
 #### Account Permissions
 
@@ -288,10 +303,12 @@ Enterprise administrators should regularly audit installed apps:
 gh api --paginate /orgs/{org}/installations \
   --jq '.installations[] | {id: .id, app: .app_slug, permissions: .permissions}'
 
-# List OAuth apps authorized by organization members
+# List SAML SSO credential authorizations (PATs, SSH keys) in an organization
 gh api --paginate /orgs/{org}/credential-authorizations \
   --jq '.[] | {login: .login, credential_type: .credential_type}'
 ```
+
+Since 2026-09-16, enterprises that use enterprise-level SSO can let an enterprise-installed GitHub App authorize an existing personal access token (classic) or SSH key for SSO in up to 50 organizations per request (`POST /enterprises/{enterprise}/credential-authorizations`), instead of each developer authorizing it per organization. Turn it on in enterprise **Settings → Authentication security → Allow GitHub Apps to authorize credentials**. The app must be owned by the enterprise or one of its organizations, have write access to the **Enterprise credentials** permission and call the API with an enterprise installation token. It identifies the credential by token ID or SSH key fingerprint, so no secret passes to the app.
 
 ## Creating Internal GitHub Apps
 
@@ -325,7 +342,7 @@ For personal apps:
 | **App name** | Unique name across all of GitHub | Use org prefix: `myorg-deploy-bot` |
 | **Description** | What the app does | Be specific about capabilities |
 | **Homepage URL** | Landing page for the app | Internal wiki or docs page |
-| **Callback URL** | OAuth redirect (if using user auth) | Only needed for user-to-server flow |
+| **Callback URL** | OAuth redirect (if using user auth) | Only needed for user-to-server flow. You can register up to 10 (OAuth apps too, since 2026-08-14). Keep wildcard matching off unless you control every subdomain and path under the URL |
 | **Webhook URL** | Endpoint for event delivery | Your server's webhook handler endpoint |
 | **Webhook secret** | HMAC secret for payload verification | Generate with `openssl rand -hex 32` |
 
@@ -424,6 +441,7 @@ module.exports = (app) => {
 - Rotate private keys on a regular schedule
 - Use webhook secrets and verify every payload signature
 - Restrict the app to internal visibility (not listed on Marketplace)
+- Review callback (redirect) URLs on every GitHub App and OAuth app you own: wildcard matching sends authorization codes to any subdomain or subpath of the URL, and it is on for apps that had a single callback URL before 2026-08-03 — turn it off unless you need it
 
 **Operations:**
 
@@ -625,7 +643,7 @@ Enterprise administrators control MCP availability through the **"MCP servers in
 
 **Key policy details:**
 
-- **Disabled by default** — admins must explicitly enable MCP
+- **Default state:** until 2026-10-22 the policy stays off unless an admin enables it. From 2026-10-22, if it is left Unconfigured, it follows the enterprise's **Default policy for new features**, which ships **Enabled**, so set it explicitly
 - Available at both enterprise and organization levels
 - Only applies to **Copilot Business** and **Copilot Enterprise** subscriptions
 - Does NOT govern Copilot Free, Pro, or Pro+ users
@@ -635,9 +653,20 @@ Enterprise administrators control MCP availability through the **"MCP servers in
 
 | Setting | Effect |
 |---------|--------|
-| **Disabled** (default) | MCP servers cannot be used with Copilot in managed surfaces |
-| **Enabled for all orgs** | All organizations can use MCP servers |
-| **Enabled for selected orgs** | Only specified organizations can use MCP servers |
+| **Enabled everywhere** | MCP servers can run in Copilot clients for Copilot Business and Enterprise users; restrict which ones with an allowlist (below). The organization-level setting is **Enabled** |
+| **Disabled** | MCP servers cannot be used with Copilot in managed surfaces |
+| **Let organizations decide** | Each organization's owners set the policy for their organization |
+| **Unconfigured** | Off until 2026-10-22; from then it follows the **Default policy for new features**, which ships **Enabled** |
+
+**MCP allowlists in enterprise managed settings (GA 2026-08-06):** Enterprise owners can approve or block individual MCP servers by adding `allowedMcpServers` and `deniedMcpServers` to `copilot/managed-settings.json` in the enterprise's `.github-private` repository. Entries match a remote server by URL (`serverUrl`, `*` wildcards allowed), a local server by exact command and arguments (`serverCommand`), or a server by its user-assigned name (`serverName`, a convenience rather than a security control because users can rename servers). A deny match always blocks; when an allowlist exists, unlisted servers are blocked; and a malformed file blocks every server except built-in defaults such as the GitHub MCP server. The 2026-08-06 post lists enforcement in the GitHub Copilot app, Copilot CLI and VS Code. The **MCP servers in Copilot** policy must still allow MCP for any server to run. See [Enterprise managed settings](./29-enterprise-managed-settings.md).
+
+**Registry-based restriction (public preview):** Since 2026-04-16, enterprise and organization owners can instead point Copilot at an internal MCP registry (**MCP Registry URL** on the **MCP** page of AI controls) and set **Restrict MCP access to registry servers** to **Registry only**. GitHub's docs say this isn't the recommended method: it matches servers only by name or ID, and users can bypass it by editing configuration files. Prefer the managed-settings allowlist.
+
+**Agent finder** (since 2026-06-17) lets Copilot discover MCP servers, skills and agents on demand from a registry you choose, either GitHub's curated public catalog or a private registry, and installs nothing automatically. The post says enterprises limit what agents can discover through managed settings; the managed settings reference documents no separate key for it.
+
+### Plugins and Plugin Marketplaces
+
+Agent plugins package skills, MCP server configurations, hooks and custom agents into one installable unit; Agent Plugins 1.0 is the open format (GA 2026-08-12). Enterprises govern plugins in `copilot/managed-settings.json`: `enabledPlugins` installs or blocks plugins for everyone, `extraKnownMarketplaces` adds marketplaces, and `strictKnownMarketplaces` (since 2026-06-25) restricts installs to listed marketplaces. The Awesome Copilot marketplace is available by default, so set `strictKnownMarketplaces` if you need to control where plugins come from, and pair it with the MCP allowlist because plugins can carry MCP servers. The May and June 2026 previews used `.github/copilot/settings.json`, which is still read for backward compatibility. See [Enterprise Managed Settings](./29-enterprise-managed-settings.md#plugins-and-marketplaces).
 
 ### Copilot Extensions in Marketplace
 
@@ -645,25 +674,28 @@ The Copilot extensibility landscape includes integrations available through Mark
 
 - **Metrics dashboards** — track Copilot adoption and productivity
 - **License monitors** — manage Copilot seat allocation
-- **Project management integrations** — Linear, Jira integration with coding agent
+- **Project management integrations** — Linear, Jira integration with Copilot cloud agent
 - **Code review tools** — AI-powered review assistants
 
 These are standard GitHub Apps that complement Copilot, not "Copilot Extensions" in the traditional sense. The extensibility model has shifted toward MCP as the primary mechanism.
 
+**Agent apps** (since 2026-06-02; public preview per the docs) are partner agents distributed as GitHub Apps in Marketplace. After an app is installed and its agent features are enabled, users can assign it an issue, @mention it in a pull request comment or start it from the Agents UI. In an organization owned by an enterprise, an administrator must also enable the **Agent apps** Copilot policy. Sessions run on Copilot cloud agent and consume GitHub AI Credits, and each user authorizes the app through OAuth on first use, so review agent apps through the same app approval process.
+
 ### Copilot Cloud Agent Integrations
 
-The Copilot cloud agent (coding agent) supports MCP servers configured at the repository level:
+Copilot cloud agent supports MCP servers configured at the repository level:
 
 - **GitHub MCP server** and **Playwright MCP server** are configured by default
-- Additional MCP servers can be added via repository configuration
-- Third-party Marketplace apps can assign work to the coding agent (e.g., "GitHub Copilot for Linear" assigns Linear issues to the coding agent)
+- Repository administrators add other servers as JSON in repository **Settings → Copilot → MCP servers**, with any secrets stored as Agents secrets prefixed `COPILOT_MCP_`. Since 2026-06-02, Copilot code review uses the same configuration (public preview), so a server added for the agent can also run during reviews
+- Third-party Marketplace apps can assign work to Copilot cloud agent (e.g., "GitHub Copilot for Linear" assigns Linear issues to Copilot cloud agent)
+- To audit this at scale, `GET /repos/{owner}/{repo}/copilot/cloud-agent/configuration` (public preview since 2026-05-18) returns a repository's MCP configuration, enabled tools, Actions workflow approval setting and firewall configuration
 
 ### MCP Security Considerations
 
-**Push Protection:**
+**Secret Scanning in MCP:**
 
-- Push protection secures GitHub MCP server interactions for public repos and repos with GitHub Advanced Security (GHAS — now Secret Protection + Code Security) enabled
-- Blocks secrets from appearing in AI-generated responses
+- Push protection secures GitHub MCP server interactions for public repos and repos with Secret Protection enabled, and blocks secrets from appearing in AI-generated responses
+- Since 2026-05-05 (GA), the GitHub MCP server's secret scanning tools let Copilot CLI, VS Code and other MCP clients scan local changes before commit, for repositories with Secret Protection. They work only with the remote GitHub MCP server, follow your organization's push protection configuration, and return findings to the chat session only: nothing is stored as an alert
 
 **Access Control:**
 
@@ -673,12 +705,12 @@ The Copilot cloud agent (coding agent) supports MCP servers configured at the re
 
 **Best Practices for Enterprise MCP Governance:**
 
-1. Start with MCP **disabled** at the enterprise level
+1. Set the **MCP servers in Copilot** policy explicitly before 2026-10-22, when an Unconfigured policy starts following the **Default policy for new features** (Enabled by default)
 2. Enable for a pilot organization first
-3. Establish an approved MCP server list
+3. Establish an approved MCP server list and enforce it with `allowedMcpServers` and `deniedMcpServers` in enterprise managed settings. GitHub's docs recommend keeping the MCP policy enabled and restricting servers this way, rather than relying on a custom MCP registry, which users can bypass by editing configuration files
 4. Document data flow for each MCP server (what data leaves your environment)
-5. Review MCP server configurations in repository `.github/copilot/` directories
-6. Monitor for unauthorized MCP server additions via code review policies
+5. Review repository MCP configurations in repository **Settings → Copilot → MCP servers** (not files in the repository), or audit them at scale with the cloud agent configuration REST API
+6. Limit repository admin access, because repository administrators change this configuration in settings, where pull request review doesn't see it
 
 ## Webhook-Driven Apps
 
@@ -705,7 +737,7 @@ GitHub Apps receive a **single, centralized webhook** for all repositories in an
 | **Pull Request** | `pull_request`, `pull_request_review`, `pull_request_review_comment` | Code review automation, merge checks |
 | **Issues** | `issues`, `issue_comment`, `label` | Triage bots, SLA tracking |
 | **CI/CD** | `check_run`, `check_suite`, `workflow_run`, `deployment` | Status reporting, deployment gates |
-| **Security** | `code_scanning_alert`, `dependabot_alert`, `secret_scanning_alert` | Security automation, alerting |
+| **Security** | `code_scanning_alert`, `dependabot_alert`, `secret_scanning_alert` | Security automation, alerting. Since 2026-07-15, `secret_scanning_alert` payloads include `secret_category` (`default` for provider and custom patterns, `generic` for generic patterns and AI-detected secrets) for routing |
 | **Organization** | `membership`, `team`, `organization` | User provisioning, team sync |
 
 ### Webhook Payload Verification
@@ -808,7 +840,7 @@ smee --url https://smee.io/YOUR_CHANNEL --target http://localhost:3000/webhooks
 1. [About Creating GitHub Apps](https://docs.github.com/en/apps/creating-github-apps/about-creating-github-apps/about-creating-github-apps) — GitHub App fundamentals and architecture
 2. [Differences Between GitHub Apps and OAuth Apps](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps) — Comprehensive comparison of app types
 3. [About GitHub Marketplace for Apps](https://docs.github.com/en/apps/github-marketplace/github-marketplace-overview/about-github-marketplace-for-apps) — Marketplace overview and listing types
-4. [About Building Copilot Extensions](https://docs.github.com/en/copilot/building-copilot-extensions/about-building-copilot-extensions) — MCP and Copilot extensibility
+4. [About Model Context Protocol (MCP)](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/context/mcp) — MCP and Copilot extensibility (GitHub App-based Copilot Extensions were disabled on 2025-11-10)
 5. [Migrating OAuth Apps to GitHub Apps](https://docs.github.com/en/apps/creating-github-apps/about-creating-github-apps/migrating-oauth-apps-to-github-apps) — Step-by-step migration guide
 6. [Choosing Permissions for a GitHub App](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app) — Fine-grained permissions reference
 7. [About OAuth App Access Restrictions](https://docs.github.com/en/enterprise-cloud@latest/organizations/managing-oauth-access-to-your-organizations-data/about-oauth-app-access-restrictions) — Organization-level OAuth controls
@@ -831,3 +863,4 @@ smee --url https://smee.io/YOUR_CHANNEL --target http://localhost:3000/webhooks
 - [06-policy-inheritance.md](./06-policy-inheritance.md) — Policy enforcement and inheritance across enterprise hierarchy
 - [08-security-compliance.md](./08-security-compliance.md) — Security scanning, audit logging, and compliance
 - [12-github-copilot-governance.md](./12-github-copilot-governance.md) — Copilot policies and governance controls
+- [29-enterprise-managed-settings.md](./29-enterprise-managed-settings.md) — Enterprise managed settings: MCP allowlists, plugins and marketplaces

@@ -32,6 +32,7 @@ The following sections organize best practices around operational pillars that e
 - Establish clear incident response procedures for GitHub outages
 - Use GitHub Actions caching to reduce external dependencies
 - Implement health checks for self-hosted runners with automatic replacement
+- Keep self-hosted runners current: GitHub Enterprise Cloud has fully enforced minimum runner versions since 2026-09-29 (GHE.com since 2026-07-31). Runners below `2.329.0` can't register, and a runner that doesn't install a new runner release within 30 days stops receiving jobs. Leave auto-update on, or rebuild runner images at least every 30 days (see [Runner Governance](30-actions-workflow-execution-protections.md#runner-governance))
 
 ### 2. Security
 
@@ -100,7 +101,7 @@ The following sections organize best practices around operational pillars that e
 - Use path filters and conditional execution to skip unnecessary workflows
 - Optimize Git operations (shallow clones, sparse checkouts)
 - Monitor and optimize Actions minutes consumption
-- Use artifact retention policies to manage storage costs
+- Use artifact retention policies to manage storage costs; since 2026-10-01 the same setting also deletes checks, workflow runs and statuses (see Cost Optimization below)
 - Implement incremental builds and selective testing strategies
 
 ### 5. Cost Optimization
@@ -117,7 +118,7 @@ The following sections organize best practices around operational pillars that e
 - Monitor GitHub Actions minutes usage by organization and repository
 - Implement tagging strategies for cost allocation
 - Use self-hosted runners for high-volume workloads to reduce Actions minutes costs
-- Configure appropriate artifact and log retention periods
+- Configure appropriate artifact and log retention periods. Since 2026-10-01 the setting is labeled **Check, workflow run, status, artifact and log retention**: checks, workflow runs and commit statuses, including those created by third-party apps, are deleted with the artifacts and logs (90 days by default, at most 90 days for public repositories; before 2026-10-01 they were kept 400+ days). Don't shorten it below the run and check history your audits need, and export what you must keep longer
 - Optimize GitHub Packages storage usage with cleanup policies
 - Review and right-size GitHub Copilot seat assignments
 - Use GitHub Advanced Security (Secret Protection and Code Security) efficiently with targeted repository enablement
@@ -226,7 +227,8 @@ graph TB
 
 - [ ] **GitHub Actions Setup**
   - [ ] Configure organization-level secrets and variables
-  - [ ] Set up self-hosted runners (if required) with autoscaling
+  - [ ] Set up self-hosted runners (if required) with autoscaling and automatic updates
+  - [ ] Create workflow execution protections in evaluate mode, review Policy insights, then enforce ([Workflow Execution Protections](30-actions-workflow-execution-protections.md))
   - [ ] Create reusable workflows for common patterns
   - [ ] Implement workflow templates for standardization
   - [ ] Configure Actions usage limits and policies
@@ -795,6 +797,12 @@ jobs:
             exit 1
           fi
 ```
+
+**Platform changes that affect these templates:**
+
+- **`actions/checkout`:** v7 has been generally available since 2026-06-18. It refuses to check out fork pull request code in `pull_request_target` workflows, and in `workflow_run` workflows triggered by a pull request event, unless the step sets `allow-unsafe-pr-checkout`. Since 2026-07-20 the protection is backported to every supported major version except v1, so floating tags such as the `@v6` used here pick it up; workflows pinned to a commit SHA, minor or patch version must upgrade to get it.
+- **Who and what can start these workflows:** workflow execution protections (generally available since 2026-09-17) restrict which actors and events can trigger them. From 2026-11-02, a default policy blocks `pull_request_target` in public repositories that have no event policy of their own. See [Workflow Execution Protections and Runner Governance](30-actions-workflow-execution-protections.md) and [Lab 18](../labs/lab18.md).
+- **`ubuntu-latest`:** the label moves from Ubuntu 24.04 to Ubuntu 26.04 gradually between 2026-10-19 and 2026-11-19, and some preinstalled tools change or are removed. Test workflows with `ubuntu-26.04`, and pin `ubuntu-24.04` where a workflow isn't ready to move.
 
 ### Required Status Checks Configuration
 
@@ -2818,7 +2826,8 @@ class GitHubCostOptimizer:
         
         print("Top 10 Actions consumers:")
         for repo, minutes in top_10:
-            print(f"  {repo}: {minutes} minutes (${minutes * 0.008})")
+            # Linux 2-core (x64) list rate; larger, Windows and macOS runners cost more
+            print(f"  {repo}: {minutes} minutes (${minutes * 0.006})")
         
         return top_10
     
@@ -3056,13 +3065,18 @@ class CostTracker:
         """Detailed cost breakdown by category"""
         billing = self.gh.get_billing_info(org)
         
+        # List prices in USD, checked on docs.github.com on 2026-10-02. Illustrative only:
+        # negotiated contracts differ, and minutes and storage count only paid usage
+        # beyond the included allowances.
         costs = {
-            'github_pro_seats': billing['pro_users'] * 4,  # $4/user/month
-            'actions_minutes': billing['actions_minutes_used'] * 0.008,
-            'packages_storage': billing['packages_gb_used'] * 0.25,
-            'actions_storage': billing['actions_storage_gb'] * 0.25,
-            'advanced_security': billing['ghas_repos'] * 3,
-            'copilot_seats': billing['copilot_seats'] * 10,
+            'enterprise_seats': billing['enterprise_users'] * 21,  # GitHub Enterprise Cloud, $21/user/month
+            'actions_minutes': billing['actions_minutes_used'] * 0.006,  # Linux 2-core (x64) rate
+            'packages_storage': billing['packages_gb_used'] * 0.25,  # shared storage, $0.25/GB-month
+            'actions_storage': billing['actions_storage_gb'] * 0.25,  # artifacts use the same shared storage rate
+            'secret_protection': billing['secret_protection_committers'] * 19,  # per active committer/month
+            'code_security': billing['code_security_committers'] * 30,  # per active committer/month
+            'copilot_seats': billing['copilot_business_seats'] * 19,  # Copilot Business; Copilot Enterprise is $39
+            'copilot_ai_credits': billing['paid_ai_credits'] * 0.01,  # GitHub AI Credits beyond the included pool
         }
         
         total = sum(costs.values())
@@ -3329,6 +3343,7 @@ Tools and Infrastructure:
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2024 | Initial comprehensive WAF documentation |
+| 1.1 | October 2026 | Apr–Oct 2026 changelog refresh: `actions/checkout` v7 and `pull_request_target`, workflow execution protections, `ubuntu-latest` migration to Ubuntu 26.04, self-hosted runner version enforcement, retention of checks, workflow runs and statuses; cost scripts use list prices checked on 2026-10-02 |
 
 ---
 

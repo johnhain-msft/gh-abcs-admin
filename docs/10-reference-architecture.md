@@ -539,13 +539,13 @@ GitHub Enterprise Cloud provides larger runner options beyond the standard 2-vCP
 
 **Pricing:** Larger runners have per-minute cost multipliers over standard runners. A 4-core Linux runner costs approximately 2× the standard rate, 8-core is 4×, and GPU runners carry premium pricing. Larger runners are always billed—there are no included free minutes, even for public repositories. Review the [GitHub Actions billing documentation](https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions/about-billing-for-github-actions) for current rates.
 
-**ARM64 Runners:** ARM-based Linux runners are available for workloads that benefit from ARM-native builds, such as mobile apps, embedded systems, or ARM container images. Target them with `runs-on: ubuntu-24.04-arm` or the equivalent label configured on your larger runner.
+**ARM64 Runners:** Arm64 GitHub-hosted runners suit workloads that benefit from Arm-native builds, such as mobile apps, embedded systems, or Arm container images. Target Linux with `runs-on: ubuntu-24.04-arm`, `ubuntu-22.04-arm` or `ubuntu-26.04-arm` (generally available since 2026-09-17), target Windows with `windows-11-arm` or `windows-11-vs2026-arm` (generally available since 2026-08-20), or use the label configured on an Arm64 larger runner. GitHub took over maintenance of the Arm64 images from Arm Limited, as announced on 2026-05-14. Between 2026-09-21 and 2026-09-30, `windows-11-arm` moved to Visual Studio 2026, which can break workflows that depend on Visual Studio 2022.
 
 **Static IP Ranges:** Larger runners support static IP egress, which enables firewall allowlisting for external services that require known source IPs. Configure static IP networking in the runner's networking settings at the enterprise or organization level.
 
 **Auto-Scaling:** GitHub manages scaling automatically for hosted larger runners. The maximum concurrency is determined by your GitHub plan limits. No manual scaling or capacity configuration is required—runners spin up and down on demand.
 
-**Azure Private Networking (VNET Injection):** GitHub-hosted runners can be deployed into your Azure VNET, allowing them to access private Azure resources (databases, storage accounts, internal APIs) without exposing those services to the public internet. VNET injection is configured at the enterprise or organization level and requires an Azure subscription linked to your GitHub enterprise. This is the recommended pattern when jobs need both the managed infrastructure of GitHub-hosted runners and secure access to corporate network resources.
+**Azure Private Networking (VNET Injection):** GitHub-hosted runners can be deployed into your Azure VNET, allowing them to access private Azure resources (databases, storage accounts, internal APIs) without exposing those services to the public internet. VNET injection is configured at the enterprise or organization level and requires an Azure subscription linked to your GitHub enterprise. This is the recommended pattern when jobs need both the managed infrastructure of GitHub-hosted runners and secure access to corporate network resources. Since 2026-04-02 (public preview), a network configuration can also include a failover network: a secondary Azure subnet, which can be in another Azure region. Switching to it is manual, so add the switch to your outage runbook.
 
 **When to use larger runners:**
 - CI builds that exceed 10 minutes on standard 2-vCPU runners
@@ -570,6 +570,8 @@ Runner groups control which repositories and workflows can execute on specific r
 **Organization Runner Groups:** Created at the organization level and scoped to repositories within that organization. Organization owners control which repositories can access each group. Use organization groups for workload isolation within a single org—for example, separating CI runners from deployment runners.
 
 **Default Group:** Every organization has a built-in "Default" group. All self-hosted runners are placed in the Default group unless explicitly moved to another group. The Default group allows access from all repositories in the organization by default. For tighter controls, move runners out of Default and into purpose-specific groups.
+
+**GitHub-Hosted Runners in Groups:** Since 2026-06-25 (GitHub Team and GitHub Enterprise plans), macOS GitHub-hosted runners can be added to runner groups, which restricts them to selected organizations, repositories or workflows, enforces concurrency limits and lets workflows route jobs by group name; network configurations aren't supported for macOS runners. Administrators can also disable the standard hosted runner labels, such as `ubuntu-latest`, so that every job must target a runner through a runner group: organization owners under **Settings** → **Actions** → **General** → "Standard hosted runners" → **Disable for all repositories**, enterprise owners under **Policies** → **Actions** → "Standard hosted runners" → **Disable for all organizations**. Check the concurrency limits of your runner groups before you disable them.
 
 **Workflow Targeting:** Workflows target a runner group using the `group` key in `runs-on`. You can combine group targeting with labels to further narrow runner selection:
 
@@ -604,6 +606,7 @@ gh api --method POST /orgs/ORG/actions/runner-groups \
 - Use separate groups for CI (build/test) vs CD (deploy) workloads to limit blast radius
 - Audit group membership regularly using the API; unexpected repository access is a common misconfiguration
 - Combine runner groups with environment protection rules for defense-in-depth on deployment pipelines
+- Keep self-hosted runners current. GitHub Enterprise Cloud has fully enforced minimum runner versions since 2026-09-29 (GHE.com since 2026-07-31): runners below `2.329.0` can't register, and a runner that doesn't install a new runner release within 30 days stops receiving jobs. Leave auto-update on, or rebuild ephemeral runner images at least every 30 days; see [Runner Governance](30-actions-workflow-execution-protections.md#runner-governance)
 
 ---
 
@@ -671,7 +674,7 @@ graph TB
 ```mermaid
 graph TB
     subgraph "Source Platform"
-        SourceVCS[Source VCS<br/>GitLab/Bitbucket/Azure DevOps]
+        SourceVCS[Source VCS<br/>GitLab/Bitbucket/Azure DevOps/GHES]
         SourceRepos[Repositories]
         SourceIssues[Issues/Work Items]
         SourceCI[CI/CD Pipelines]
@@ -679,6 +682,7 @@ graph TB
     
     subgraph "Migration Tools"
         GEI[GitHub Enterprise Importer]
+        ELM[Enterprise Live Migrations<br/>GHES to GHE.com]
         Scripts[Custom Scripts]
         API[REST/GraphQL API]
     end
@@ -705,11 +709,13 @@ graph TB
     end
     
     SourceRepos -->|Git Clone/Push| GEI
+    SourceRepos -->|Continuous sync| ELM
     SourceIssues -->|Export/Import| API
     SourceCI -->|Translate| Scripts
     
     GEI --> Orgs
     GEI --> Repos
+    ELM --> Repos
     API --> Issues
     Scripts --> Workflows
     
@@ -726,9 +732,12 @@ graph TB
     Training --> Cutover
     
     style GEI fill:#0366d6,color:#fff
+    style ELM fill:#0366d6,color:#fff
     style Validation fill:#28a745,color:#fff
     style Cutover fill:#dc3545,color:#fff
 ```
+
+Enterprise Live Migrations (ELM), generally available since 2026-09-01, migrates repositories from GitHub Enterprise Server to GitHub Enterprise Cloud with data residency (GHE.com). It syncs continuously while developers keep working, so cutover only drains the remaining in-flight changes. It moves one repository per migration and doesn't migrate organization settings or teams. GitHub positions it alongside GEI: GEI for migrations where brief downtime is acceptable, ELM for repositories that need near-zero downtime.
 
 ### Migration Phases
 
@@ -1071,10 +1080,12 @@ This reference architecture document provides consolidated views of:
 - [Identity & Access Management](03-identity-access-management.md) - IAM configuration
 - [Enterprise Managed Users](04-enterprise-managed-users.md) - EMU deep dive
 - [Teams & Permissions](05-teams-permissions.md) - Team structures
+- [Enterprise Teams](28-enterprise-teams.md) - Teams defined once at the enterprise and assigned across organizations
 - [Policy Inheritance](06-policy-inheritance.md) - Policy enforcement
 - [Repository Governance](07-repository-governance.md) - Repo settings and rulesets
 - [Security & Compliance](08-security-compliance.md) - Secret Protection, Code Security, and compliance
 - [Best Practices & WAF](09-best-practices-waf.md) - Well-Architected Framework
+- [Actions Workflow Execution Protections](30-actions-workflow-execution-protections.md) - Who and what can start workflows, runner governance
 
 ---
 

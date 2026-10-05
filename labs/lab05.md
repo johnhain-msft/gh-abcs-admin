@@ -88,6 +88,9 @@ References:
               core.setFailed(`GraphQL query failed: ${error.message}`)
             }
 ```
+
+> **Note:** From 2026-10-19 to 2026-11-19, the `ubuntu-latest` label moves gradually from Ubuntu 24.04 to Ubuntu 26.04, and some preinstalled tools change. These jobs only call GitHub APIs through `actions/github-script`, but if a run behaves differently during that window, pin `runs-on: ubuntu-24.04` to compare.
+
 3. Commit the changes into the `main` branch
 4. Go to `Actions` and see the details of your running workflow
 

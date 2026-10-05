@@ -24,7 +24,7 @@ These questions validate understanding of key concepts from each workshop module
 
 **Q2.1.2:** What is the key difference between a GitHub App and an OAuth App?
 
-- A) GitHub Apps use fine-grained permissions and are installed on specific repos; OAuth Apps act on behalf of a user
+- A) GitHub Apps use fine-grained permissions and are installed on an account (an organization or user account with access to all or selected repositories, or the enterprise account); OAuth Apps act on behalf of a user
 - B) They are the same thing
 - C) OAuth Apps are more secure
 - D) GitHub Apps can only be used with GitHub Actions
@@ -58,6 +58,13 @@ These questions validate understanding of key concepts from each workshop module
 - B) In each organization's settings
 - C) In the enterprise policy settings (Settings → Policies → Actions)
 - D) In a `.github` repository
+
+**Q2.4.2:** Several public repositories in your organization run workflows on `pull_request_target`. You want to stop untrusted pull requests from triggering privileged workflows without breaking the few workflows that need the event. What is the best approach?
+
+- A) Require approval for fork pull request workflows from all outside collaborators
+- B) Create a workflow execution protection with an event rule in Evaluate mode, review Policy insights, allow `pull_request_target` only for the workflow files that need it, then set the policy to Active
+- C) Disable GitHub Actions in all public repositories
+- D) Pin every action to a full-length commit SHA
 
 ### User Administration and Teams (2.5, 2.6, 2.7)
 
@@ -105,6 +112,13 @@ These questions validate understanding of key concepts from each workshop module
 - C) Read access only
 - D) Admin access
 
+**Q2.7.3:** Your SRE group must review pull requests in 12 organizations and receive Copilot Business licenses from the enterprise. Your enterprise uses Enterprise Managed Users, and the group's membership is managed in Microsoft Entra ID. What should you set up?
+
+- A) An organization team in each of the 12 organizations, kept in sync by a script
+- B) One enterprise team synced from the Entra ID group, assigned to the 12 organizations and used for review requests and Copilot license assignment
+- C) Make every SRE engineer an enterprise owner
+- D) A nested team under each organization's engineering team
+
 ### Audit Log (2.3)
 
 **Q2.3.1:** You need to investigate who changed the base permission of an organization from "Read" to "Write" last Tuesday. Where do you look and what event do you search for?
@@ -144,6 +158,13 @@ These questions validate understanding of key concepts from each workshop module
 - C) Configure content exclusion rules in enterprise/organization Copilot settings
 - D) Disable Copilot for all users in the organization
 
+**Q2.2.5:** Your enterprise has enabled Copilot CLI and the GitHub Copilot app. Security wants to stop every licensed developer from turning on bypass ("allow all") mode in those clients, while one enterprise team keeps an exception. Where do you configure this?
+
+- A) In each developer's local Copilot settings
+- B) In enterprise managed settings: `copilot/managed-settings.json` in the `.github-private` repository of the enterprise's configuration source organization, with the key marked `overridable` and a team value for that enterprise team
+- C) By setting the Copilot CLI and GitHub Copilot app policies to **Disabled everywhere**
+- D) With a repository ruleset on every repository
+
 ---
 
 ## Day 2
@@ -176,7 +197,7 @@ These questions validate understanding of key concepts from each workshop module
 **Q1.2.1:** What is the recommended modern approach for protecting branches in GitHub Enterprise Cloud?
 
 - A) Branch protection rules (Settings → Branches)
-- B) Repository rulesets (Settings → Rules → Rulesets)
+- B) Repository rulesets (Settings → Rulesets → Rulesets)
 - C) CODEOWNERS file
 - D) Required status checks only
 
@@ -404,20 +425,23 @@ These questions validate understanding of key concepts from each workshop module
 | Question | Answer | Explanation |
 |----------|--------|-------------|
 | Q2.1.1 | B | SAML handles authentication (SSO); SCIM automates user lifecycle (provisioning/deprovisioning) |
-| Q2.1.2 | A | GitHub Apps are installed per-repo with fine-grained permissions; OAuth Apps act as the authenticated user |
+| Q2.1.2 | A | GitHub Apps act as their own identity with fine-grained permissions and are installed on an organization or user account, scoped to all or selected repositories. Apps with enterprise permissions can also be installed on the enterprise account (public third-party apps too, since 2026-08-07), which grants access to the enterprise itself, not its organizations or repositories. OAuth Apps act as the authenticated user |
 | Q2.1.3 | D | Fine-grained PATs and GitHub App tokens both improve on classic PATs; Apps are most secure for CI/CD |
 | Q2.2.1 | B | Enterprise-level "Enforce" policies cannot be overridden by organization admins |
 | Q2.2.2 | D | Setting "Not set" at the enterprise level allows each org to configure their own Actions policy |
 | Q2.4.1 | C | Enterprise policy settings cascade to all organizations as the centralized control point |
+| Q2.4.2 | B | Fork approval settings don't apply to `pull_request_target`, which always runs. Workflow execution protections (generally available since 2026-09-17) allow or block actors and events before a run starts, can target individual workflow files, and Evaluate mode with Policy insights shows what would be blocked before you enforce. From 2026-11-02, a default policy blocks `pull_request_target` in public repositories that have no event policy of their own |
 | Q2.5.1 | B | Dormancy considers multiple signals: login, Git operations, and web activity, with no qualifying activity for 30+ days |
-| Q2.5.2 | B | Complete offboarding requires org removal, SAML session revocation, and reviewing tokens/keys |
+| Q2.5.2 | B | Complete offboarding requires org removal, SAML session revocation, and reviewing tokens/keys. Since 2026-06-24, enterprise owners can revoke all of one user's SSO credential authorizations in one action and, with EMU, delete the user's tokens and SSH keys |
 | Q2.7.1 | B | Team sync maps IdP groups to GitHub teams, automating membership based on directory groups |
 | Q2.7.2 | B | Child teams inherit parent team permissions and can have additional permissions granted |
+| Q2.7.3 | B | Enterprise teams (generally available since 2026-06-04) are defined once at the enterprise and assigned to organizations, enterprise roles, Copilot Business licenses, cost centers and ruleset bypass lists, and can be requested as reviewers in every assigned organization. With EMU, an IdP group can drive their membership. They don't support CODEOWNERS or nesting, so keep organization teams for those |
 | Q2.3.1 | B | The organization audit log tracks permission changes with specific event names like `org.update_member_repository_permission` |
 | Q2.3.2 | B | Audit log streaming provides near-real-time delivery to SIEM endpoints like S3, Splunk, and Azure Event Hubs |
 | Q2.3.3 | B | Branch protection bypass events are recorded in the audit log and can be queried for compliance |
 | Q2.2.3 | B | Enterprise-level Copilot policies override organization-level settings; enterprise "Disabled" cannot be overridden by org admins |
-| Q2.2.4 | C | Content exclusion rules in enterprise/organization Copilot settings prevent specific repositories from being used as context |
+| Q2.2.4 | C | Content exclusion rules in enterprise/organization Copilot settings prevent specific repositories from being used as context. Since 2026-09-02 they also apply in Copilot CLI and the GitHub Copilot app, and since 2026-06-12 Copilot code review skips excluded files, but they aren't supported in the Edit and Agent modes of Copilot Chat in IDEs |
+| Q2.2.5 | B | AI Controls policies decide whether users get a feature; enterprise managed settings (generally available since 2026-07-01) decide how the supported clients behave for everyone licensed through the enterprise. Since 2026-08-03, keys marked `overridable` can take a different value for an enterprise team. Disabling the policies (C) would remove the clients altogether |
 | Q2.6.1 | B | The enterprise dormant users report and API track multiple activity types (login, Git, web) as the authoritative source for dormancy |
 | Q2.6.2 | B | A phased identify → warn → remove approach prevents accidentally removing temporarily inactive users |
 

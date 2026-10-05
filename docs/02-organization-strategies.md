@@ -305,6 +305,10 @@ The Archive organization contains repositories that are **no longer actively mai
 | **GitHub Actions** | Standard policies | Strict allow-lists | Permissive |
 | **GHAS Features** | Enabled | Required | Optional |
 
+### Enterprise Teams Across Organizations
+
+A multi-organization design no longer means duplicating the same team in every organization. Since 2026-06-04, an enterprise owner can define an **enterprise team** once and assign it to selected organizations or to all of them, then use it for review requests, ruleset bypass, enterprise roles, Copilot Business licenses and cost centers. Assignment adds members to each organization directly, so plan which teams may reach Red or regulated organizations. Organization-specific needs such as CODEOWNERS and nested teams still use organization teams. See [28-enterprise-teams.md](28-enterprise-teams.md) and [Lab 16](../labs/lab16.md).
+
 ### Workflow Between Organizations
 
 ```mermaid
@@ -753,7 +757,7 @@ Organizational architecture evolution requires careful planning to minimize disr
 **Phase 4: Cleanup and Optimization (2 weeks)**
 - Archive or delete empty repositories in source organization
 - Review and optimize team structures in new organizations
-- Consolidate duplicate teams across organizations
+- Replace teams duplicated across organizations with one enterprise team where the same group needs access in several organizations; keep organization teams for CODEOWNERS and nested hierarchies
 - Validate policy enforcement and compliance posture
 - Update enterprise documentation and architecture diagrams
 
@@ -803,7 +807,7 @@ done
 
 **Consolidation Execution**
 1. **Policy Harmonization**: Align target organization policies to most restrictive settings
-2. **Team Merging**: Consolidate teams with overlapping membership
+2. **Team Merging**: Consolidate teams with overlapping membership; a group that still spans several organizations can become one enterprise team
 3. **Repository Transfer**: Batch transfer repositories with collision resolution (rename with prefix)
 4. **Integration Migration**: Reinstall GitHub Apps and reconfigure webhooks
 5. **Clean Decommission**: Delete source organizations after 30-day validation period
@@ -1087,6 +1091,7 @@ stateDiagram-v2
 ### Related Documentation
 - [Enterprise Hierarchy](01-enterprise-hierarchy.md) - Understanding the enterprise account structure that contains organizations
 - [Teams and Permissions](05-teams-permissions.md) - Team structures and permission models within organizations
+- [Enterprise Teams](28-enterprise-teams.md) - Teams defined once at the enterprise and assigned across organizations
 - [Policy Inheritance](06-policy-inheritance.md) - How enterprise policies flow down to organization level
 - [Repository Governance](07-repository-governance.md) - Repository-level controls within organizational boundaries
 - [Security and Compliance](08-security-compliance.md) - Security features and compliance capabilities across organizations

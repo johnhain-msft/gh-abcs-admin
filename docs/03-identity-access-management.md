@@ -268,6 +268,18 @@ sequenceDiagram
 - Password change or credential revocation
 - Security policy enforcement (IP whitelist violation)
 
+### Proof of Presence for High-Impact Actions
+
+A valid session or token proves that someone authenticated earlier, not that the right person is the one acting at that moment. Proof of presence, in public preview since 2026-09-24, extends sudo mode for enterprises: before a protected high-impact action, GitHub sends the member back to the enterprise's IdP and lets the action proceed only after the member satisfies the IdP's policy.
+
+- **Protected actions:** the actions that trigger sudo mode, for example creating a personal access token, adding an SSH key, editing webhooks, changing organization security settings, creating or modifying rulesets, and viewing recovery codes.
+- **Requirement:** in the enterprise's **Settings** → **Authentication security**, the **Proof of presence** dropdown offers **Re-authentication** (sign in again; depending on IdP policy a password may be enough) or **MFA** (sign in again and complete a multi-factor challenge). The setting applies across the enterprise, and your IdP's own policies, such as a device compliance check, can also apply to the challenge.
+- **Session:** after a successful challenge, the member can perform protected actions in that browser session for two hours, the same timeout as sudo mode.
+- **Why it matters for EMU:** managed user accounts have no credentials stored on GitHub and don't get the regular sudo prompt, so proof of presence adds a fresh-authentication check they otherwise lack.
+- **Eligibility:** the 2026-09-24 changelog post scopes the preview to Enterprise Managed Users enterprises on GitHub.com and GHE.com that use Microsoft Entra ID through SAML or OIDC. The docs say the preview supports Microsoft Entra ID and list SSO prerequisites for both personal-account and EMU enterprises without stating that personal-account enterprises are eligible. Confirm availability for your enterprise before you plan on it.
+
+> **Note:** Because the setting applies to the whole enterprise, align it with your IdP's Conditional Access policies before you turn it on. A member who can't complete the IdP challenge can't complete the action and should contact the enterprise or IdP administrator who manages authentication.
+
 ---
 
 ## SAML Single Sign-On (SSO) Configuration
@@ -351,6 +363,8 @@ For OIDC authentication, configure CAP to enforce:
 - **Risk-Based Policies:** Require step-up auth for risky sign-ins
 
 GitHub validates CAP enforcement during OIDC token exchange.
+
+To require a fresh IdP check at the moment of a high-impact action, not only at sign-in, see [Proof of Presence for High-Impact Actions](#proof-of-presence-for-high-impact-actions) (public preview, Entra ID).
 
 ### IdP Setup: Okta
 
@@ -710,6 +724,8 @@ Authorization: Bearer {SCIM_TOKEN}
 }
 ```
 
+> **Note:** Since 2026-09-16, SCIM `/Users` responses include the RFC 7643 `profileUrl` attribute: the absolute URL of the GitHub account linked to the identity. It's omitted while an identity isn't linked to a GitHub user, and `userName` and the other attributes are unchanged, so existing integrations keep working. Read `profileUrl` to match a SCIM record to its GitHub account without extra lookups. The changelog post covers organization and enterprise SCIM responses; as of 2026-10-02 the REST reference documents `profileUrl` only for the organization SCIM endpoints.
+
 **Update User:**
 ```bash
 PATCH /scim/v2/enterprises/{ENTERPRISE}/Users/{id}
@@ -940,6 +956,7 @@ rotation_policy:
 - Review PAT usage in audit log: Enterprise → Audit log → Filter: "oauth_access"
 - Alert on suspicious token usage (unusual IP, geographic anomaly)
 - Revoke unused tokens after 90 days of inactivity
+- Export the enterprise credential inventory (since 2026-09-21): **Settings** → **Authentication security** → next to "Overview", **Export CSV**, or the token inventory REST API (`POST /enterprises/{enterprise}/credentials/exports`). It lists SSH keys, classic and fine-grained PATs, OAuth app tokens and GitHub App user tokens and installations, with owner, scopes or permissions, creation, last-use and expiry dates, and authorizing organizations. The export never contains token values; match its `hashed_token` column to the audit log's `hashed_token` field. Enterprise owners and members with the **View enterprise credentials** permission can export it
 
 **4. Token Authentication in CI/CD:**
 ```bash
@@ -963,7 +980,10 @@ rotation_policy:
 ### SSH Key Management
 
 **Key Types and Support:**
-- **RSA:** 2048-bit minimum, 4096-bit recommended
+- **RSA:** keys added from 2026-10-14 must be at least 3072 bits (4096-bit recommended)
+- **`ssh-rsa` (SHA-1) signatures:** removed on 2027-01-13, after brownouts on 2026-11-04 and 2026-12-09. Existing RSA keys keep working when the client signs with SHA-2 (`rsa-sha2-256`, `rsa-sha2-512`)
+- **Key exchange:** `diffie-hellman-group-exchange-sha256` is removed on the same schedule (brownouts 2026-11-04 and 2026-12-09, removal 2027-01-13). From 2026-10-14, the post-quantum `mlkem768x25519-sha256` key exchange is offered on GitHub.com and GHE.com, except the U.S. region; clients use it automatically when they prefer it
+- **Scope:** only Git clients connecting over SSH are affected; `https://` remotes are not. Clients that support RSA with SHA-2 need no change, for example OpenSSH 7.2p1, PuTTY 0.82, libssh2 1.11.0, Go SSH 0.16.0 or later. Inventory older CI images and appliances before the first brownout
 - **Ed25519:** Preferred (smaller, faster, more secure)
 - **ECDSA:** P-256, P-384, P-521 curves supported
 - **DSA:** Deprecated (insecure, unsupported)
@@ -973,7 +993,7 @@ rotation_policy:
 **1. Enterprise SSH Key Requirements:**
 ```bash
 # Enforce SSH certificate authority (advanced)
-# Enterprise → Settings → SSH certificate authorities
+# Enterprise → Settings → Authentication security → SSH Certificate Authorities → New CA
 # Upload CA public key for signed SSH certificates
 ```
 
@@ -1384,7 +1404,7 @@ Common integrations for automated IAM:
 ---
 
 **Document Version:** 1.0  
-**Last Updated:** 2024  
+**Last Updated:** October 2, 2026  
 **Target Audience:** Enterprise Administrators, Security Engineers, Identity & Access Management Teams  
 **Expertise Level:** L400 (Expert)
 
